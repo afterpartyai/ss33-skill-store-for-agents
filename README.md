@@ -75,6 +75,8 @@ This links to the clone, so `git pull` there updates the CLI. (Installing straig
 - **Prompt matching** (only if you turn it on) sends each prompt (truncated to 600 characters) plus the summary.
 - **Never sent:** source code, file contents or dependency trees.
 
+The store's [privacy policy](https://ss33.ai/skills/privacy) covers everything the plugin sends: searches, matched prompts and the project summary all go to the Skill Store's MCP server at `mcp.ss33.ai`. The plugin sends nothing anywhere else, apart from a one-time Node.js download from nodejs.org if you don't have Node ≥ 22.
+
 ## Support
 
 Email [support@readyai.ai](mailto:support@readyai.ai), or open an issue on [GitHub](https://github.com/afterpartyai/ss33-skill-store-for-agents/issues).
