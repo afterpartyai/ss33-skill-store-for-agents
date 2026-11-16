@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Create a Kubernetes deployment and service manifest for the API with liveness and readiness probes Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"jeremylongshore/creating-kubernetes-deployments-15770844038\", \"title\": \"Creating Kubernetes Deployments\", \"publisher\": \"jeremylongshore\", \"what_it_does\": \"Deploy applications to Kubernetes with production-ready manifests.\\nSupports Deployments, Services, Ingress, HPA, ConfigMaps, Secrets, StatefulSets, and NetworkPolicies.\\nIncludes health checks, resource limits, auto-scaling, and TLS termination. Use when working with creating kubernetes deployments. Trigger with 'creating', 'kubernetes', 'deployments'.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2293 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/jeremylongshore/creating-kubernetes-deployments-15770844038\", \"available\": true}, {\"ref\": \"patricio0312rev/kubernetes-manifest-generator-21764104888\", \"title\": \"Kubernetes Manifest Generator\", \"publisher\": \"patricio0312rev\", \"what_it_does\": \"Generates Kubernetes manifests including Deployments, Services, ConfigMaps, Secrets, Ingress, and HPA with best practices. Use when users request \\\"Kubernetes setup\\\", \\\"K8s manifests\\\", \\\"deploy to Kubernetes\\\", \\\"container orchestration\\\", or \\\"K8s configuration\\\".\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3220 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/patricio0312rev/kubernetes-manifest-generator-21764104888\", \"available\": true}, {\"ref\": \"wshobson/k8s-manifest-generator-44849699378\", \"title\": \"K8S Manifest Generator\", \"publisher\": \"wshobson\", \"what_it_does\": \"Create production-ready Kubernetes manifests for Deployments, Services, ConfigMaps, and Secrets following best practices and security standards. Use when generating Kubernetes YAML manifests, creating K8s resources, or implementing production-grade Kubernetes configurations.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~774 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/wshobson/k8s-manifest-generator-44849699378\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2293 tokens to load",
+          "get": "/api/v1/ss33/skill/jeremylongshore/creating-kubernetes-deployments-15770844038",
+          "publisher": "jeremylongshore",
+          "ref": "jeremylongshore/creating-kubernetes-deployments-15770844038",
+          "requires": "not declared",
+          "title": "Creating Kubernetes Deployments",
+          "what_it_does": "Deploy applications to Kubernetes with production-ready manifests.\nSupports Deployments, Services, Ingress, HPA, ConfigMaps, Secrets, StatefulSets, and NetworkPolicies.\nIncludes health checks, resource limits, auto-scaling, and TLS termination. Use when working with creating kubernetes deployments. Trigger with 'creating', 'kubernetes', 'deployments'.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3220 tokens to load",
+          "get": "/api/v1/ss33/skill/patricio0312rev/kubernetes-manifest-generator-21764104888",
+          "publisher": "patricio0312rev",
+          "ref": "patricio0312rev/kubernetes-manifest-generator-21764104888",
+          "requires": "not declared",
+          "title": "Kubernetes Manifest Generator",
+          "what_it_does": "Generates Kubernetes manifests including Deployments, Services, ConfigMaps, Secrets, Ingress, and HPA with best practices. Use when users request \"Kubernetes setup\", \"K8s manifests\", \"deploy to Kubernetes\", \"container orchestration\", or \"K8s configuration\".",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~774 tokens to load",
+          "get": "/api/v1/ss33/skill/wshobson/k8s-manifest-generator-44849699378",
+          "publisher": "wshobson",
+          "ref": "wshobson/k8s-manifest-generator-44849699378",
+          "requires": "not declared",
+          "title": "K8S Manifest Generator",
+          "what_it_does": "Create production-ready Kubernetes manifests for Deployments, Services, ConfigMaps, and Secrets following best practices and security standards. Use when generating Kubernetes YAML manifests, creating K8s resources, or implementing production-grade Kubernetes configurations.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:51.903Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

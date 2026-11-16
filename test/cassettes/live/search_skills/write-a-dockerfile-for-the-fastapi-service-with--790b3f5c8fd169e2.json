@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Write a Dockerfile for the FastAPI service with a slim production image Project context: languages: python; package manager: poetry; uses: python ^3.11, fastapi ^0.110, pytest ^8; services: postgres:16"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"josiahsiegel/python-fastapi-81696560868\", \"title\": \"Python Fastapi\", \"publisher\": \"josiahsiegel\", \"what_it_does\": \"Complete FastAPI production system.\\nPROACTIVELY activate for: (1) Project structure (scalable layout), (2) Pydantic schemas (input/output separation), (3) Dependency injection, (4) Async database with SQLAlchemy, (5) JWT authentication, (6) Error handling patterns, (7) Docker deployment, (8) Gunicorn + Uvicorn production, (9) Rate limiting, (10) Testing with httpx.\\nProvides: Project templates, schema patterns, auth setup, Docker config.\\nEnsures production-ready FastAPI applications.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~4180 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/josiahsiegel/python-fastapi-81696560868\", \"available\": true}, {\"ref\": \"mindrally/microservices-91314280093\", \"title\": \"Microservices\", \"publisher\": \"mindrally\", \"what_it_does\": \"Guidelines for building production-grade microservices with FastAPI/Python and Go, covering serverless patterns, clean architecture, observability, and resilience.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~695 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/mindrally/microservices-91314280093\", \"available\": true}, {\"ref\": \"rebyteai-template/fastapi-fullstack-58034859923\", \"title\": \"Fastapi Fullstack\", \"publisher\": \"rebyteai-template\", \"what_it_does\": \"Python full-stack with FastAPI, React, PostgreSQL, and Docker.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~265 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/rebyteai-template/fastapi-fullstack-58034859923\", \"available\": false}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~4180 tokens to load",
+          "get": "/api/v1/ss33/skill/josiahsiegel/python-fastapi-81696560868",
+          "publisher": "josiahsiegel",
+          "ref": "josiahsiegel/python-fastapi-81696560868",
+          "requires": "not declared",
+          "title": "Python Fastapi",
+          "what_it_does": "Complete FastAPI production system.\nPROACTIVELY activate for: (1) Project structure (scalable layout), (2) Pydantic schemas (input/output separation), (3) Dependency injection, (4) Async database with SQLAlchemy, (5) JWT authentication, (6) Error handling patterns, (7) Docker deployment, (8) Gunicorn + Uvicorn production, (9) Rate limiting, (10) Testing with httpx.\nProvides: Project templates, schema patterns, auth setup, Docker config.\nEnsures production-ready FastAPI applications.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~695 tokens to load",
+          "get": "/api/v1/ss33/skill/mindrally/microservices-91314280093",
+          "publisher": "mindrally",
+          "ref": "mindrally/microservices-91314280093",
+          "requires": "not declared",
+          "title": "Microservices",
+          "what_it_does": "Guidelines for building production-grade microservices with FastAPI/Python and Go, covering serverless patterns, clean architecture, observability, and resilience.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": false,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~265 tokens to load",
+          "get": "/api/v1/ss33/skill/rebyteai-template/fastapi-fullstack-58034859923",
+          "publisher": "rebyteai-template",
+          "ref": "rebyteai-template/fastapi-fullstack-58034859923",
+          "requires": "not declared",
+          "title": "Fastapi Fullstack",
+          "what_it_does": "Python full-stack with FastAPI, React, PostgreSQL, and Docker.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:50.641Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

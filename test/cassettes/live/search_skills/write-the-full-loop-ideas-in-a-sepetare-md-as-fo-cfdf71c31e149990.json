@@ -1,0 +1,35 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Write the full loop ideas in a sepetare .md. As for the \"ss33\", I cant seem to figure out how to run them, I get \"ss33: command not found\" Project context: languages: javascript, typescript; package manager: npm; uses: typescript ^5.9.3, node >=20; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"5dive-ai/loops-62939937460\", \"title\": \"Loops\", \"publisher\": \"5dive-ai\", \"what_it_does\": \"Author or modify a LOOP.md — the portable agenticloops.dev format for a recurring, scheduled agent (trigger + skills + prompt in one file). Use when writing a new loop or editing an existing one; to find and install a loop that already exists use `find-loops`.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2831 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/5dive-ai/loops-62939937460\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2831 tokens to load",
+          "get": "/api/v1/ss33/skill/5dive-ai/loops-62939937460",
+          "publisher": "5dive-ai",
+          "ref": "5dive-ai/loops-62939937460",
+          "requires": "not declared",
+          "title": "Loops",
+          "what_it_does": "Author or modify a LOOP.md — the portable agenticloops.dev format for a recurring, scheduled agent (trigger + skills + prompt in one file). Use when writing a new loop or editing an existing one; to find and install a loop that already exists use `find-loops`.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:11:57.670Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

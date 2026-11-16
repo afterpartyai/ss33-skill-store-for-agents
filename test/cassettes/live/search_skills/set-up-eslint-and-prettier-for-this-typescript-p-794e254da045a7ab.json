@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Set up ESLint and Prettier for this TypeScript project with a pre-commit hook Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"patricio0312rev/eslint-prettier-config-26217390295\", \"title\": \"Eslint Prettier Config\", \"publisher\": \"patricio0312rev\", \"what_it_does\": \"Configures ESLint and Prettier for consistent code quality with TypeScript, React, and modern best practices. Use when users request \\\"ESLint setup\\\", \\\"Prettier config\\\", \\\"linting configuration\\\", \\\"code formatting\\\", or \\\"lint rules\\\".\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3229 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/patricio0312rev/eslint-prettier-config-26217390295\", \"available\": true}, {\"ref\": \"thebushidocollective/prettier-integration-54443488679\", \"title\": \"Prettier Integration\", \"publisher\": \"thebushidocollective\", \"what_it_does\": \"Use when prettier integration with editors, pre-commit hooks, ESLint, and CI/CD pipelines.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2867 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/thebushidocollective/prettier-integration-54443488679\", \"available\": true}, {\"ref\": \"tartinerlabs/setup-91980673865\", \"title\": \"Setup\", \"publisher\": \"tartinerlabs\", \"what_it_does\": \"Use when setting up a project, adding linting, formatting, git hooks, or type checking. Detects the language and installs that ecosystem's lint/format/hooks toolchain (JS/TS, Python, Go, Rust).\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1874 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/tartinerlabs/setup-91980673865\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3229 tokens to load",
+          "get": "/api/v1/ss33/skill/patricio0312rev/eslint-prettier-config-26217390295",
+          "publisher": "patricio0312rev",
+          "ref": "patricio0312rev/eslint-prettier-config-26217390295",
+          "requires": "not declared",
+          "title": "Eslint Prettier Config",
+          "what_it_does": "Configures ESLint and Prettier for consistent code quality with TypeScript, React, and modern best practices. Use when users request \"ESLint setup\", \"Prettier config\", \"linting configuration\", \"code formatting\", or \"lint rules\".",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2867 tokens to load",
+          "get": "/api/v1/ss33/skill/thebushidocollective/prettier-integration-54443488679",
+          "publisher": "thebushidocollective",
+          "ref": "thebushidocollective/prettier-integration-54443488679",
+          "requires": "not declared",
+          "title": "Prettier Integration",
+          "what_it_does": "Use when prettier integration with editors, pre-commit hooks, ESLint, and CI/CD pipelines.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1874 tokens to load",
+          "get": "/api/v1/ss33/skill/tartinerlabs/setup-91980673865",
+          "publisher": "tartinerlabs",
+          "ref": "tartinerlabs/setup-91980673865",
+          "requires": "not declared",
+          "title": "Setup",
+          "what_it_does": "Use when setting up a project, adding linting, formatting, git hooks, or type checking. Detects the language and installs that ecosystem's lint/format/hooks toolchain (JS/TS, Python, Go, Rust).",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:49.757Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

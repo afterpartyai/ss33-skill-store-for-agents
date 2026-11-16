@@ -1,0 +1,10 @@
+{
+  "cases": 28,
+  "hints": 10,
+  "precision": 1,
+  "recall": 1,
+  "hintRate": 0.357,
+  "falseHints": 0,
+  "wrongHints": 0,
+  "missedHints": 0
+}

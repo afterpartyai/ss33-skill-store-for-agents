@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Set up Sentry error tracking in the React frontend, including source maps Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"getsentry/sentry-react-sdk-11625669544\", \"title\": \"Sentry React Sdk\", \"publisher\": \"getsentry\", \"what_it_does\": \"Full Sentry SDK setup for React. Use when asked to \\\"add Sentry to React\\\", \\\"install @sentry/react\\\", or configure error monitoring, tracing, session replay, profiling, or logging for React applications. Supports React 16+, React Router v5-v7 non-framework mode, TanStack Router, Redux, Vite, and webpack.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~4788 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/getsentry/sentry-react-sdk-11625669544\", \"available\": true}, {\"ref\": \"getsentry/sentry-react-sdk-15636654624\", \"title\": \"Sentry React Sdk\", \"publisher\": \"getsentry\", \"what_it_does\": \"Full Sentry SDK setup for React. Use when asked to \\\"add Sentry to React\\\", \\\"install @sentry/react\\\", or configure error monitoring, tracing, session replay, profiling, or logging for React applications. Supports React 16+, React Router v5-v7, TanStack Router, Redux, Vite, and webpack.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~4011 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/getsentry/sentry-react-sdk-15636654624\", \"available\": true}, {\"ref\": \"spencerpauly/adding-error-tracking-2675861617\", \"title\": \"Adding Error Tracking\", \"publisher\": \"spencerpauly\", \"what_it_does\": \"Add Sentry error tracking, performance monitoring, and source maps to a web application.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~504 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/spencerpauly/adding-error-tracking-2675861617\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~4788 tokens to load",
+          "get": "/api/v1/ss33/skill/getsentry/sentry-react-sdk-11625669544",
+          "publisher": "getsentry",
+          "ref": "getsentry/sentry-react-sdk-11625669544",
+          "requires": "not declared",
+          "title": "Sentry React Sdk",
+          "what_it_does": "Full Sentry SDK setup for React. Use when asked to \"add Sentry to React\", \"install @sentry/react\", or configure error monitoring, tracing, session replay, profiling, or logging for React applications. Supports React 16+, React Router v5-v7 non-framework mode, TanStack Router, Redux, Vite, and webpack.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~4011 tokens to load",
+          "get": "/api/v1/ss33/skill/getsentry/sentry-react-sdk-15636654624",
+          "publisher": "getsentry",
+          "ref": "getsentry/sentry-react-sdk-15636654624",
+          "requires": "not declared",
+          "title": "Sentry React Sdk",
+          "what_it_does": "Full Sentry SDK setup for React. Use when asked to \"add Sentry to React\", \"install @sentry/react\", or configure error monitoring, tracing, session replay, profiling, or logging for React applications. Supports React 16+, React Router v5-v7, TanStack Router, Redux, Vite, and webpack.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~504 tokens to load",
+          "get": "/api/v1/ss33/skill/spencerpauly/adding-error-tracking-2675861617",
+          "publisher": "spencerpauly",
+          "ref": "spencerpauly/adding-error-tracking-2675861617",
+          "requires": "not declared",
+          "title": "Adding Error Tracking",
+          "what_it_does": "Add Sentry error tracking, performance monitoring, and source maps to a web application.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:52.355Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

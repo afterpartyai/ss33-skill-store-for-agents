@@ -1,0 +1,35 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "the build is failing after the dependency upgrade, can you fix it? Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"arize-ai/typescript-tooling-migration-45635677489\", \"title\": \"Typescript Tooling Migration\", \"publisher\": \"arize-ai\", \"what_it_does\": \"Migrate or upgrade TypeScript tooling in the Phoenix monorepo. Use when upgrading TypeScript versions, switching tools (ESLint to oxlint, Prettier to oxfmt), upgrading bundlers (Vite, esbuild), or making major dependency upgrades. Triggers on requests to migrate, upgrade, or replace TypeScript/JavaScript tooling.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2799 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/arize-ai/typescript-tooling-migration-45635677489\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2799 tokens to load",
+          "get": "/api/v1/ss33/skill/arize-ai/typescript-tooling-migration-45635677489",
+          "publisher": "arize-ai",
+          "ref": "arize-ai/typescript-tooling-migration-45635677489",
+          "requires": "not declared",
+          "title": "Typescript Tooling Migration",
+          "what_it_does": "Migrate or upgrade TypeScript tooling in the Phoenix monorepo. Use when upgrading TypeScript versions, switching tools (ESLint to oxlint, Prettier to oxfmt), upgrading bundlers (Vite, esbuild), or making major dependency upgrades. Triggers on requests to migrate, upgrade, or replace TypeScript/JavaScript tooling.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:10.016Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

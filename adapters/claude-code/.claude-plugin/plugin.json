@@ -1,0 +1,24 @@
+{
+  "name": "ss33",
+  "version": "0.3.0",
+  "description": "ss33 Skill Store for Claude Code: project-aware skill search, native skill install with a lockfile, and opt-in prompt matching.",
+  "author": { "name": "ReadyAI", "email": "support@readyai.ai" },
+  "repository": "https://github.com/afterpartyai/ss33-skill-store-for-agents",
+  "license": "MIT",
+  "icon": "./.claude-plugin/icon.png",
+  "keywords": ["skills", "skill-store", "ss33"],
+  "userConfig": {
+    "api_key": {
+      "type": "string",
+      "title": "Skill Store API key",
+      "description": "Raises the free-tier limit (5 searches/minute). Create one at https://ss33.ai/skills/account. Stored in your OS keychain; the plugin also copies it to ~/.config/ss33/config.json (0600) so /ss33 commands can use it.",
+      "sensitive": true
+    },
+    "prompt_matching": {
+      "type": "boolean",
+      "title": "Suggest skills from your prompts",
+      "default": false,
+      "description": "Off by default. When on, each prompt (plus a short project summary, never source code) is sent to the Skill Store to look for a relevant skill; at most a few one-line hints per session. Leave off to send nothing until you search."
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "can you explain what this regex does: ^\\d{3}-\\d{4}$ Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"onewave-ai/regex-debugger-70890976950\", \"title\": \"Regex Debugger\", \"publisher\": \"onewave-ai\", \"what_it_does\": \"Debug regex patterns with visual breakdowns, plain English explanations, test case generation, and flavor conversion. Use when user needs help with regular expressions or pattern matching.\", \"when_to_use\": \"Intended outcome: review or verify work.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1306 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/onewave-ai/regex-debugger-70890976950\", \"available\": true}, {\"ref\": \"nickcrew/regex-master-81089295082\", \"title\": \"Regex Master\", \"publisher\": \"nickcrew\", \"what_it_does\": \"Use this skill when building, explaining, or debugging regular expressions for pattern matching, validation, or text extraction. Trigger phrases: ''write a regex'', ''match this pattern'', ''validate this format'', ''extract from text''. Not for natural language parsing or full grammar parsing (use a parser instead).\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2981 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/nickcrew/regex-master-81089295082\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1306 tokens to load",
+          "get": "/api/v1/ss33/skill/onewave-ai/regex-debugger-70890976950",
+          "publisher": "onewave-ai",
+          "ref": "onewave-ai/regex-debugger-70890976950",
+          "requires": "not declared",
+          "title": "Regex Debugger",
+          "what_it_does": "Debug regex patterns with visual breakdowns, plain English explanations, test case generation, and flavor conversion. Use when user needs help with regular expressions or pattern matching.",
+          "when_to_use": "Intended outcome: review or verify work.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2981 tokens to load",
+          "get": "/api/v1/ss33/skill/nickcrew/regex-master-81089295082",
+          "publisher": "nickcrew",
+          "ref": "nickcrew/regex-master-81089295082",
+          "requires": "not declared",
+          "title": "Regex Master",
+          "what_it_does": "Use this skill when building, explaining, or debugging regular expressions for pattern matching, validation, or text extraction. Trigger phrases: ''write a regex'', ''match this pattern'', ''validate this format'', ''extract from text''. Not for natural language parsing or full grammar parsing (use a parser instead).",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:55.309Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

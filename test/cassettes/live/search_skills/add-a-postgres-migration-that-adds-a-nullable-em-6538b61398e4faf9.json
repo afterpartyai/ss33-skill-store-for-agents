@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Add a postgres migration that adds a nullable email column to the users table and backfills it Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"curiositech/drizzle-migrations-52128720908\", \"title\": \"Drizzle Migrations\", \"publisher\": \"curiositech\", \"what_it_does\": \"Drizzle ORM schema management and SQLite migrations — adding tables, modifying columns, creating indexes, generating and running migrations, Drizzle query patterns. NOT for Prisma, TypeORM,\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2552 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/curiositech/drizzle-migrations-52128720908\", \"available\": true}, {\"ref\": \"affaan-m/database-migrations-58335176380\", \"title\": \"Database Migrations\", \"publisher\": \"affaan-m\", \"what_it_does\": \"Database migration best practices for schema changes, data migrations, rollbacks, and zero-downtime deployments across PostgreSQL, MySQL, and common ORMs (Prisma, Drizzle, Django, TypeORM, golang-migrate). Use when planning or implementing database schema changes.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2438 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/affaan-m/database-migrations-58335176380\", \"available\": true}, {\"ref\": \"n8n-io/n8n-db-migrations-45172405829\", \"title\": \"N8N:Db Migrations\", \"publisher\": \"n8n-io\", \"what_it_does\": \"Authors n8n database migrations. Use when creating or modifying files under packages/@n8n/db/src/migrations/, when the user asks to add a column, table, index, foreign key, or backfill, or when the user mentions DB migrations or TypeORM migrations.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~11886 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/n8n-io/n8n-db-migrations-45172405829\", \"available\": false}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2552 tokens to load",
+          "get": "/api/v1/ss33/skill/curiositech/drizzle-migrations-52128720908",
+          "publisher": "curiositech",
+          "ref": "curiositech/drizzle-migrations-52128720908",
+          "requires": "not declared",
+          "title": "Drizzle Migrations",
+          "what_it_does": "Drizzle ORM schema management and SQLite migrations — adding tables, modifying columns, creating indexes, generating and running migrations, Drizzle query patterns. NOT for Prisma, TypeORM,",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2438 tokens to load",
+          "get": "/api/v1/ss33/skill/affaan-m/database-migrations-58335176380",
+          "publisher": "affaan-m",
+          "ref": "affaan-m/database-migrations-58335176380",
+          "requires": "not declared",
+          "title": "Database Migrations",
+          "what_it_does": "Database migration best practices for schema changes, data migrations, rollbacks, and zero-downtime deployments across PostgreSQL, MySQL, and common ORMs (Prisma, Drizzle, Django, TypeORM, golang-migrate). Use when planning or implementing database schema changes.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": false,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~11886 tokens to load",
+          "get": "/api/v1/ss33/skill/n8n-io/n8n-db-migrations-45172405829",
+          "publisher": "n8n-io",
+          "ref": "n8n-io/n8n-db-migrations-45172405829",
+          "requires": "not declared",
+          "title": "N8N:Db Migrations",
+          "what_it_does": "Authors n8n database migrations. Use when creating or modifying files under packages/@n8n/db/src/migrations/, when the user asks to add a column, table, index, foreign key, or backfill, or when the user mentions DB migrations or TypeORM migrations.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:02.154Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

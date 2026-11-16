@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "set up a CI pipeline for this project that runs the tests Project context: languages: python; package manager: poetry; uses: python ^3.11, fastapi ^0.110, pytest ^8; services: postgres:16"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"hieutrtr/deployment-pipeline-97111255661\", \"title\": \"Deployment Pipeline\", \"publisher\": \"hieutrtr\", \"what_it_does\": \"Deployment procedures and CI/CD pipeline configuration for Python/React projects. Use when deploying to staging or production, creating CI/CD pipelines with GitHub Actions, troubleshooting deployment failures, or planning rollbacks. Covers pipeline stages (build/test/staging/production), environment promotion, pre-deployment validation, health checks, canary deployment, rollback procedures, and GitHub Actions workflows. Does NOT cover Docker image building (use docker-best-practices) or incident response (use incident-response).\", \"when_to_use\": \"Intended outcome: run a routine task.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3961 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/hieutrtr/deployment-pipeline-97111255661\", \"available\": true}, {\"ref\": \"tony363/sc-cicd-setup-18189993060\", \"title\": \"Sc Cicd Setup\", \"publisher\": \"tony363\", \"what_it_does\": \"Generates GitHub Actions workflow files (ci.yml, security.yml, ai-review.yml, publish.yml) and pre-commit-config.yaml hooks for Python, Node.js, Go, and Rust projects from Jinja2 templates, covering linters, tests, CodeQL, pip-audit, npm audit, govulncheck, cargo-audit, and PyPI, npm, or crates.io publishing. Use when setting up CI/CD or pre-commit hooks in a new project, adding GitHub Actions to an existing repository, or when the user asks to set up CI, add GitHub Actions, or configure pipelines.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~684 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/tony363/sc-cicd-setup-18189993060\", \"available\": true}, {\"ref\": \"jeremylongshore/relay-pipeline-4134860173\", \"title\": \"Relay Pipeline\", \"publisher\": \"jeremylongshore\", \"what_it_does\": \"Build a full CI/CD pipeline from scratch. Use when asked to \\\"set up CI/CD\\\", \\\"create pipeline\\\", or \\\"automate deploys\\\".\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2418 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/jeremylongshore/relay-pipeline-4134860173\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3961 tokens to load",
+          "get": "/api/v1/ss33/skill/hieutrtr/deployment-pipeline-97111255661",
+          "publisher": "hieutrtr",
+          "ref": "hieutrtr/deployment-pipeline-97111255661",
+          "requires": "not declared",
+          "title": "Deployment Pipeline",
+          "what_it_does": "Deployment procedures and CI/CD pipeline configuration for Python/React projects. Use when deploying to staging or production, creating CI/CD pipelines with GitHub Actions, troubleshooting deployment failures, or planning rollbacks. Covers pipeline stages (build/test/staging/production), environment promotion, pre-deployment validation, health checks, canary deployment, rollback procedures, and GitHub Actions workflows. Does NOT cover Docker image building (use docker-best-practices) or incident response (use incident-response).",
+          "when_to_use": "Intended outcome: run a routine task.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~684 tokens to load",
+          "get": "/api/v1/ss33/skill/tony363/sc-cicd-setup-18189993060",
+          "publisher": "tony363",
+          "ref": "tony363/sc-cicd-setup-18189993060",
+          "requires": "not declared",
+          "title": "Sc Cicd Setup",
+          "what_it_does": "Generates GitHub Actions workflow files (ci.yml, security.yml, ai-review.yml, publish.yml) and pre-commit-config.yaml hooks for Python, Node.js, Go, and Rust projects from Jinja2 templates, covering linters, tests, CodeQL, pip-audit, npm audit, govulncheck, cargo-audit, and PyPI, npm, or crates.io publishing. Use when setting up CI/CD or pre-commit hooks in a new project, adding GitHub Actions to an existing repository, or when the user asks to set up CI, add GitHub Actions, or configure pipelines.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2418 tokens to load",
+          "get": "/api/v1/ss33/skill/jeremylongshore/relay-pipeline-4134860173",
+          "publisher": "jeremylongshore",
+          "ref": "jeremylongshore/relay-pipeline-4134860173",
+          "requires": "not declared",
+          "title": "Relay Pipeline",
+          "what_it_does": "Build a full CI/CD pipeline from scratch. Use when asked to \"set up CI/CD\", \"create pipeline\", or \"automate deploys\".",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:59.594Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

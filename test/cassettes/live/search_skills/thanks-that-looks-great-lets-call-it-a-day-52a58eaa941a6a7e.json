@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "thanks, that looks great! lets call it a day"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"anthropics/end-of-day-21200766111\", \"title\": \"End Of Day\", \"publisher\": \"anthropics\", \"what_it_does\": \"The closing beat of the day - every call processed or explicitly skipped, the CRM brought current, commitments captured, and tomorrow's top three teed up. Use when the user says \\\"end of day\\\", \\\"close out my day\\\", \\\"process today's calls\\\", \\\"EOD\\\", or on an evening schedule. Companion bookend to daily-briefing.\", \"when_to_use\": \"Intended outcome: run a routine task.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2208 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/anthropics/end-of-day-21200766111\", \"available\": true}, {\"ref\": \"andreadellacorte/groove-daily-end-67363050107\", \"title\": \"Groove Daily End\", \"publisher\": \"andreadellacorte\", \"what_it_does\": \"End the workday: write memory, analyse tasks, run end hook. Use when wrapping up the day.\", \"when_to_use\": \"Intended outcome: run a routine task.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~971 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/andreadellacorte/groove-daily-end-67363050107\", \"available\": true}, {\"ref\": \"readdle/spark-recipe-end-of-day-88467859948\", \"title\": \"Spark Recipe End Of Day\", \"publisher\": \"readdle\", \"what_it_does\": \"End-of-day review: check for loose ends, review pinned items, and preview tomorrow's calendar.\", \"when_to_use\": \"Intended outcome: run a routine task.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~525 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/readdle/spark-recipe-end-of-day-88467859948\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2208 tokens to load",
+          "get": "/api/v1/ss33/skill/anthropics/end-of-day-21200766111",
+          "publisher": "anthropics",
+          "ref": "anthropics/end-of-day-21200766111",
+          "requires": "not declared",
+          "title": "End Of Day",
+          "what_it_does": "The closing beat of the day - every call processed or explicitly skipped, the CRM brought current, commitments captured, and tomorrow's top three teed up. Use when the user says \"end of day\", \"close out my day\", \"process today's calls\", \"EOD\", or on an evening schedule. Companion bookend to daily-briefing.",
+          "when_to_use": "Intended outcome: run a routine task.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~971 tokens to load",
+          "get": "/api/v1/ss33/skill/andreadellacorte/groove-daily-end-67363050107",
+          "publisher": "andreadellacorte",
+          "ref": "andreadellacorte/groove-daily-end-67363050107",
+          "requires": "not declared",
+          "title": "Groove Daily End",
+          "what_it_does": "End the workday: write memory, analyse tasks, run end hook. Use when wrapping up the day.",
+          "when_to_use": "Intended outcome: run a routine task.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~525 tokens to load",
+          "get": "/api/v1/ss33/skill/readdle/spark-recipe-end-of-day-88467859948",
+          "publisher": "readdle",
+          "ref": "readdle/spark-recipe-end-of-day-88467859948",
+          "requires": "not declared",
+          "title": "Spark Recipe End Of Day",
+          "what_it_does": "End-of-day review: check for loose ends, review pinned items, and preview tomorrow's calendar.",
+          "when_to_use": "Intended outcome: run a routine task.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:08.987Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

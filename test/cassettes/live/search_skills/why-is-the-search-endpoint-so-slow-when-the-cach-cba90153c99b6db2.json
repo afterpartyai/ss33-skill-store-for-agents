@@ -1,0 +1,35 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "why is the search endpoint so slow when the cache is cold, any ideas? Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"posthog/diagnosing-endpoint-performance-16547337026\", \"title\": \"Diagnosing Endpoint Performance\", \"publisher\": \"posthog\", \"what_it_does\": \"Diagnose why a PostHog endpoint is slow or expensive and propose a concrete fix — bump the cache TTL, enable materialisation, restructure variables, or rewrite the query. Use when the user says \\\"this endpoint is slow\\\", \\\"my endpoint times out\\\", \\\"we're hitting the cost cap on this one\\\", or asks \\\"should I materialise this?\\\". Focuses on a single named endpoint, not a project-wide audit.\", \"when_to_use\": \"Intended outcome: analyse and decide.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3317 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/posthog/diagnosing-endpoint-performance-16547337026\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3317 tokens to load",
+          "get": "/api/v1/ss33/skill/posthog/diagnosing-endpoint-performance-16547337026",
+          "publisher": "posthog",
+          "ref": "posthog/diagnosing-endpoint-performance-16547337026",
+          "requires": "not declared",
+          "title": "Diagnosing Endpoint Performance",
+          "what_it_does": "Diagnose why a PostHog endpoint is slow or expensive and propose a concrete fix — bump the cache TTL, enable materialisation, restructure variables, or rewrite the query. Use when the user says \"this endpoint is slow\", \"my endpoint times out\", \"we're hitting the cost cap on this one\", or asks \"should I materialise this?\". Focuses on a single named endpoint, not a project-wide audit.",
+          "when_to_use": "Intended outcome: analyse and decide.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:07.398Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

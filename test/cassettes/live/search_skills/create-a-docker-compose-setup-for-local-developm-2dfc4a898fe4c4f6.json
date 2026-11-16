@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Create a docker compose setup for local development with postgres and redis containers Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"thienanblog/docker-local-dev-54244503999\", \"title\": \"Docker Local Dev\", \"publisher\": \"thienanblog\", \"what_it_does\": \"Create or repair local Docker Compose services, Dockerfiles, mounts, networking, and readiness checks. Use when container configuration is the deliverable; ordinary container commands and production deployment are separate concerns.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2408 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/thienanblog/docker-local-dev-54244503999\", \"available\": true}, {\"ref\": \"jeremylongshore/pave-env-36515283342\", \"title\": \"Pave Env\", \"publisher\": \"jeremylongshore\", \"what_it_does\": \"Set up local development environments — devcontainers, Docker Compose, one-command setup, dev/prod parity. Use when asked to \\\"set up dev environment\\\", \\\"devcontainer\\\", \\\"docker compose for dev\\\", \\\"local development setup\\\", or \\\"one command to run\\\".\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~936 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/jeremylongshore/pave-env-36515283342\", \"available\": true}, {\"ref\": \"hieutrtr/docker-best-practices-35076499757\", \"title\": \"Docker Best Practices\", \"publisher\": \"hieutrtr\", \"what_it_does\": \"Docker containerization patterns for Python/React projects. Use when creating or modifying Dockerfiles, optimizing image size, setting up Docker Compose for local development, or hardening container security. Covers multi-stage builds for Python (python:3.12-slim) and React (node:20-alpine -> nginx:alpine), layer optimization, .dockerignore, non-root user, security scanning with Trivy, Docker Compose for dev (backend + frontend + PostgreSQL + Redis), and image tagging strategy. Does NOT cover deployment orchestration (use deployment-pipeline).\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3434 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/hieutrtr/docker-best-practices-35076499757\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2408 tokens to load",
+          "get": "/api/v1/ss33/skill/thienanblog/docker-local-dev-54244503999",
+          "publisher": "thienanblog",
+          "ref": "thienanblog/docker-local-dev-54244503999",
+          "requires": "not declared",
+          "title": "Docker Local Dev",
+          "what_it_does": "Create or repair local Docker Compose services, Dockerfiles, mounts, networking, and readiness checks. Use when container configuration is the deliverable; ordinary container commands and production deployment are separate concerns.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~936 tokens to load",
+          "get": "/api/v1/ss33/skill/jeremylongshore/pave-env-36515283342",
+          "publisher": "jeremylongshore",
+          "ref": "jeremylongshore/pave-env-36515283342",
+          "requires": "not declared",
+          "title": "Pave Env",
+          "what_it_does": "Set up local development environments — devcontainers, Docker Compose, one-command setup, dev/prod parity. Use when asked to \"set up dev environment\", \"devcontainer\", \"docker compose for dev\", \"local development setup\", or \"one command to run\".",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3434 tokens to load",
+          "get": "/api/v1/ss33/skill/hieutrtr/docker-best-practices-35076499757",
+          "publisher": "hieutrtr",
+          "ref": "hieutrtr/docker-best-practices-35076499757",
+          "requires": "not declared",
+          "title": "Docker Best Practices",
+          "what_it_does": "Docker containerization patterns for Python/React projects. Use when creating or modifying Dockerfiles, optimizing image size, setting up Docker Compose for local development, or hardening container security. Covers multi-stage builds for Python (python:3.12-slim) and React (node:20-alpine -> nginx:alpine), layer optimization, .dockerignore, non-root user, security scanning with Trivy, Docker Compose for dev (backend + frontend + PostgreSQL + Redis), and image tagging strategy. Does NOT cover deployment orchestration (use deployment-pipeline).",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:02.731Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

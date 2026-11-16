@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "rename the variable userData to profile across the whole codebase please Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"mkosir/typescript-naming-4749554725\", \"title\": \"Typescript Naming\", \"publisher\": \"mkosir\", \"what_it_does\": \"Apply, review, and explain TypeScript naming conventions. Use automatically for tasks involving exports, identifiers, generic type parameters, acronyms, React props and handlers, hooks, comments, or TSDoc.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2541 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/mkosir/typescript-naming-4749554725\", \"available\": true}, {\"ref\": \"mkosir/typescript-variables-85925664395\", \"title\": \"Typescript Variables\", \"publisher\": \"mkosir\", \"what_it_does\": \"Apply, review, and explain TypeScript variable conventions. Use automatically for tasks involving variable declarations, const assertions, enum alternatives, literal-union state modelling, boolean flags, or choosing between null and undefined.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1707 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/mkosir/typescript-variables-85925664395\", \"available\": true}, {\"ref\": \"mhattingpete/code-refactor-62255551554\", \"title\": \"Code Refactor\", \"publisher\": \"mhattingpete\", \"what_it_does\": \"Perform bulk code refactoring operations like renaming variables/functions across files, replacing patterns, and updating API calls. Use when users request renaming identifiers, replacing deprecated code patterns, updating method calls, or making consistent changes across multiple locations.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~836 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/mhattingpete/code-refactor-62255551554\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2541 tokens to load",
+          "get": "/api/v1/ss33/skill/mkosir/typescript-naming-4749554725",
+          "publisher": "mkosir",
+          "ref": "mkosir/typescript-naming-4749554725",
+          "requires": "not declared",
+          "title": "Typescript Naming",
+          "what_it_does": "Apply, review, and explain TypeScript naming conventions. Use automatically for tasks involving exports, identifiers, generic type parameters, acronyms, React props and handlers, hooks, comments, or TSDoc.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1707 tokens to load",
+          "get": "/api/v1/ss33/skill/mkosir/typescript-variables-85925664395",
+          "publisher": "mkosir",
+          "ref": "mkosir/typescript-variables-85925664395",
+          "requires": "not declared",
+          "title": "Typescript Variables",
+          "what_it_does": "Apply, review, and explain TypeScript variable conventions. Use automatically for tasks involving variable declarations, const assertions, enum alternatives, literal-union state modelling, boolean flags, or choosing between null and undefined.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~836 tokens to load",
+          "get": "/api/v1/ss33/skill/mhattingpete/code-refactor-62255551554",
+          "publisher": "mhattingpete",
+          "ref": "mhattingpete/code-refactor-62255551554",
+          "requires": "not declared",
+          "title": "Code Refactor",
+          "what_it_does": "Perform bulk code refactoring operations like renaming variables/functions across files, replacing patterns, and updating API calls. Use when users request renaming identifiers, replacing deprecated code patterns, updating method calls, or making consistent changes across multiple locations.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:06.599Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

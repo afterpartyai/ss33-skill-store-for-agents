@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Build an MCP server in Python with FastMCP that exposes our inventory API as tools Project context: languages: python; package manager: poetry; uses: python ^3.11, fastapi ^0.110, pytest ^8; services: postgres:16"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"ovachiever/fastmcp-348724249\", \"title\": \"Fastmcp\", \"publisher\": \"ovachiever\", \"what_it_does\": \"Build MCP servers in Python with FastMCP framework to expose tools, resources, and prompts to LLMs. Supports\\nstorage backends (memory/disk/Redis), middleware, OAuth Proxy, OpenAPI integration, and FastMCP Cloud deployment.\\nUse when: creating MCP servers, defining tools or resources, implementing OAuth authentication, configuring\\nstorage backends for tokens/cache, adding middleware for logging/rate limiting, deploying to FastMCP Cloud,\\nor troubleshooting module-level server, storage, lifespan, middleware order, circular imports, or OAuth errors.\\nKeywords: FastMCP, MCP server Python, Model Context Protocol Python, fastmcp framework, mcp tools, mcp resources, mcp prompts, fastmcp storage, fastmcp memory storage, fastmcp disk storage, fastmcp redis, fastmcp dynamodb, fastmcp lifespan, fastmcp middleware, fastmcp oauth proxy, server composition mcp, fastmcp import, fastmcp mount, fastmcp cloud, fastmcp deployment, mcp authentication, fastmcp icons, openapi mcp, claude mcp server, fastmcp testing, storage misconfig\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~15955 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/ovachiever/fastmcp-348724249\", \"available\": true}, {\"ref\": \"nousresearch/fastmcp-78968151007\", \"title\": \"Fastmcp\", \"publisher\": \"nousresearch\", \"what_it_does\": \"Build, test, and deploy Python MCP servers.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2038 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/nousresearch/fastmcp-78968151007\", \"available\": true}, {\"ref\": \"jezweb/mcp-builder-49869384991\", \"title\": \"Mcp Builder\", \"publisher\": \"jezweb\", \"what_it_does\": \"Build MCP servers in Python with FastMCP. Define tools / resources / prompts, build the server, test locally, deploy to FastMCP Cloud or Docker. Use whenever the user mentions building an MCP server, exposing tools to LLMs, FastMCP, building a Claude integration, or troubleshooting FastMCP module-level server, storage, lifespan, middleware, OAuth, or deployment errors.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3087 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/jezweb/mcp-builder-49869384991\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~15955 tokens to load",
+          "get": "/api/v1/ss33/skill/ovachiever/fastmcp-348724249",
+          "publisher": "ovachiever",
+          "ref": "ovachiever/fastmcp-348724249",
+          "requires": "not declared",
+          "title": "Fastmcp",
+          "what_it_does": "Build MCP servers in Python with FastMCP framework to expose tools, resources, and prompts to LLMs. Supports\nstorage backends (memory/disk/Redis), middleware, OAuth Proxy, OpenAPI integration, and FastMCP Cloud deployment.\nUse when: creating MCP servers, defining tools or resources, implementing OAuth authentication, configuring\nstorage backends for tokens/cache, adding middleware for logging/rate limiting, deploying to FastMCP Cloud,\nor troubleshooting module-level server, storage, lifespan, middleware order, circular imports, or OAuth errors.\nKeywords: FastMCP, MCP server Python, Model Context Protocol Python, fastmcp framework, mcp tools, mcp resources, mcp prompts, fastmcp storage, fastmcp memory storage, fastmcp disk storage, fastmcp redis, fastmcp dynamodb, fastmcp lifespan, fastmcp middleware, fastmcp oauth proxy, server composition mcp, fastmcp import, fastmcp mount, fastmcp cloud, fastmcp deployment, mcp authentication, fastmcp icons, openapi mcp, claude mcp server, fastmcp testing, storage misconfig",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2038 tokens to load",
+          "get": "/api/v1/ss33/skill/nousresearch/fastmcp-78968151007",
+          "publisher": "nousresearch",
+          "ref": "nousresearch/fastmcp-78968151007",
+          "requires": "not declared",
+          "title": "Fastmcp",
+          "what_it_does": "Build, test, and deploy Python MCP servers.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3087 tokens to load",
+          "get": "/api/v1/ss33/skill/jezweb/mcp-builder-49869384991",
+          "publisher": "jezweb",
+          "ref": "jezweb/mcp-builder-49869384991",
+          "requires": "not declared",
+          "title": "Mcp Builder",
+          "what_it_does": "Build MCP servers in Python with FastMCP. Define tools / resources / prompts, build the server, test locally, deploy to FastMCP Cloud or Docker. Use whenever the user mentions building an MCP server, exposing tools to LLMs, FastMCP, building a Claude integration, or troubleshooting FastMCP module-level server, storage, lifespan, middleware, OAuth, or deployment errors.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:03.183Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

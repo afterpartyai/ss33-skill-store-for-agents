@@ -1,0 +1,62 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "ok perfect, that's all for today, thanks for the help"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": false, \"candidates\": [], \"message\": \"No skill in the corpus covers this request well enough to recommend. The closest existing skills are listed under near_misses; none of them actually does what was asked.\", \"near_misses\": [{\"ref\": \"recoupable/recoup-platform-capture-lesson-85600590593\", \"title\": \"Recoup Platform Capture Lesson\", \"publisher\": \"recoupable\", \"what_it_does\": \"Capture a solved problem or reusable lesson so the next run is cheaper — the box's compounding memory. Use when the user says \\\"that worked\\\", \\\"remember this\\\", \\\"capture this learning\\\", \\\"save this so we don't redo it\\\", \\\"write this down for next time\\\", or after a non-trivial fix/decision in any Recoup work. Writes one deduplicated learning into the workspace's learnings/ store and makes sure future agents can find it.\", \"when_to_use\": \"Intended outcome: improve how the agent works.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~644 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/recoupable/recoup-platform-capture-lesson-85600590593\", \"available\": false}, {\"ref\": \"sundial-org/daily-review-2-89986641992\", \"title\": \"Daily Review 2\", \"publisher\": \"sundial-org\", \"what_it_does\": \"End-of-day review to capture progress, insights, and plan tomorrow\", \"when_to_use\": \"Intended outcome: run a routine task.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~395 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/sundial-org/daily-review-2-89986641992\", \"available\": false}, {\"ref\": \"jsmastery-pro/remember-59000278904\", \"title\": \"Remember\", \"publisher\": \"jsmastery-pro\", \"what_it_does\": \"Save what matters at the end of a session so the next session picks up exactly where you left off. Or restore context at the start of a new session so nothing is lost between them.\", \"when_to_use\": \"Intended outcome: improve how the agent works.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1874 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/jsmastery-pro/remember-59000278904\", \"available\": true}], \"next_step\": \"fork_to_fill\"}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [],
+      "found": false,
+      "message": "No skill in the corpus covers this request well enough to recommend. The closest existing skills are listed under near_misses; none of them actually does what was asked.",
+      "near_misses": [
+        {
+          "available": false,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~644 tokens to load",
+          "get": "/api/v1/ss33/skill/recoupable/recoup-platform-capture-lesson-85600590593",
+          "publisher": "recoupable",
+          "ref": "recoupable/recoup-platform-capture-lesson-85600590593",
+          "requires": "not declared",
+          "title": "Recoup Platform Capture Lesson",
+          "what_it_does": "Capture a solved problem or reusable lesson so the next run is cheaper — the box's compounding memory. Use when the user says \"that worked\", \"remember this\", \"capture this learning\", \"save this so we don't redo it\", \"write this down for next time\", or after a non-trivial fix/decision in any Recoup work. Writes one deduplicated learning into the workspace's learnings/ store and makes sure future agents can find it.",
+          "when_to_use": "Intended outcome: improve how the agent works.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": false,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~395 tokens to load",
+          "get": "/api/v1/ss33/skill/sundial-org/daily-review-2-89986641992",
+          "publisher": "sundial-org",
+          "ref": "sundial-org/daily-review-2-89986641992",
+          "requires": "not declared",
+          "title": "Daily Review 2",
+          "what_it_does": "End-of-day review to capture progress, insights, and plan tomorrow",
+          "when_to_use": "Intended outcome: run a routine task.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1874 tokens to load",
+          "get": "/api/v1/ss33/skill/jsmastery-pro/remember-59000278904",
+          "publisher": "jsmastery-pro",
+          "ref": "jsmastery-pro/remember-59000278904",
+          "requires": "not declared",
+          "title": "Remember",
+          "what_it_does": "Save what matters at the end of a session so the next session picks up exactly where you left off. Or restore context at the start of a new session so nothing is lost between them.",
+          "when_to_use": "Intended outcome: improve how the agent works.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "next_step": "fork_to_fill"
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:57.738Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

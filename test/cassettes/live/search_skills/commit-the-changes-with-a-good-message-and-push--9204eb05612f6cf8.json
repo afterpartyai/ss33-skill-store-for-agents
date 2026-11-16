@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "commit the changes with a good message and push them to the branch Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"meleantonio/commit-push-pr-58593634859\", \"title\": \"Commit Push Pr\", \"publisher\": \"meleantonio\", \"what_it_does\": \"Commit changes, push to remote, and create a pull request. Use for completing features or fixes ready for review.\", \"when_to_use\": \"Intended outcome: run a routine task.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~524 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/meleantonio/commit-push-pr-58593634859\", \"available\": true}, {\"ref\": \"duc01226/commit-90910945271\", \"title\": \"Commit\", \"publisher\": \"duc01226\", \"what_it_does\": \"[Git] Use when asked to commit, stage and commit, or save changes. --push also pushes.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~415 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/duc01226/commit-90910945271\", \"available\": true}, {\"ref\": \"duc01226/commit-44330370729\", \"title\": \"Commit\", \"publisher\": \"duc01226\", \"what_it_does\": \"[Git] Use when asked to commit, stage and commit, or save changes. --push also pushes.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~415 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/duc01226/commit-44330370729\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~524 tokens to load",
+          "get": "/api/v1/ss33/skill/meleantonio/commit-push-pr-58593634859",
+          "publisher": "meleantonio",
+          "ref": "meleantonio/commit-push-pr-58593634859",
+          "requires": "not declared",
+          "title": "Commit Push Pr",
+          "what_it_does": "Commit changes, push to remote, and create a pull request. Use for completing features or fixes ready for review.",
+          "when_to_use": "Intended outcome: run a routine task.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~415 tokens to load",
+          "get": "/api/v1/ss33/skill/duc01226/commit-90910945271",
+          "publisher": "duc01226",
+          "ref": "duc01226/commit-90910945271",
+          "requires": "not declared",
+          "title": "Commit",
+          "what_it_does": "[Git] Use when asked to commit, stage and commit, or save changes. --push also pushes.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~415 tokens to load",
+          "get": "/api/v1/ss33/skill/duc01226/commit-44330370729",
+          "publisher": "duc01226",
+          "ref": "duc01226/commit-44330370729",
+          "requires": "not declared",
+          "title": "Commit",
+          "what_it_does": "[Git] Use when asked to commit, stage and commit, or save changes. --push also pushes.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:08.437Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

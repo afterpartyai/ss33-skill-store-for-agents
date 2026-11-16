@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Set up a GitHub Actions CI pipeline that runs lint and tests on every pull request Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"spencerpauly/setting-up-ci-47966146241\", \"title\": \"Setting Up Ci\", \"publisher\": \"spencerpauly\", \"what_it_does\": \"Set up a GitHub Actions CI/CD pipeline with linting, testing, type-checking, and deployment steps.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~581 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/spencerpauly/setting-up-ci-47966146241\", \"available\": true}, {\"ref\": \"jdevalk/emdash-github-actions-1823114253\", \"title\": \"Emdash Github Actions\", \"publisher\": \"jdevalk\", \"what_it_does\": \"Sets up GitHub Actions CI/CD workflows for EmDash plugins — TypeScript type-checking, ESLint linting, Vitest testing, npm publishing, and automated releases. ALWAYS use this skill when a user wants to create, add, set up, or configure GitHub Actions, CI/CD, automated checks, or deployment workflows for an EmDash plugin — even if they don't use the exact phrase \\\"GitHub Actions\\\". This includes any request to: add automated type-checking or linting to an EmDash plugin repo; set up testing in CI for a plugin; auto-publish a plugin to npm from GitHub; add security scanning or dependency auditing to a plugin pipeline; or generally \\\"add CI\\\", \\\"add automated checks\\\", \\\"set up workflows\\\", or \\\"automate\\\" anything related to an EmDash plugin's GitHub repository. Also trigger when someone wants quality gates on PRs or is setting up a new EmDash plugin repo and wants best practices for automation. If the user is inside an EmDash plugin repository and mentions anything about automated testing, code quality, deployment, or Git\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1661 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/jdevalk/emdash-github-actions-1823114253\", \"available\": true}, {\"ref\": \"jdevalk/astro-github-actions-62473972226\", \"title\": \"Astro Github Actions\", \"publisher\": \"jdevalk\", \"what_it_does\": \"Sets up GitHub Actions CI/CD workflows for Astro sites — `astro check` (TypeScript + content schema), ESLint, Prettier, build verification, Vitest testing, Lighthouse CI, link checking, npm audit, and automated deployment to GitHub Pages, Cloudflare Pages, Netlify, or Vercel. ALWAYS use this skill when a user wants to create, add, set up, or configure GitHub Actions, CI/CD, automated checks, or deployment workflows for an Astro site — even if they don't use the exact phrase \\\"GitHub Actions\\\". This includes any request to: add automated type-checking or linting to an Astro repo; set up `astro check` in CI; add Lighthouse or accessibility checks to PRs; configure Vitest in CI for an Astro project; auto-deploy an Astro site to GitHub Pages, Cloudflare Pages, Netlify, or Vercel from GitHub; add link checking or broken-link detection; add security scanning to an Astro pipeline; or generally \\\"add CI\\\", \\\"add automated checks\\\", \\\"set up workflows\\\", or \\\"automate\\\" anything related to an Astro site's GitHub repository. Als\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2360 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/jdevalk/astro-github-actions-62473972226\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~581 tokens to load",
+          "get": "/api/v1/ss33/skill/spencerpauly/setting-up-ci-47966146241",
+          "publisher": "spencerpauly",
+          "ref": "spencerpauly/setting-up-ci-47966146241",
+          "requires": "not declared",
+          "title": "Setting Up Ci",
+          "what_it_does": "Set up a GitHub Actions CI/CD pipeline with linting, testing, type-checking, and deployment steps.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1661 tokens to load",
+          "get": "/api/v1/ss33/skill/jdevalk/emdash-github-actions-1823114253",
+          "publisher": "jdevalk",
+          "ref": "jdevalk/emdash-github-actions-1823114253",
+          "requires": "not declared",
+          "title": "Emdash Github Actions",
+          "what_it_does": "Sets up GitHub Actions CI/CD workflows for EmDash plugins — TypeScript type-checking, ESLint linting, Vitest testing, npm publishing, and automated releases. ALWAYS use this skill when a user wants to create, add, set up, or configure GitHub Actions, CI/CD, automated checks, or deployment workflows for an EmDash plugin — even if they don't use the exact phrase \"GitHub Actions\". This includes any request to: add automated type-checking or linting to an EmDash plugin repo; set up testing in CI for a plugin; auto-publish a plugin to npm from GitHub; add security scanning or dependency auditing to a plugin pipeline; or generally \"add CI\", \"add automated checks\", \"set up workflows\", or \"automate\" anything related to an EmDash plugin's GitHub repository. Also trigger when someone wants quality gates on PRs or is setting up a new EmDash plugin repo and wants best practices for automation. If the user is inside an EmDash plugin repository and mentions anything about automated testing, code quality, deployment, or Git",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2360 tokens to load",
+          "get": "/api/v1/ss33/skill/jdevalk/astro-github-actions-62473972226",
+          "publisher": "jdevalk",
+          "ref": "jdevalk/astro-github-actions-62473972226",
+          "requires": "not declared",
+          "title": "Astro Github Actions",
+          "what_it_does": "Sets up GitHub Actions CI/CD workflows for Astro sites — `astro check` (TypeScript + content schema), ESLint, Prettier, build verification, Vitest testing, Lighthouse CI, link checking, npm audit, and automated deployment to GitHub Pages, Cloudflare Pages, Netlify, or Vercel. ALWAYS use this skill when a user wants to create, add, set up, or configure GitHub Actions, CI/CD, automated checks, or deployment workflows for an Astro site — even if they don't use the exact phrase \"GitHub Actions\". This includes any request to: add automated type-checking or linting to an Astro repo; set up `astro check` in CI; add Lighthouse or accessibility checks to PRs; configure Vitest in CI for an Astro project; auto-deploy an Astro site to GitHub Pages, Cloudflare Pages, Netlify, or Vercel from GitHub; add link checking or broken-link detection; add security scanning to an Astro pipeline; or generally \"add CI\", \"add automated checks\", \"set up workflows\", or \"automate\" anything related to an Astro site's GitHub repository. Als",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:00.570Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

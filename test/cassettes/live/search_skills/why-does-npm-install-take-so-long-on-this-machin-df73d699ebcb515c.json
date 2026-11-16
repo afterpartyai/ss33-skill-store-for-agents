@@ -1,0 +1,25 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "why does npm install take so long on this machine? Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": false, \"candidates\": [], \"message\": \"No skill in the corpus covers this request well enough to recommend. The closest existing skills are listed under near_misses; none of them actually does what was asked.\", \"near_misses\": [], \"next_step\": \"generate\"}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [],
+      "found": false,
+      "message": "No skill in the corpus covers this request well enough to recommend. The closest existing skills are listed under near_misses; none of them actually does what was asked.",
+      "near_misses": [],
+      "next_step": "generate"
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:58.219Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Add rate limiting to the public API endpoints so one client can't flood us Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"upstash/upstash-ratelimit-js-59032512828\", \"title\": \"Upstash Ratelimit Js\", \"publisher\": \"upstash\", \"what_it_does\": \"Rate limiting for serverless and edge apps with the @upstash/ratelimit TypeScript/JavaScript SDK backed by Upstash Redis. Use when adding a rate limiter or throttling to an API route, Next.js middleware, Vercel Edge, Cloudflare Workers, or any HTTP endpoint; returning 429 Too Many Requests; choosing between fixed window, sliding window, and token bucket algorithms; limiting per user, IP, API key, or tenant with prefixes and custom keys; protecting login, signup, form, or AI endpoints from abuse, bots, and brute force; using deny lists, ephemeral caching, analytics, timeouts, and multi-region rate limits; or estimating the Redis command cost of rate limiting. Also use when the user says rate limit, rate-limiting, throttle, quota, request limits, or traffic protection.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~478 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/upstash/upstash-ratelimit-js-59032512828\", \"available\": true}, {\"ref\": \"omer-metin/rate-limiting-74560627577\", \"title\": \"Rate Limiting\", \"publisher\": \"omer-metin\", \"what_it_does\": \"Patterns for implementing rate limiting to protect APIs from abuse, ensure fair usage, and maintain system stability. Covers token bucket, sliding window, distributed rate limiting, and per-user quotas. Use when \\\", \\\" mentioned.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~279 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/omer-metin/rate-limiting-74560627577\", \"available\": true}, {\"ref\": \"jeremylongshore/rate-limiting-apis-30131672622\", \"title\": \"Rate Limiting Apis\", \"publisher\": \"jeremylongshore\", \"what_it_does\": \"Implement sophisticated rate limiting with sliding windows, token buckets, and quotas.\\nUse when protecting APIs from excessive requests.\\nTrigger with phrases like \\\"add rate limiting\\\", \\\"limit API requests\\\", or \\\"implement rate limits\\\".\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1423 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/jeremylongshore/rate-limiting-apis-30131672622\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~478 tokens to load",
+          "get": "/api/v1/ss33/skill/upstash/upstash-ratelimit-js-59032512828",
+          "publisher": "upstash",
+          "ref": "upstash/upstash-ratelimit-js-59032512828",
+          "requires": "not declared",
+          "title": "Upstash Ratelimit Js",
+          "what_it_does": "Rate limiting for serverless and edge apps with the @upstash/ratelimit TypeScript/JavaScript SDK backed by Upstash Redis. Use when adding a rate limiter or throttling to an API route, Next.js middleware, Vercel Edge, Cloudflare Workers, or any HTTP endpoint; returning 429 Too Many Requests; choosing between fixed window, sliding window, and token bucket algorithms; limiting per user, IP, API key, or tenant with prefixes and custom keys; protecting login, signup, form, or AI endpoints from abuse, bots, and brute force; using deny lists, ephemeral caching, analytics, timeouts, and multi-region rate limits; or estimating the Redis command cost of rate limiting. Also use when the user says rate limit, rate-limiting, throttle, quota, request limits, or traffic protection.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~279 tokens to load",
+          "get": "/api/v1/ss33/skill/omer-metin/rate-limiting-74560627577",
+          "publisher": "omer-metin",
+          "ref": "omer-metin/rate-limiting-74560627577",
+          "requires": "not declared",
+          "title": "Rate Limiting",
+          "what_it_does": "Patterns for implementing rate limiting to protect APIs from abuse, ensure fair usage, and maintain system stability. Covers token bucket, sliding window, distributed rate limiting, and per-user quotas. Use when \", \" mentioned.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1423 tokens to load",
+          "get": "/api/v1/ss33/skill/jeremylongshore/rate-limiting-apis-30131672622",
+          "publisher": "jeremylongshore",
+          "ref": "jeremylongshore/rate-limiting-apis-30131672622",
+          "requires": "not declared",
+          "title": "Rate Limiting Apis",
+          "what_it_does": "Implement sophisticated rate limiting with sliding windows, token buckets, and quotas.\nUse when protecting APIs from excessive requests.\nTrigger with phrases like \"add rate limiting\", \"limit API requests\", or \"implement rate limits\".",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:53.619Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

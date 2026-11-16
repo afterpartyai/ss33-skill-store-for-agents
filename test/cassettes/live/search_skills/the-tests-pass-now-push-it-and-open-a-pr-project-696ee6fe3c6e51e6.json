@@ -1,0 +1,47 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "the tests pass now, push it and open a PR Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"seed-hypermedia/push-81448727300\", \"title\": \"Push\", \"publisher\": \"seed-hypermedia\", \"what_it_does\": \"Run pre-push checks including typecheck and tests.\", \"when_to_use\": \"Intended outcome: review or verify work.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~273 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/seed-hypermedia/push-81448727300\", \"available\": true}, {\"ref\": \"zernie/ship-pr-18080839425\", \"title\": \"Ship Pr\", \"publisher\": \"zernie\", \"what_it_does\": \"Run the project checks and open a pull request once they pass\", \"when_to_use\": \"Intended outcome: review or verify work.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~216 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/zernie/ship-pr-18080839425\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~273 tokens to load",
+          "get": "/api/v1/ss33/skill/seed-hypermedia/push-81448727300",
+          "publisher": "seed-hypermedia",
+          "ref": "seed-hypermedia/push-81448727300",
+          "requires": "not declared",
+          "title": "Push",
+          "what_it_does": "Run pre-push checks including typecheck and tests.",
+          "when_to_use": "Intended outcome: review or verify work.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~216 tokens to load",
+          "get": "/api/v1/ss33/skill/zernie/ship-pr-18080839425",
+          "publisher": "zernie",
+          "ref": "zernie/ship-pr-18080839425",
+          "requires": "not declared",
+          "title": "Ship Pr",
+          "what_it_does": "Run the project checks and open a pull request once they pass",
+          "when_to_use": "Intended outcome: review or verify work.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:57.352Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

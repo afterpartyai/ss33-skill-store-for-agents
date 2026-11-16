@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Write vitest unit tests for the date parsing module, including edge cases for time zones Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"sentimony/vitest-92527582690\", \"title\": \"Vitest\", \"publisher\": \"sentimony\", \"what_it_does\": \"You MUST use this when configuring, writing, debugging, running, migrating, or auditing Vitest tests in JavaScript/TypeScript projects - Vite, Vue, Nuxt, React, Next.js, Node libraries, workspaces, coverage, mocks, snapshots, flaky tests, CI parity, or Jest migration.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~4927 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/sentimony/vitest-92527582690\", \"available\": true}, {\"ref\": \"secondsky/vitest-testing-52339513588\", \"title\": \"Vitest Testing\", \"publisher\": \"secondsky\", \"what_it_does\": \"Modern TypeScript/JavaScript testing with Vitest. Fast unit and integration tests, native ESM support, Vite-powered HMR, and comprehensive mocking. Use for testing TS/JS projects.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1195 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/secondsky/vitest-testing-52339513588\", \"available\": true}, {\"ref\": \"paulrberg/vitest-39938999952\", \"title\": \"Vitest\", \"publisher\": \"paulrberg\", \"what_it_does\": \"Writes, reviews, and debugs Vitest tests in JavaScript and TypeScript repositories, covering vitest config projects, setup files, globals and imports, jsdom or browser environments, path aliases, mocks and spies, fixtures, snapshots, coverage, and @effect/vitest tests. Use when adding or fixing Vitest test files or vitest.config settings, diagnosing hangs, discovery, module resolution, or flaky test state, or migrating test configuration.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~512 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/paulrberg/vitest-39938999952\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~4927 tokens to load",
+          "get": "/api/v1/ss33/skill/sentimony/vitest-92527582690",
+          "publisher": "sentimony",
+          "ref": "sentimony/vitest-92527582690",
+          "requires": "not declared",
+          "title": "Vitest",
+          "what_it_does": "You MUST use this when configuring, writing, debugging, running, migrating, or auditing Vitest tests in JavaScript/TypeScript projects - Vite, Vue, Nuxt, React, Next.js, Node libraries, workspaces, coverage, mocks, snapshots, flaky tests, CI parity, or Jest migration.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1195 tokens to load",
+          "get": "/api/v1/ss33/skill/secondsky/vitest-testing-52339513588",
+          "publisher": "secondsky",
+          "ref": "secondsky/vitest-testing-52339513588",
+          "requires": "not declared",
+          "title": "Vitest Testing",
+          "what_it_does": "Modern TypeScript/JavaScript testing with Vitest. Fast unit and integration tests, native ESM support, Vite-powered HMR, and comprehensive mocking. Use for testing TS/JS projects.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~512 tokens to load",
+          "get": "/api/v1/ss33/skill/paulrberg/vitest-39938999952",
+          "publisher": "paulrberg",
+          "ref": "paulrberg/vitest-39938999952",
+          "requires": "not declared",
+          "title": "Vitest",
+          "what_it_does": "Writes, reviews, and debugs Vitest tests in JavaScript and TypeScript repositories, covering vitest config projects, setup files, globals and imports, jsdom or browser environments, path aliases, mocks and spies, fixtures, snapshots, coverage, and @effect/vitest tests. Use when adding or fixing Vitest test files or vitest.config settings, diagnosing hangs, discovery, module resolution, or flaky test state, or migrating test configuration.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:01.182Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

@@ -1,0 +1,47 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Lets get started on phase 1 here's a brand new repo you'll be able to use. I'll need to step away for a bit so feel free to take some liberties in the decisions as long as you write them to a claude.md file Project context: languages: javascript, typescript; package manager: npm; uses: typescript ^5.9.3, node >=20; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"ovachiever/project-workflow-96676852944\", \"title\": \"Project Workflow\", \"publisher\": \"ovachiever\", \"what_it_does\": \"This skill provides seven slash commands for Claude Code project lifecycle work: /explore-idea writes PROJECT_BRIEF.md, /plan-project and /plan-feature generate IMPLEMENTATION_PHASES.md and SESSION.md, /wrap-session and /continue-session checkpoint and resume work via git commits, and /release runs gitleaks and README, LICENSE and .gitignore checks before a GitHub release. Use when starting a new project plan, adding features to an existing plan, saving or resuming a multi-session Claude Code task, or preparing a repository for public release.\", \"when_to_use\": \"Intended outcome: improve how the agent works.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~4872 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/ovachiever/project-workflow-96676852944\", \"available\": true}, {\"ref\": \"paulirish/pauls-project-setup-55442160714\", \"title\": \"Pauls Project Setup\", \"publisher\": \"paulirish\", \"what_it_does\": \"Paul's modern stack conventions for new projects (pnpm, native node test, esbuild, buildless-types). Consult when starting a new project or repository.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~881 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/paulirish/pauls-project-setup-55442160714\", \"available\": false}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~4872 tokens to load",
+          "get": "/api/v1/ss33/skill/ovachiever/project-workflow-96676852944",
+          "publisher": "ovachiever",
+          "ref": "ovachiever/project-workflow-96676852944",
+          "requires": "not declared",
+          "title": "Project Workflow",
+          "what_it_does": "This skill provides seven slash commands for Claude Code project lifecycle work: /explore-idea writes PROJECT_BRIEF.md, /plan-project and /plan-feature generate IMPLEMENTATION_PHASES.md and SESSION.md, /wrap-session and /continue-session checkpoint and resume work via git commits, and /release runs gitleaks and README, LICENSE and .gitignore checks before a GitHub release. Use when starting a new project plan, adding features to an existing plan, saving or resuming a multi-session Claude Code task, or preparing a repository for public release.",
+          "when_to_use": "Intended outcome: improve how the agent works.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": false,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~881 tokens to load",
+          "get": "/api/v1/ss33/skill/paulirish/pauls-project-setup-55442160714",
+          "publisher": "paulirish",
+          "ref": "paulirish/pauls-project-setup-55442160714",
+          "requires": "not declared",
+          "title": "Pauls Project Setup",
+          "what_it_does": "Paul's modern stack conventions for new projects (pnpm, native node test, esbuild, buildless-types). Consult when starting a new project or repository.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:11:58.243Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Create a GitHub Actions workflow that builds and pushes a Docker image to GHCR on every release Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"wu529778790/docker-build-deploy-5600887810\", \"title\": \"Docker Build Deploy\", \"publisher\": \"wu529778790\", \"what_it_does\": \"Use when containerizing a Node.js app and setting up GitHub Actions CI/CD to build, push to GHCR, and deploy via SSH. Multi-stage build, non-root user, caching.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~776 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/wu529778790/docker-build-deploy-5600887810\", \"available\": true}, {\"ref\": \"bobmatnyc/github-actions-67051715825\", \"title\": \"Github Actions\", \"publisher\": \"bobmatnyc\", \"what_it_does\": \"GitHub Actions CI/CD workflows for automating build, test, and deployment\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~6939 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/bobmatnyc/github-actions-67051715825\", \"available\": true}, {\"ref\": \"bagelhole/github-actions-68697777923\", \"title\": \"Github Actions\", \"publisher\": \"bagelhole\", \"what_it_does\": \"Build, test, and deploy applications using GitHub Actions workflows. Create CI/CD pipelines, configure runners, manage secrets, and automate software delivery. Use when working with GitHub repositories, automating builds, running tests, or deploying applications.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1683 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/bagelhole/github-actions-68697777923\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~776 tokens to load",
+          "get": "/api/v1/ss33/skill/wu529778790/docker-build-deploy-5600887810",
+          "publisher": "wu529778790",
+          "ref": "wu529778790/docker-build-deploy-5600887810",
+          "requires": "not declared",
+          "title": "Docker Build Deploy",
+          "what_it_does": "Use when containerizing a Node.js app and setting up GitHub Actions CI/CD to build, push to GHCR, and deploy via SSH. Multi-stage build, non-root user, caching.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~6939 tokens to load",
+          "get": "/api/v1/ss33/skill/bobmatnyc/github-actions-67051715825",
+          "publisher": "bobmatnyc",
+          "ref": "bobmatnyc/github-actions-67051715825",
+          "requires": "not declared",
+          "title": "Github Actions",
+          "what_it_does": "GitHub Actions CI/CD workflows for automating build, test, and deployment",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1683 tokens to load",
+          "get": "/api/v1/ss33/skill/bagelhole/github-actions-68697777923",
+          "publisher": "bagelhole",
+          "ref": "bagelhole/github-actions-68697777923",
+          "requires": "not declared",
+          "title": "Github Actions",
+          "what_it_does": "Build, test, and deploy applications using GitHub Actions workflows. Create CI/CD pipelines, configure runners, manage secrets, and automate software delivery. Use when working with GitHub repositories, automating builds, running tests, or deploying applications.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:54.092Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

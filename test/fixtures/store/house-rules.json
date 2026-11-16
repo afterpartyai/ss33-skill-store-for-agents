@@ -1,0 +1,20 @@
+{
+  "skills": [
+    {
+      "ref": "acme-platform/postgres-migration-rules-2001",
+      "publisher": "acme-platform",
+      "title": "Postgres Migration Rules",
+      "what_it_does": "House rules for writing Postgres schema migrations in our services: lock timeouts, batched backfills, safe NOT NULL changes and concurrent indexes.",
+      "keywords": ["migration", "migrations", "postgres", "schema", "backfill", "column", "index", "null"],
+      "contentFile": "skills/postgres-migration-rules.md"
+    },
+    {
+      "ref": "acme-platform/http-api-conventions-2002",
+      "publisher": "acme-platform",
+      "title": "HTTP API Endpoint Conventions",
+      "what_it_does": "House rules for HTTP API endpoints in our TypeScript services: error responses, request IDs, validation and pagination.",
+      "keywords": ["api", "endpoint", "endpoints", "route", "http", "get", "orders", "express", "list"],
+      "contentFile": "skills/http-api-conventions.md"
+    }
+  ]
+}

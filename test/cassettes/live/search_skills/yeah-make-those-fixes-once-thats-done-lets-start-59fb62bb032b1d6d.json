@@ -1,0 +1,47 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Yeah, make those fixes. Once thats done lets start brainstorming on more advanced \"full loop testing\" ideas Project context: languages: javascript, typescript; package manager: npm; uses: typescript ^5.9.3, node >=20; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"react/fix-65666218173\", \"title\": \"Fix\", \"publisher\": \"react\", \"what_it_does\": \"Use when you have lint errors, formatting issues, or before committing code to ensure it passes CI.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~123 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/react/fix-65666218173\", \"available\": true}, {\"ref\": \"duyet/fix-workflow-49547087535\", \"title\": \"Fix Workflow\", \"publisher\": \"duyet\", \"what_it_does\": \"Use when fixing failing tests, lint, type errors, build, or CI, and then committing, pushing, or opening or updating a PR. The fix commands delegate here.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~175 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/duyet/fix-workflow-49547087535\", \"available\": false}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~123 tokens to load",
+          "get": "/api/v1/ss33/skill/react/fix-65666218173",
+          "publisher": "react",
+          "ref": "react/fix-65666218173",
+          "requires": "not declared",
+          "title": "Fix",
+          "what_it_does": "Use when you have lint errors, formatting issues, or before committing code to ensure it passes CI.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": false,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~175 tokens to load",
+          "get": "/api/v1/ss33/skill/duyet/fix-workflow-49547087535",
+          "publisher": "duyet",
+          "ref": "duyet/fix-workflow-49547087535",
+          "requires": "not declared",
+          "title": "Fix Workflow",
+          "what_it_does": "Use when fixing failing tests, lint, type errors, build, or CI, and then committing, pushing, or opening or updating a PR. The fix commands delegate here.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:11:56.119Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

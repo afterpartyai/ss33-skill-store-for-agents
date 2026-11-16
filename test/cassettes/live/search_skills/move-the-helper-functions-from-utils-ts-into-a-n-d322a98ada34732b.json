@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "move the helper functions from utils.ts into a new file called format.ts Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"siviter-xyz/typescript-51597817911\", \"title\": \"Typescript\", \"publisher\": \"siviter-xyz\", \"what_it_does\": \"TypeScript standards and best practices with modern tooling. Use when working with TypeScript or TypeScript React files.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1133 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/siviter-xyz/typescript-51597817911\", \"available\": true}, {\"ref\": \"alleneubank/typescript-best-practices-93781002036\", \"title\": \"Typescript Best Practices\", \"publisher\": \"alleneubank\", \"what_it_does\": \"Use when reading or writing TypeScript or JavaScript files (.ts, .tsx, .js, tsconfig.json).\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~985 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/alleneubank/typescript-best-practices-93781002036\", \"available\": true}, {\"ref\": \"organizzolini/write-typescript-61257387342\", \"title\": \"Write Typescript\", \"publisher\": \"organizzolini\", \"what_it_does\": \"TypeScript coding conventions for this codebase. Use when writing or modifying TypeScript or TSX files, when TypeScript type errors appear, or when asked about strict mode, type imports, naming conventions, return types, the no-any rule, async functions, floating promises, exhaustive switches, readonly properties, non-null assertions, control-flow style, test typing patterns, Node fs Dirent mock typing, formatting with oxfmt, import group order, enforced alphabetical ordering, the three-parameter limit, or JSDoc on public APIs.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~770 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/organizzolini/write-typescript-61257387342\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1133 tokens to load",
+          "get": "/api/v1/ss33/skill/siviter-xyz/typescript-51597817911",
+          "publisher": "siviter-xyz",
+          "ref": "siviter-xyz/typescript-51597817911",
+          "requires": "not declared",
+          "title": "Typescript",
+          "what_it_does": "TypeScript standards and best practices with modern tooling. Use when working with TypeScript or TypeScript React files.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~985 tokens to load",
+          "get": "/api/v1/ss33/skill/alleneubank/typescript-best-practices-93781002036",
+          "publisher": "alleneubank",
+          "ref": "alleneubank/typescript-best-practices-93781002036",
+          "requires": "not declared",
+          "title": "Typescript Best Practices",
+          "what_it_does": "Use when reading or writing TypeScript or JavaScript files (.ts, .tsx, .js, tsconfig.json).",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~770 tokens to load",
+          "get": "/api/v1/ss33/skill/organizzolini/write-typescript-61257387342",
+          "publisher": "organizzolini",
+          "ref": "organizzolini/write-typescript-61257387342",
+          "requires": "not declared",
+          "title": "Write Typescript",
+          "what_it_does": "TypeScript coding conventions for this codebase. Use when writing or modifying TypeScript or TSX files, when TypeScript type errors appear, or when asked about strict mode, type imports, naming conventions, return types, the no-any rule, async functions, floating promises, exhaustive switches, readonly properties, non-null assertions, control-flow style, test typing patterns, Node fs Dirent mock typing, formatting with oxfmt, import group order, enforced alphabetical ordering, the three-parameter limit, or JSDoc on public APIs.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:55.790Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

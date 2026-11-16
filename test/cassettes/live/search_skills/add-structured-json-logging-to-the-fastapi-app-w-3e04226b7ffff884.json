@@ -1,0 +1,47 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Add structured JSON logging to the FastAPI app with request IDs on every log line Project context: languages: python; package manager: poetry; uses: python ^3.11, fastapi ^0.110, pytest ^8; services: postgres:16"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"claude-dev-suite/structlog-63714001990\", \"title\": \"Structlog\", \"publisher\": \"claude-dev-suite\", \"what_it_does\": \"structlog - structured logging library for Python with native JSON support, context binding,\\nand processor pipeline. Integrates with FastAPI, Django, and standard logging module.\\nUSE WHEN: user mentions \\\"structlog\\\", \\\"python structured logging\\\", \\\"context binding\\\",\\nasks about \\\"JSON logging python\\\", \\\"fastapi logging\\\", \\\"django structured logging\\\"\\nDO NOT USE FOR: Standard Python logging - use `python-logging` instead, Node.js logging - use `pino` or `winston`,\\nJava logging - use `slf4j` or `logback` instead\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1303 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/claude-dev-suite/structlog-63714001990\", \"available\": true}, {\"ref\": \"claude-dev-suite/python-logging-99085129027\", \"title\": \"Python Logging\", \"publisher\": \"claude-dev-suite\", \"what_it_does\": \"Python logging with the standard library logging module and structlog.\\nCovers log levels, handlers, formatters, structured logging, and\\nproduction best practices for FastAPI/Django applications.\\nUSE WHEN: user mentions \\\"python logging\\\", \\\"fastapi logging\\\", \\\"django logging\\\",\\nasks about \\\"how to log in python\\\", \\\"python logging module\\\", \\\"logging configuration python\\\"\\nDO NOT USE FOR: Node.js logging - use `nodejs-logging` instead, Java logging - use `slf4j` or `logback`,\\nstructlog-specific - use `structlog` skill for deep dive\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2933 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/claude-dev-suite/python-logging-99085129027\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1303 tokens to load",
+          "get": "/api/v1/ss33/skill/claude-dev-suite/structlog-63714001990",
+          "publisher": "claude-dev-suite",
+          "ref": "claude-dev-suite/structlog-63714001990",
+          "requires": "not declared",
+          "title": "Structlog",
+          "what_it_does": "structlog - structured logging library for Python with native JSON support, context binding,\nand processor pipeline. Integrates with FastAPI, Django, and standard logging module.\nUSE WHEN: user mentions \"structlog\", \"python structured logging\", \"context binding\",\nasks about \"JSON logging python\", \"fastapi logging\", \"django structured logging\"\nDO NOT USE FOR: Standard Python logging - use `python-logging` instead, Node.js logging - use `pino` or `winston`,\nJava logging - use `slf4j` or `logback` instead",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2933 tokens to load",
+          "get": "/api/v1/ss33/skill/claude-dev-suite/python-logging-99085129027",
+          "publisher": "claude-dev-suite",
+          "ref": "claude-dev-suite/python-logging-99085129027",
+          "requires": "not declared",
+          "title": "Python Logging",
+          "what_it_does": "Python logging with the standard library logging module and structlog.\nCovers log levels, handlers, formatters, structured logging, and\nproduction best practices for FastAPI/Django applications.\nUSE WHEN: user mentions \"python logging\", \"fastapi logging\", \"django logging\",\nasks about \"how to log in python\", \"python logging module\", \"logging configuration python\"\nDO NOT USE FOR: Node.js logging - use `nodejs-logging` instead, Java logging - use `slf4j` or `logback`,\nstructlog-specific - use `structlog` skill for deep dive",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:51.194Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

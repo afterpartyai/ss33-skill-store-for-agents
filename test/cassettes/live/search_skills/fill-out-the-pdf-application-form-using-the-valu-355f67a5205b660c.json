@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Fill out the PDF application form using the values from customers.csv for each row Project context: languages: python; package manager: poetry; uses: python ^3.11, fastapi ^0.110, pytest ^8; services: postgres:16"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"davila7/pdf-fill-studio-34606790985\", \"title\": \"Pdf Fill Studio\", \"publisher\": \"davila7\", \"what_it_does\": \"Fill any PDF locally and place each value precisely in a visual editor. Use when the user wants to fill out a PDF form, enter data into a PDF, complete a tax/insurance/bank form, or position text on a flat/scanned PDF. Handles flat (field-less) PDFs, per-character (comb) fields, and native AcroForm fields; leaves the signature blank for the user to sign.\", \"when_to_use\": \"Intended outcome: run a routine task.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~577 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/davila7/pdf-fill-studio-34606790985\", \"available\": true}, {\"ref\": \"curiositech/document-generation-pdf-59472466753\", \"title\": \"Document Generation Pdf\", \"publisher\": \"curiositech\", \"what_it_does\": \"Generate, fill, and assemble PDF documents at scale. Handles legal forms, contracts, invoices, certificates. Supports form filling (pdf-lib), template rendering (Puppeteer, LaTeX), digital\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~5060 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/curiositech/document-generation-pdf-59472466753\", \"available\": true}, {\"ref\": \"vercel/pdf-forms-23763623909\", \"title\": \"Pdf Forms\", \"publisher\": \"vercel\", \"what_it_does\": \"Fill and validate the billing desk's PDF forms, such as refund authorizations.\", \"when_to_use\": \"Intended outcome: run a routine task.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~60 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/vercel/pdf-forms-23763623909\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~577 tokens to load",
+          "get": "/api/v1/ss33/skill/davila7/pdf-fill-studio-34606790985",
+          "publisher": "davila7",
+          "ref": "davila7/pdf-fill-studio-34606790985",
+          "requires": "not declared",
+          "title": "Pdf Fill Studio",
+          "what_it_does": "Fill any PDF locally and place each value precisely in a visual editor. Use when the user wants to fill out a PDF form, enter data into a PDF, complete a tax/insurance/bank form, or position text on a flat/scanned PDF. Handles flat (field-less) PDFs, per-character (comb) fields, and native AcroForm fields; leaves the signature blank for the user to sign.",
+          "when_to_use": "Intended outcome: run a routine task.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~5060 tokens to load",
+          "get": "/api/v1/ss33/skill/curiositech/document-generation-pdf-59472466753",
+          "publisher": "curiositech",
+          "ref": "curiositech/document-generation-pdf-59472466753",
+          "requires": "not declared",
+          "title": "Document Generation Pdf",
+          "what_it_does": "Generate, fill, and assemble PDF documents at scale. Handles legal forms, contracts, invoices, certificates. Supports form filling (pdf-lib), template rendering (Puppeteer, LaTeX), digital",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~60 tokens to load",
+          "get": "/api/v1/ss33/skill/vercel/pdf-forms-23763623909",
+          "publisher": "vercel",
+          "ref": "vercel/pdf-forms-23763623909",
+          "requires": "not declared",
+          "title": "Pdf Forms",
+          "what_it_does": "Fill and validate the billing desk's PDF forms, such as refund authorizations.",
+          "when_to_use": "Intended outcome: run a routine task.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:04.620Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

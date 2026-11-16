@@ -1,0 +1,166 @@
+#!/bin/sh
+# ss33 launcher: runs lib/ss33.cjs with Node.js, so users don't have to install Node themselves.
+#
+# Runtime, first found wins:
+#   1. $SS33_NODE (an explicit path)
+#   2. `node` on PATH, if it is v22 or newer (skipped when SS33_NO_SYSTEM_NODE=1)
+#   3. a Node.js build this script downloaded earlier, in $SS33_RUNTIME_DIR (default ~/.cache/ss33/runtime)
+#   4. otherwise download the official build from nodejs.org, check it against the SHA-256 pinned below
+#      (taken from the release's GPG-signed SHASUMS256.txt), and cache it. About 30 MB, once.
+#
+# Hooks must never hold up or break a prompt. So for `hook …` and `__prefetch-runtime` (SessionStart),
+# a missing runtime is fetched in the background and the command exits 0 with no output.
+set -u
+
+NODE_VERSION=v24.22.2
+NODE_DIST=${SS33_NODE_DIST:-https://nodejs.org/dist}
+
+sha_for() {
+  case $1 in
+    darwin-arm64) echo aa9549349e47dffaa42dcf95d6e06ade8c4bdafc980979883b88767670df385a ;;
+    darwin-x64) echo d5e336d588c45be0c37dbd52cc29895593009ca4997a77a1fd02815131ed0e52 ;;
+    linux-arm64) echo 95c264150aceb7f3437a29fd6984924f5f8d1511ea3cbd6c508b83f6c555dae2 ;;
+    linux-x64) echo 361718c444e49af2ca5a110c83ba6a8901143f23ab285ebbef0341f391f482a9 ;;
+    win-arm64) echo f47968c213105077f64c6510f007632c0ca2574802a0b5067c327c49abe1c468 ;;
+    win-x64) echo ca1bff5d8ead13c9f2ea404a176db46bd430704d5b5113734049fa365e7799e2 ;;
+    *) echo "" ;;
+  esac
+}
+
+say() { printf 'ss33: %s\n' "$*" >&2; }
+
+# Resolve symlinks (npm -g links this script elsewhere) to find the plugin root.
+self=$0
+while [ -L "$self" ]; do
+  link=$(readlink "$self")
+  case $link in
+    /*) self=$link ;;
+    *) self=$(dirname "$self")/$link ;;
+  esac
+done
+root=$(cd "$(dirname "$self")/.." && pwd)
+bundle=$root/lib/ss33.cjs
+
+platform() {
+  case $(uname -s) in
+    Linux) os=linux ;;
+    Darwin) os=darwin ;;
+    MINGW* | MSYS* | CYGWIN*) os=win ;;
+    *) return 1 ;;
+  esac
+  case $(uname -m) in
+    x86_64 | amd64) arch=x64 ;;
+    arm64 | aarch64) arch=arm64 ;;
+    *) return 1 ;;
+  esac
+  echo "$os-$arch"
+}
+
+runtime_dir=${SS33_RUNTIME_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/ss33/runtime}
+plat=$(platform) || plat=unsupported
+name=node-$NODE_VERSION-$plat
+if [ "${plat%%-*}" = win ]; then cached=$runtime_dir/$name/node.exe; else cached=$runtime_dir/$name/bin/node; fi
+
+find_node() {
+  if [ -n "${SS33_NODE:-}" ]; then printf '%s\n' "$SS33_NODE"; return 0; fi
+  if [ "${SS33_NO_SYSTEM_NODE:-}" != 1 ] && command -v node >/dev/null 2>&1; then
+    major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null) || major=0
+    if [ "${major:-0}" -ge 22 ] 2>/dev/null; then command -v node; return 0; fi
+  fi
+  if [ -x "$cached" ]; then printf '%s\n' "$cached"; return 0; fi  # not echo: dash expands backslashes
+  return 1
+}
+
+# Hash from stdin: with a filename containing a backslash (Windows paths), coreutils prefixes the
+# hash with "\", which never matches.
+sha256_of() {
+  if command -v sha256sum >/dev/null 2>&1; then sha256sum <"$1" | cut -d' ' -f1
+  elif command -v shasum >/dev/null 2>&1; then shasum -a 256 <"$1" | cut -d' ' -f1
+  elif command -v openssl >/dev/null 2>&1; then openssl dgst -sha256 <"$1" | sed 's/.*= *//'
+  else return 1; fi
+}
+
+download() { # url file
+  if command -v curl >/dev/null 2>&1; then curl -fsSL --retry 2 -o "$2" "$1"
+  elif command -v wget >/dev/null 2>&1; then wget -q -O "$2" "$1"
+  else say "needs curl or wget to download Node.js"; return 1; fi
+}
+
+# Download, verify and unpack the runtime into $runtime_dir. Only one fetch at a time.
+fetch_runtime() {
+  want=${SS33_TEST_NODE_SHA256:-$(sha_for "$plat")} # the override exists for the offline tests only
+  if [ -z "$want" ]; then
+    say "no prebuilt Node.js for this platform ($(uname -s) $(uname -m)); install Node.js 22 or newer"
+    return 1
+  fi
+  mkdir -p "$runtime_dir" || return 1
+  lock=$runtime_dir/.lock-$name
+  # A lock older than 10 minutes is left over from a fetch that died.
+  if [ -d "$lock" ] && [ -n "$(find "$lock" -maxdepth 0 -mmin +10 2>/dev/null)" ]; then rmdir "$lock" 2>/dev/null; fi
+  if ! mkdir "$lock" 2>/dev/null; then
+    # Someone else is fetching: wait for them (up to 3 minutes).
+    i=0
+    while [ -d "$lock" ] && [ $i -lt 180 ]; do sleep 1; i=$((i + 1)); done
+    [ -x "$cached" ]
+    return
+  fi
+  tmp=$runtime_dir/.tmp-$$
+  rm -rf "$tmp" && mkdir -p "$tmp"
+  if [ "${plat%%-*}" = win ]; then ext=zip; else ext=tar.gz; fi
+  archive=$tmp/$name.$ext
+  ok=1
+  if download "$NODE_DIST/$NODE_VERSION/$name.$ext" "$archive"; then
+    got=$(sha256_of "$archive") || got=""
+    if [ "$got" != "$want" ]; then
+      say "the downloaded Node.js did not match its pinned checksum; not using it"
+    elif [ "$ext" = zip ]; then
+      # Unpack from inside $tmp by relative name: GNU tar and unzip treat backslashes in path arguments
+      # as escapes, and Windows paths are full of them.
+      if command -v unzip >/dev/null 2>&1; then (cd "$tmp" && unzip -q "./$name.$ext") && ok=0
+      else powershell.exe -NoProfile -Command "Expand-Archive -LiteralPath '$(cygpath -w "$archive")' -DestinationPath '$(cygpath -w "$tmp")'" && ok=0; fi
+    else
+      (cd "$tmp" && tar -xzf "./$name.$ext") && ok=0
+    fi
+  else
+    say "could not download Node.js from $NODE_DIST"
+  fi
+  if [ $ok = 0 ] && [ -d "$tmp/$name" ]; then
+    rm -rf "${runtime_dir:?}/$name" && mv "$tmp/$name" "$runtime_dir/$name" || ok=1
+  else
+    ok=1
+  fi
+  rm -rf "$tmp"
+  rmdir "$lock" 2>/dev/null
+  return $ok
+}
+
+background_fetch() {
+  mkdir -p "$runtime_dir" 2>/dev/null
+  (SS33_FETCH_ONLY=1 sh "$self" </dev/null >>"$runtime_dir/fetch.log" 2>&1 &) 2>/dev/null
+}
+
+if [ "${SS33_FETCH_ONLY:-}" = 1 ]; then
+  find_node >/dev/null || fetch_runtime
+  exit
+fi
+
+case ${1:-} in
+  hook | __prefetch-runtime)
+    if node=$(find_node); then
+      [ "$1" = __prefetch-runtime ] && exit 0
+      exec "$node" "$bundle" "$@"
+    fi
+    background_fetch
+    exit 0
+    ;;
+esac
+
+if ! node=$(find_node); then
+  say "first run: downloading Node.js $NODE_VERSION for ss33 (about 30 MB, once)…"
+  fetch_runtime && node=$cached || {
+    say "could not set up Node.js. Install Node.js 22 or newer (https://nodejs.org) and try again."
+    exit 1
+  }
+  say "done."
+fi
+exec "$node" "$bundle" "$@"

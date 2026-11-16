@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "All right I dont want to share the full writeup right now so draft me a short message I can send over in slack which outlines the main points"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"slackapi/slack-messaging-11029518097\", \"title\": \"Slack Messaging\", \"publisher\": \"slackapi\", \"what_it_does\": \"Use when writing, drafting, scheduling, or improving a Slack message, announcement, or reply sent via the Slack MCP tools (slack_send_message, slack_send_message_draft, slack_schedule_message). Covers Slack markdown formatting, message structure, thread etiquette, reactions, and scheduling, and points to the right dialect for canvases and Block Kit.\", \"when_to_use\": \"Intended outcome: produce a creative asset.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1292 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/slackapi/slack-messaging-11029518097\", \"available\": true}, {\"ref\": \"anthropics/slack-messaging-31586895700\", \"title\": \"Slack Messaging\", \"publisher\": \"anthropics\", \"what_it_does\": \"Guidance for composing well-formatted, effective Slack messages using mrkdwn syntax\", \"when_to_use\": \"Intended outcome: produce a creative asset.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~780 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/anthropics/slack-messaging-31586895700\", \"available\": true}, {\"ref\": \"onewave-ai/slack-message-formatter-23827925460\", \"title\": \"Slack Message Formatter\", \"publisher\": \"onewave-ai\", \"what_it_does\": \"Convert long text into Slack-optimized format with emojis, bullets, code blocks, and threading suggestions\", \"when_to_use\": \"Intended outcome: produce a creative asset.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~342 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/onewave-ai/slack-message-formatter-23827925460\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1292 tokens to load",
+          "get": "/api/v1/ss33/skill/slackapi/slack-messaging-11029518097",
+          "publisher": "slackapi",
+          "ref": "slackapi/slack-messaging-11029518097",
+          "requires": "not declared",
+          "title": "Slack Messaging",
+          "what_it_does": "Use when writing, drafting, scheduling, or improving a Slack message, announcement, or reply sent via the Slack MCP tools (slack_send_message, slack_send_message_draft, slack_schedule_message). Covers Slack markdown formatting, message structure, thread etiquette, reactions, and scheduling, and points to the right dialect for canvases and Block Kit.",
+          "when_to_use": "Intended outcome: produce a creative asset.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~780 tokens to load",
+          "get": "/api/v1/ss33/skill/anthropics/slack-messaging-31586895700",
+          "publisher": "anthropics",
+          "ref": "anthropics/slack-messaging-31586895700",
+          "requires": "not declared",
+          "title": "Slack Messaging",
+          "what_it_does": "Guidance for composing well-formatted, effective Slack messages using mrkdwn syntax",
+          "when_to_use": "Intended outcome: produce a creative asset.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~342 tokens to load",
+          "get": "/api/v1/ss33/skill/onewave-ai/slack-message-formatter-23827925460",
+          "publisher": "onewave-ai",
+          "ref": "onewave-ai/slack-message-formatter-23827925460",
+          "requires": "not declared",
+          "title": "Slack Message Formatter",
+          "what_it_does": "Convert long text into Slack-optimized format with emojis, bullets, code blocks, and threading suggestions",
+          "when_to_use": "Intended outcome: produce a creative asset.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:11:59.271Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Bundle is up to date
+        run: |
+          npm run build
+          git diff --exit-code -- adapters/claude-code/lib/ss33.cjs adapters/codex/lib/ss33.cjs adapters/codex/scripts/ss33 || { echo "::error::Run 'npm run build' and commit the bundle in adapters/claude-code and adapters/codex"; exit 1; }
+      - name: Bundle runs through the launcher
+        run: adapters/claude-code/scripts/ss33 version
+      - name: End-to-end tests against the shipped bundle
+        run: SS33_E2E_BIN=adapters/claude-code/lib/ss33.cjs node --test build/test/e2e-cli.test.js
+
+  # The launcher must work for users without Node.js: it downloads the pinned official build.
+  # Runners have Node installed, so SS33_NO_SYSTEM_NODE=1 makes the launcher ignore it.
+  launcher:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      SS33_NO_SYSTEM_NODE: "1"
+      SS33_RUNTIME_DIR: ${{ github.workspace }}/.ss33-runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: First run downloads and verifies Node.js
+        run: sh adapters/claude-code/scripts/ss33 version
+      - name: Second run uses the cached runtime
+        run: |
+          out=$(sh adapters/claude-code/scripts/ss33 fingerprint 2>&1)
+          echo "$out"
+          if echo "$out" | grep -q downloading; then echo "::error::downloaded twice"; exit 1; fi
+      - name: Hook exits 0 silently
+        run: |
+          out=$(echo '{"session_id":"ci","cwd":"'"$PWD"'","prompt":"hi"}' | SS33_MATCH=0 sh adapters/claude-code/scripts/ss33 hook claude-code user-prompt-submit)
+          test -z "$out"
+      - name: Codex plugin's launcher and hook exit 0 silently
+        run: |
+          out=$(echo '{"session_id":"ci","turn_id":"t","cwd":"'"$PWD"'","prompt":"hi"}' | SS33_MATCH=0 sh adapters/codex/scripts/ss33 hook codex user-prompt-submit)
+          test -z "$out"

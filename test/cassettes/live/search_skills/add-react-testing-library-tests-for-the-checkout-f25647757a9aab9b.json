@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Add React Testing Library tests for the checkout form component's validation errors Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"affaan-m/react-testing-63364764876\", \"title\": \"React Testing\", \"publisher\": \"affaan-m\", \"what_it_does\": \"React component testing with React Testing Library, Vitest/Jest, MSW for network mocking, accessibility assertions with axe, and the decision boundary between component tests and Playwright/Cypress end-to-end runs. Use when writing or fixing tests for React components, hooks, or pages.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3280 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/affaan-m/react-testing-63364764876\", \"available\": true}, {\"ref\": \"affaan-m/react-testing-58556038754\", \"title\": \"React Testing\", \"publisher\": \"affaan-m\", \"what_it_does\": \"React component testing with React Testing Library, Vitest/Jest, MSW for network mocking, accessibility assertions with axe, and the decision boundary between component tests and Playwright/Cypress end-to-end runs. Use when writing or fixing tests for React components, hooks, or pages.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3283 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/affaan-m/react-testing-58556038754\", \"available\": true}, {\"ref\": \"claude-dev-suite/react-testing-37048009495\", \"title\": \"React Testing\", \"publisher\": \"claude-dev-suite\", \"what_it_does\": \"React component testing with Testing Library and Vitest. Covers unit tests,\\nintegration tests, async testing, mocking, user events, accessibility testing,\\nand test patterns.\\nUSE WHEN: user mentions \\\"React testing\\\", \\\"Testing Library\\\", \\\"Vitest\\\", \\\"component tests\\\",\\n\\\"userEvent\\\", \\\"screen queries\\\", \\\"MSW\\\", asks about \\\"testing React components\\\",\\n\\\"mocking in tests\\\", \\\"accessibility testing\\\", \\\"React test patterns\\\"\\nDO NOT USE FOR: E2E testing - use Playwright skill instead,\\nbackend testing - use framework-specific testing skills,\\ngeneral testing concepts - use testing framework skills\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~2373 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/claude-dev-suite/react-testing-37048009495\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3280 tokens to load",
+          "get": "/api/v1/ss33/skill/affaan-m/react-testing-63364764876",
+          "publisher": "affaan-m",
+          "ref": "affaan-m/react-testing-63364764876",
+          "requires": "not declared",
+          "title": "React Testing",
+          "what_it_does": "React component testing with React Testing Library, Vitest/Jest, MSW for network mocking, accessibility assertions with axe, and the decision boundary between component tests and Playwright/Cypress end-to-end runs. Use when writing or fixing tests for React components, hooks, or pages.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3283 tokens to load",
+          "get": "/api/v1/ss33/skill/affaan-m/react-testing-58556038754",
+          "publisher": "affaan-m",
+          "ref": "affaan-m/react-testing-58556038754",
+          "requires": "not declared",
+          "title": "React Testing",
+          "what_it_does": "React component testing with React Testing Library, Vitest/Jest, MSW for network mocking, accessibility assertions with axe, and the decision boundary between component tests and Playwright/Cypress end-to-end runs. Use when writing or fixing tests for React components, hooks, or pages.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~2373 tokens to load",
+          "get": "/api/v1/ss33/skill/claude-dev-suite/react-testing-37048009495",
+          "publisher": "claude-dev-suite",
+          "ref": "claude-dev-suite/react-testing-37048009495",
+          "requires": "not declared",
+          "title": "React Testing",
+          "what_it_does": "React component testing with Testing Library and Vitest. Covers unit tests,\nintegration tests, async testing, mocking, user events, accessibility testing,\nand test patterns.\nUSE WHEN: user mentions \"React testing\", \"Testing Library\", \"Vitest\", \"component tests\",\n\"userEvent\", \"screen queries\", \"MSW\", asks about \"testing React components\",\n\"mocking in tests\", \"accessibility testing\", \"React test patterns\"\nDO NOT USE FOR: E2E testing - use Playwright skill instead,\nbackend testing - use framework-specific testing skills,\ngeneral testing concepts - use testing framework skills",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:05.664Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

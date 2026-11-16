@@ -1,0 +1,47 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Write Terraform for a private S3 bucket served through a CloudFront distribution with HTTPS Project context: languages: hcl; uses: terraform >=1.6; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"akin-ozer/terraform-generator-27939405873\", \"title\": \"Terraform Generator\", \"publisher\": \"akin-ozer\", \"what_it_does\": \"Create, generate, write, or scaffold Terraform .tf HCL — resources, modules, providers, variables, outputs.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~7694 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/akin-ozer/terraform-generator-27939405873\", \"available\": true}, {\"ref\": \"manutej/terraform-infrastructure-56576737921\", \"title\": \"Terraform Infrastructure\", \"publisher\": \"manutej\", \"what_it_does\": \"Comprehensive Terraform infrastructure-as-code skill covering providers, resources, modules, state management, and enterprise patterns for multi-cloud infrastructure\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~7512 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/manutej/terraform-infrastructure-56576737921\", \"available\": false}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~7694 tokens to load",
+          "get": "/api/v1/ss33/skill/akin-ozer/terraform-generator-27939405873",
+          "publisher": "akin-ozer",
+          "ref": "akin-ozer/terraform-generator-27939405873",
+          "requires": "not declared",
+          "title": "Terraform Generator",
+          "what_it_does": "Create, generate, write, or scaffold Terraform .tf HCL — resources, modules, providers, variables, outputs.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": false,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~7512 tokens to load",
+          "get": "/api/v1/ss33/skill/manutej/terraform-infrastructure-56576737921",
+          "publisher": "manutej",
+          "ref": "manutej/terraform-infrastructure-56576737921",
+          "requires": "not declared",
+          "title": "Terraform Infrastructure",
+          "what_it_does": "Comprehensive Terraform infrastructure-as-code skill covering providers, resources, modules, state management, and enterprise patterns for multi-cloud infrastructure",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:04.134Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

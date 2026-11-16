@@ -1,0 +1,35 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "great, now do the same for the other two endpoints Project context: languages: python; package manager: poetry; uses: python ^3.11, fastapi ^0.110, pytest ^8; services: postgres:16"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"davila7/fastapi-endpoint-39229994161\", \"title\": \"Fastapi Endpoint\", \"publisher\": \"davila7\", \"what_it_does\": \"Plan and build production-ready FastAPI endpoints with async SQLAlchemy, Pydantic v2 models, dependency injection for auth, and pytest tests. Uses interview-driven planning to clarify data models, authentication method, pagination strategy, and caching before writing any code.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3862 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/davila7/fastapi-endpoint-39229994161\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3862 tokens to load",
+          "get": "/api/v1/ss33/skill/davila7/fastapi-endpoint-39229994161",
+          "publisher": "davila7",
+          "ref": "davila7/fastapi-endpoint-39229994161",
+          "requires": "not declared",
+          "title": "Fastapi Endpoint",
+          "what_it_does": "Plan and build production-ready FastAPI endpoints with async SQLAlchemy, Pydantic v2 models, dependency injection for auth, and pytest tests. Uses interview-driven planning to clarify data models, authentication method, pagination strategy, and caching before writing any code.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:56.289Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Write a SQL query to find duplicate customer emails in postgres and merge the duplicate rows Project context: languages: python; package manager: poetry; uses: python ^3.11, fastapi ^0.110, pytest ^8; services: postgres:16"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"prisma/prisma-postgres-26111855007\", \"title\": \"Prisma Postgres\", \"publisher\": \"prisma\", \"what_it_does\": \"Set up and query Postgres through Prisma ORM. Use when working with prisma postgres.\", \"when_to_use\": \"Covers part of its domain (36%) — check the specific capability you need is included. Works by: deterministic / tool-driven. Intended outcome: write or change code.\", \"why_suggested\": \"safety-scanned, not test-verified; partial scope (36%); method: deterministic / tool-driven; tuned for frontier-class models\", \"fit_notes\": \"Tuned for frontier-class models; ~891 tokens to load\", \"requires\": \"read files\", \"get\": \"/api/v1/ss33/skill/prisma/prisma-postgres-26111855007\", \"available\": true}, {\"ref\": \"ccheney/postgres-drizzle-7398651014\", \"title\": \"Postgres Drizzle\", \"publisher\": \"ccheney\", \"what_it_does\": \"Write or review PostgreSQL schemas, queries, migrations, and Drizzle ORM code. Use for Postgres/Drizzle relations, indexing, pooling, or query performance; not for unrelated databases or generic backend work.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~807 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/ccheney/postgres-drizzle-7398651014\", \"available\": true}, {\"ref\": \"manutej/psycopg-11233262605\", \"title\": \"Psycopg\", \"publisher\": \"manutej\", \"what_it_does\": \"PostgreSQL adapter for Python - customer support tech enablement for database operations, query optimization, and data management\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~10998 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/manutej/psycopg-11233262605\", \"available\": false}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "Tuned for frontier-class models; ~891 tokens to load",
+          "get": "/api/v1/ss33/skill/prisma/prisma-postgres-26111855007",
+          "publisher": "prisma",
+          "ref": "prisma/prisma-postgres-26111855007",
+          "requires": "read files",
+          "title": "Prisma Postgres",
+          "what_it_does": "Set up and query Postgres through Prisma ORM. Use when working with prisma postgres.",
+          "when_to_use": "Covers part of its domain (36%) — check the specific capability you need is included. Works by: deterministic / tool-driven. Intended outcome: write or change code.",
+          "why_suggested": "safety-scanned, not test-verified; partial scope (36%); method: deterministic / tool-driven; tuned for frontier-class models"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~807 tokens to load",
+          "get": "/api/v1/ss33/skill/ccheney/postgres-drizzle-7398651014",
+          "publisher": "ccheney",
+          "ref": "ccheney/postgres-drizzle-7398651014",
+          "requires": "not declared",
+          "title": "Postgres Drizzle",
+          "what_it_does": "Write or review PostgreSQL schemas, queries, migrations, and Drizzle ORM code. Use for Postgres/Drizzle relations, indexing, pooling, or query performance; not for unrelated databases or generic backend work.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": false,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~10998 tokens to load",
+          "get": "/api/v1/ss33/skill/manutej/psycopg-11233262605",
+          "publisher": "manutej",
+          "ref": "manutej/psycopg-11233262605",
+          "requires": "not declared",
+          "title": "Psycopg",
+          "what_it_does": "PostgreSQL adapter for Python - customer support tech enablement for database operations, query optimization, and data management",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:54.622Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

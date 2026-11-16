@@ -1,0 +1,35 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Ok, update the plugin and after that get started on the full loop testing setup we talked about earlier Project context: languages: javascript, typescript; package manager: npm; uses: typescript ^5.9.3, node >=20; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"awdr74100/figma-typings-audit-26292946457\", \"title\": \"Figma Typings Audit\", \"publisher\": \"awdr74100\", \"what_it_does\": \"Upgrade @figma/plugin-typings and absorb what the new version exposes. Diffs the .d.ts between the installed and the target version (that package ships no changelog), sorts the changes into breakage / new API / silently-added fields, maps each onto the sandbox handlers, the hand-written Zod mirrors in shared, and the tool registry — then bumps the package and builds whatever the user picks. Use whenever the user wants @figma/plugin-typings updated or audited, or asks what a new plugin-typings version would break or newly enable — including a Renovate bump PR for that package.\", \"when_to_use\": \"Intended outcome: review or verify work.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3330 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/awdr74100/figma-typings-audit-26292946457\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3330 tokens to load",
+          "get": "/api/v1/ss33/skill/awdr74100/figma-typings-audit-26292946457",
+          "publisher": "awdr74100",
+          "ref": "awdr74100/figma-typings-audit-26292946457",
+          "requires": "not declared",
+          "title": "Figma Typings Audit",
+          "what_it_does": "Upgrade @figma/plugin-typings and absorb what the new version exposes. Diffs the .d.ts between the installed and the target version (that package ships no changelog), sorts the changes into breakage / new API / silently-added fields, maps each onto the sandbox handlers, the hand-written Zod mirrors in shared, and the tool registry — then bumps the package and builds whatever the user picks. Use whenever the user wants @figma/plugin-typings updated or audited, or asks what a new plugin-typings version would break or newly enable — including a Renovate bump PR for that package.",
+          "when_to_use": "Intended outcome: review or verify work.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:11:57.162Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

@@ -1,0 +1,30 @@
+{
+  "description": "ss33: suggest a relevant Skill Store skill from the prompt (silent on any failure); fetch the Node.js runtime in the background if none is installed",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$PLUGIN_ROOT/scripts/ss33\" __prefetch-runtime",
+            "commandWindows": "sh \"%PLUGIN_ROOT%/scripts/ss33\" __prefetch-runtime",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$PLUGIN_ROOT/scripts/ss33\" hook codex user-prompt-submit",
+            "commandWindows": "sh \"%PLUGIN_ROOT%/scripts/ss33\" hook codex user-prompt-submit",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "ss33",
+  "version": "0.3.0",
+  "description": "ss33 Skill Store for Codex: project-aware skill search, native skill install with a lockfile, and prompt matching.",
+  "author": { "name": "ReadyAI", "email": "support@readyai.ai" },
+  "repository": "https://github.com/afterpartyai/ss33-skill-store-for-agents",
+  "license": "MIT",
+  "keywords": ["skills", "skill-store", "ss33"],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "ss33 Skill Store",
+    "shortDescription": "Find & install agent skills",
+    "longDescription": "Suggests a relevant published skill when your prompt matches one, searches the ss33 Skill Store with a short project summary (never source code), and installs skills as native SKILL.md files in .agents/skills, pinned in ss33.lock.",
+    "developerName": "ReadyAI",
+    "category": "Coding",
+    "websiteURL": "https://ss33.ai",
+    "defaultPrompt": ["$ss33:search a skill for setting up CI in this project"],
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "add tests for the invoice parser module and make sure they cover the rounding cases Project context: languages: python; package manager: poetry; uses: python ^3.11, fastapi ^0.110, pytest ^8; services: postgres:16"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"hieutrtr/pytest-patterns-54172254973\", \"title\": \"Pytest Patterns\", \"publisher\": \"hieutrtr\", \"what_it_does\": \"Python backend testing patterns with pytest for FastAPI applications. Use when writing Python tests: unit tests for services and repositories, integration tests for API endpoints with httpx.AsyncClient, fixture creation, factory setup with factory_boy, async testing with pytest-asyncio, mocking strategies, and parametrized tests. Covers test organization (tests/unit, tests/integration), conftest hierarchy, and coverage requirements. Does NOT cover frontend tests (use react-testing-patterns) or E2E browser tests (use e2e-testing).\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3824 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/hieutrtr/pytest-patterns-54172254973\", \"available\": true}, {\"ref\": \"alinaqi/python-66204202307\", \"title\": \"Python\", \"publisher\": \"alinaqi\", \"what_it_does\": \"Python development with ruff, mypy, pytest - TDD and type safety\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1069 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/alinaqi/python-66204202307\", \"available\": true}, {\"ref\": \"manutej/pytest-54997005167\", \"title\": \"Pytest\", \"publisher\": \"manutej\", \"what_it_does\": \"Advanced Python unit testing framework for customer support tech enablement, covering FastAPI, SQLAlchemy, PostgreSQL, async operations, mocking, fixtures, parametrization, coverage, and comprehensive testing strategies for backend support systems\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~16446 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/manutej/pytest-54997005167\", \"available\": false}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3824 tokens to load",
+          "get": "/api/v1/ss33/skill/hieutrtr/pytest-patterns-54172254973",
+          "publisher": "hieutrtr",
+          "ref": "hieutrtr/pytest-patterns-54172254973",
+          "requires": "not declared",
+          "title": "Pytest Patterns",
+          "what_it_does": "Python backend testing patterns with pytest for FastAPI applications. Use when writing Python tests: unit tests for services and repositories, integration tests for API endpoints with httpx.AsyncClient, fixture creation, factory setup with factory_boy, async testing with pytest-asyncio, mocking strategies, and parametrized tests. Covers test organization (tests/unit, tests/integration), conftest hierarchy, and coverage requirements. Does NOT cover frontend tests (use react-testing-patterns) or E2E browser tests (use e2e-testing).",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1069 tokens to load",
+          "get": "/api/v1/ss33/skill/alinaqi/python-66204202307",
+          "publisher": "alinaqi",
+          "ref": "alinaqi/python-66204202307",
+          "requires": "not declared",
+          "title": "Python",
+          "what_it_does": "Python development with ruff, mypy, pytest - TDD and type safety",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": false,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~16446 tokens to load",
+          "get": "/api/v1/ss33/skill/manutej/pytest-54997005167",
+          "publisher": "manutej",
+          "ref": "manutej/pytest-54997005167",
+          "requires": "not declared",
+          "title": "Pytest",
+          "what_it_does": "Advanced Python unit testing framework for customer support tech enablement, covering FastAPI, SQLAlchemy, PostgreSQL, async operations, mocking, fixtures, parametrization, coverage, and comprehensive testing strategies for backend support systems",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T16:12:09.500Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

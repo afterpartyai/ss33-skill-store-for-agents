@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Write an OpenAPI spec for the orders endpoints in the FastAPI app Project context: languages: python; package manager: poetry; uses: python ^3.11, fastapi ^0.110, pytest ^8; services: postgres:16"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"davila7/fastapi-endpoint-39229994161\", \"title\": \"Fastapi Endpoint\", \"publisher\": \"davila7\", \"what_it_does\": \"Plan and build production-ready FastAPI endpoints with async SQLAlchemy, Pydantic v2 models, dependency injection for auth, and pytest tests. Uses interview-driven planning to clarify data models, authentication method, pagination strategy, and caching before writing any code.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3862 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/davila7/fastapi-endpoint-39229994161\", \"available\": true}, {\"ref\": \"mindrally/fastapi-python-92748773632\", \"title\": \"Fastapi Python\", \"publisher\": \"mindrally\", \"what_it_does\": \"Expert in FastAPI Python development with best practices for APIs and async operations\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~615 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/mindrally/fastapi-python-92748773632\", \"available\": true}, {\"ref\": \"jiatastic/python-backend-51007977294\", \"title\": \"Python Backend\", \"publisher\": \"jiatastic\", \"what_it_does\": \"Python backend development expertise for FastAPI, security patterns, database operations, Upstash integrations, and code quality. Use when: (1) Building REST APIs with FastAPI, (2) Implementing JWT/OAuth2 authentication, (3) Setting up SQLAlchemy/async databases, (4) Integrating Redis/Upstash caching, (5) Refactoring AI-generated Python code (deslopification), (6) Designing API patterns, or (7) Optimizing backend performance.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1053 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/jiatastic/python-backend-51007977294\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3862 tokens to load",
+          "get": "/api/v1/ss33/skill/davila7/fastapi-endpoint-39229994161",
+          "publisher": "davila7",
+          "ref": "davila7/fastapi-endpoint-39229994161",
+          "requires": "not declared",
+          "title": "Fastapi Endpoint",
+          "what_it_does": "Plan and build production-ready FastAPI endpoints with async SQLAlchemy, Pydantic v2 models, dependency injection for auth, and pytest tests. Uses interview-driven planning to clarify data models, authentication method, pagination strategy, and caching before writing any code.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~615 tokens to load",
+          "get": "/api/v1/ss33/skill/mindrally/fastapi-python-92748773632",
+          "publisher": "mindrally",
+          "ref": "mindrally/fastapi-python-92748773632",
+          "requires": "not declared",
+          "title": "Fastapi Python",
+          "what_it_does": "Expert in FastAPI Python development with best practices for APIs and async operations",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1053 tokens to load",
+          "get": "/api/v1/ss33/skill/jiatastic/python-backend-51007977294",
+          "publisher": "jiatastic",
+          "ref": "jiatastic/python-backend-51007977294",
+          "requires": "not declared",
+          "title": "Python Backend",
+          "what_it_does": "Python backend development expertise for FastAPI, security patterns, database operations, Upstash integrations, and code quality. Use when: (1) Building REST APIs with FastAPI, (2) Implementing JWT/OAuth2 authentication, (3) Setting up SQLAlchemy/async databases, (4) Integrating Redis/Upstash caching, (5) Refactoring AI-generated Python code (deslopification), (6) Designing API patterns, or (7) Optimizing backend performance.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:52.871Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}

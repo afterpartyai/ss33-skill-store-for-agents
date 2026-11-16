@@ -1,0 +1,59 @@
+{
+  "tool": "search_skills",
+  "args": {
+    "limit": 3,
+    "query": "Add Playwright end-to-end tests for the login and signup flows Project context: languages: javascript, typescript; package manager: npm; uses: vitest ^3.2.0, typescript ^5.6.0, react ^18.3.0; services: postgres:16, redis:7; ci: github-actions"
+  },
+  "result": {
+    "content": [
+      {
+        "text": "{\"found\": true, \"candidates\": [{\"ref\": \"fugazi/playwright-e2e-testing-10066577776\", \"title\": \"Playwright E2E Testing\", \"publisher\": \"fugazi\", \"what_it_does\": \"Author and maintain versioned Playwright (@playwright/test) TypeScript UI specs for browser user flows. Use when asked to create, run, debug, or refactor E2E tests, form/navigation/auth flows, responsive checks, UI mocking, fixtures, Page Objects, or visual comparisons. Use api-testing for standalone REST/GraphQL contracts and playwright-cli for live browser sessions. Keywords: E2E spec, Playwright test, POM, fixtures, UI regression.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~3230 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/fugazi/playwright-e2e-testing-10066577776\", \"available\": true}, {\"ref\": \"pproenca/playwright-88280522169\", \"title\": \"Playwright\", \"publisher\": \"pproenca\", \"what_it_does\": \"Playwright testing best practices for Next.js applications (formerly test-playwright). This skill should be used when writing, reviewing, or debugging E2E tests with Playwright. Triggers on tasks involving test selectors, flaky tests, authentication state, API mocking, hydration testing, parallel execution, CI configuration, or debugging test failures.\", \"when_to_use\": \"Intended outcome: write or change code.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~1668 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/pproenca/playwright-88280522169\", \"available\": true}, {\"ref\": \"duc01226/playwright-cli-75060505929\", \"title\": \"Playwright Cli\", \"publisher\": \"duc01226\", \"what_it_does\": \"[Testing] Automate browser interactions, test web pages, and work with Playwright tests.\", \"when_to_use\": \"Intended outcome: review or verify work.\", \"why_suggested\": \"not yet verified; no per-model evidence\", \"fit_notes\": \"No per-model evidence — compatibility unknown, not failed; ~4544 tokens to load\", \"requires\": \"not declared\", \"get\": \"/api/v1/ss33/skill/duc01226/playwright-cli-75060505929\", \"available\": true}]}",
+        "type": "text"
+      }
+    ],
+    "isError": false,
+    "structuredContent": {
+      "candidates": [
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~3230 tokens to load",
+          "get": "/api/v1/ss33/skill/fugazi/playwright-e2e-testing-10066577776",
+          "publisher": "fugazi",
+          "ref": "fugazi/playwright-e2e-testing-10066577776",
+          "requires": "not declared",
+          "title": "Playwright E2E Testing",
+          "what_it_does": "Author and maintain versioned Playwright (@playwright/test) TypeScript UI specs for browser user flows. Use when asked to create, run, debug, or refactor E2E tests, form/navigation/auth flows, responsive checks, UI mocking, fixtures, Page Objects, or visual comparisons. Use api-testing for standalone REST/GraphQL contracts and playwright-cli for live browser sessions. Keywords: E2E spec, Playwright test, POM, fixtures, UI regression.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~1668 tokens to load",
+          "get": "/api/v1/ss33/skill/pproenca/playwright-88280522169",
+          "publisher": "pproenca",
+          "ref": "pproenca/playwright-88280522169",
+          "requires": "not declared",
+          "title": "Playwright",
+          "what_it_does": "Playwright testing best practices for Next.js applications (formerly test-playwright). This skill should be used when writing, reviewing, or debugging E2E tests with Playwright. Triggers on tasks involving test selectors, flaky tests, authentication state, API mocking, hydration testing, parallel execution, CI configuration, or debugging test failures.",
+          "when_to_use": "Intended outcome: write or change code.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        },
+        {
+          "available": true,
+          "fit_notes": "No per-model evidence — compatibility unknown, not failed; ~4544 tokens to load",
+          "get": "/api/v1/ss33/skill/duc01226/playwright-cli-75060505929",
+          "publisher": "duc01226",
+          "ref": "duc01226/playwright-cli-75060505929",
+          "requires": "not declared",
+          "title": "Playwright Cli",
+          "what_it_does": "[Testing] Automate browser interactions, test web pages, and work with Playwright tests.",
+          "when_to_use": "Intended outcome: review or verify work.",
+          "why_suggested": "not yet verified; no per-model evidence"
+        }
+      ],
+      "found": true
+    }
+  },
+  "recordedAt": "2026-11-05T20:15:48.929Z",
+  "upstream": "https://mcp.ss33.ai/mcp"
+}
