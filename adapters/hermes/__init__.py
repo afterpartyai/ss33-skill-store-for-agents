@@ -64,11 +64,13 @@ def _hermes_node() -> str | None:
 
 
 def _api_key() -> str | None:
-    """The key from the plugin's settings (config_schema secret → SS33_API_KEY in the profile .env)."""
+    """The key from the plugin's settings (config_schema secret → SS33_API_KEY in the profile .env).
+    Only through Hermes's profile-aware lookup: under a multi-profile gateway, os.environ may hold another
+    profile's key. Without the lookup there's no key, and the store's free tier applies."""
     try:
-        from agent.secret_scope import get_secret  # Hermes's profile-aware secret lookup
+        from agent.secret_scope import get_secret
     except ImportError:
-        return os.environ.get("SS33_API_KEY") or None
+        return None
     try:
         return get_secret("SS33_API_KEY") or None
     except Exception:  # e.g. no profile scope bound in a multi-profile gateway: never guess
@@ -77,6 +79,9 @@ def _api_key() -> str | None:
 
 def _env() -> dict[str, str]:
     env = dict(os.environ)
+    # The CLI prefers SS33_API_KEY over SS33_PLUGIN_API_KEY. Inherited from the gateway's environment, it
+    # could be another profile's key, so the CLI only gets the scoped one below.
+    env.pop("SS33_API_KEY", None)
     node = _hermes_node()
     if node:
         env["SS33_HOST_NODE"] = node

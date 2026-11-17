@@ -109,6 +109,7 @@ const skip = python ? false : "python3 (3.9+) not found";
 const DRIVER = `
 import importlib.util, json, sys
 root, cwd, surface, prompt = sys.argv[1:5]
+if len(sys.argv) > 5: sys.path.insert(0, sys.argv[5])  # a stand-in for Hermes's agent.secret_scope
 spec = importlib.util.spec_from_file_location("ss33_hermes_plugin", root + "/__init__.py", submodule_search_locations=[root])
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
@@ -147,7 +148,7 @@ before(async () => {
 });
 after(() => store.close());
 
-function runShim(opts: { cwd: string; surface: string; env: Record<string, string> }): Promise<{ code: number; stdout: string; stderr: string }> {
+function runShim(opts: { cwd: string; surface: string; env: Record<string, string>; endpoint?: string; secrets?: string }): Promise<{ code: number; stdout: string; stderr: string }> {
   const scratch = tempDir("ss33-shim-");
   const driver = join(scratch, "driver.py");
   writeFileSync(driver, DRIVER);
@@ -161,7 +162,7 @@ function runShim(opts: { cwd: string; surface: string; env: Record<string, strin
     {
       HOME: scratch, // so the shim doesn't find the developer's own ~/.hermes/node
       HERMES_HOME: join(scratch, "hermes"),
-      SS33_ENDPOINT: store.url,
+      SS33_ENDPOINT: opts.endpoint ?? store.url,
       SS33_MATCH: "1", // prompt matching is opt-in
       SS33_CONFIG_DIR: join(scratch, "cfg"),
       SS33_STATE_DIR: join(scratch, "state"),
@@ -171,7 +172,7 @@ function runShim(opts: { cwd: string; surface: string; env: Record<string, strin
     opts.env,
   );
   return new Promise((resolve) => {
-    execFile(python!, ["-I", "-B", driver, join(process.cwd(), "adapters/hermes"), opts.cwd, opts.surface, prompt], { cwd: scratch, env, timeout: 30_000 }, (err, stdout, stderr) =>
+    execFile(python!, ["-I", "-B", driver, join(process.cwd(), "adapters/hermes"), opts.cwd, opts.surface, prompt, ...(opts.secrets ? [opts.secrets] : [])], { cwd: scratch, env, timeout: 30_000 }, (err, stdout, stderr) =>
       resolve({ code: err ? 1 : 0, stdout, stderr }),
     );
   });
@@ -229,4 +230,30 @@ test("hermes shim: a failing CLI never breaks the turn", { skip }, async () => {
   const out = JSON.parse(r.stdout);
   assert.equal(out.context, null);
   assert.ok(out.search.error, "the tool reports the failure to the model instead of raising");
+});
+
+test("hermes shim: the API key comes only from Hermes's profile-scoped secret, never the inherited env", { skip }, async () => {
+  // A multi-profile gateway's environment can hold another profile's SS33_API_KEY.
+  const keyed = await startFakeStore({ skills: loadSkillFixture(join(process.cwd(), "test/fixtures/store/basic.json")), auth: { keys: ["ss33_this_profile"] } });
+  try {
+    const secrets = tempDir("ss33-secrets-");
+    mkdirSync(join(secrets, "agent"));
+    writeFileSync(join(secrets, "agent", "__init__.py"), "");
+    writeFileSync(join(secrets, "agent", "secret_scope.py"), 'def get_secret(name):\n    return "ss33_this_profile" if name == "SS33_API_KEY" else None\n');
+    const env = { SS33_NODE: process.execPath, SS33_API_KEY: "ss33_other_profile" };
+
+    const scoped = await runShim({ cwd: project(), surface: "cli", env, endpoint: keyed.url, secrets });
+    assert.equal(scoped.code, 0, scoped.stderr);
+    const searches = keyed.calls.filter((c) => c.tool === "search_skills");
+    assert.ok(searches.length > 0);
+    assert.ok(searches.every((c) => c.auth === "key"), "the scoped key was sent, not the inherited one");
+
+    // Without Hermes's lookup (older or stripped-down host) there is no key: the free tier, not a guess.
+    keyed.calls.length = 0;
+    const bare = await runShim({ cwd: project(), surface: "cli", env, endpoint: keyed.url });
+    assert.equal(bare.code, 0, bare.stderr);
+    assert.ok(keyed.calls.filter((c) => c.tool === "search_skills").every((c) => c.auth === "anonymous"));
+  } finally {
+    await keyed.close();
+  }
 });

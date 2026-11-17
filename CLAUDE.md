@@ -99,6 +99,8 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
   - Hermes ignores `disable-model-invocation`, so the user-only skills use `fallback_for_toolsets: [ss33]` (hidden while the plugin is on), and `search` uses `fallback_for_tools: [ss33_search]`.
   - `requires_hermes: ">=0.22.3"`: `session_cwd`, `session_surface` and `post_message` first shipped there.
   - The shim passes Hermes's own Node.js (`<HERMES_HOME>/node`) as `SS33_HOST_NODE`, and the plugin's `api_key` secret as `SS33_PLUGIN_API_KEY`.
+  - The key is read only with `agent.secret_scope.get_secret`, and the shim drops `SS33_API_KEY` from the CLI's environment (catalog rule 11): a multi-profile gateway's `os.environ` can hold another profile's key, and the CLI would prefer it. No lookup available means no key (free tier), never an `os.environ` fallback.
+  - Hermes plugin catalog: the entry lives in `NousResearch/hermes-agent` at `plugin-catalog/ss33.yaml`, pinned to a full commit SHA; every release needs a SHA-bump PR there. The Node.js download in `scripts/ss33` is allowed under rules 3 and 17 (third-party runtime, official source, pinned checksum, never touches plugin files) and passes the CI self-updater gate because it never fetches from GitHub. Keep it that way.
 - **Supporting files:** the store returns only `SKILL.md`. `add` warns about linked files that won't be installed and points to the author's folder.
 
 ## Releasing
