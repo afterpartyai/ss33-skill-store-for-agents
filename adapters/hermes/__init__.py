@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -64,11 +65,13 @@ def _hermes_node() -> str | None:
 
 
 def _api_key() -> str | None:
-    """The key from the plugin's settings (config_schema secret → SS33_API_KEY in the profile .env)."""
+    """The key from the plugin's settings (config_schema secret → SS33_API_KEY in the profile .env).
+    Only through Hermes's profile-aware lookup: under a multi-profile gateway, os.environ may hold another
+    profile's key. Without the lookup there's no key, and the store's free tier applies."""
     try:
-        from agent.secret_scope import get_secret  # Hermes's profile-aware secret lookup
+        from agent.secret_scope import get_secret
     except ImportError:
-        return os.environ.get("SS33_API_KEY") or None
+        return None
     try:
         return get_secret("SS33_API_KEY") or None
     except Exception:  # e.g. no profile scope bound in a multi-profile gateway: never guess
@@ -77,6 +80,9 @@ def _api_key() -> str | None:
 
 def _env() -> dict[str, str]:
     env = dict(os.environ)
+    # The CLI prefers SS33_API_KEY over SS33_PLUGIN_API_KEY. Inherited from the gateway's environment, it
+    # could be another profile's key, so the CLI only gets the scoped one below.
+    env.pop("SS33_API_KEY", None)
     node = _hermes_node()
     if node:
         env["SS33_HOST_NODE"] = node
@@ -88,9 +94,33 @@ def _env() -> dict[str, str]:
     return env
 
 
+_shell_path: str | None = None
+
+
+def _shell() -> str:
+    """A POSIX shell for the launcher. On native Windows that is Git Bash, which Hermes needs too but doesn't
+    always put on the gateway's PATH: find it next to git.exe, or in Git for Windows' default folders."""
+    global _shell_path
+    if _shell_path is None:
+        found = shutil.which("sh") or shutil.which("bash")
+        if not found and os.name == "nt":
+            roots = []
+            git = shutil.which("git")
+            if git:  # <root>\cmd\git.exe or <root>\bin\git.exe
+                roots.append(os.path.dirname(os.path.dirname(os.path.realpath(git))))
+            for var in ("ProgramFiles", "ProgramW6432", "LOCALAPPDATA"):
+                base = os.environ.get(var)
+                if base:
+                    roots.append(os.path.join(base, "Programs", "Git") if var == "LOCALAPPDATA" else os.path.join(base, "Git"))
+            candidates = (os.path.join(root, *sub) for root in roots for sub in (("bin", "bash.exe"), ("usr", "bin", "bash.exe")))
+            found = next((c for c in candidates if os.path.isfile(c)), None)
+        _shell_path = found or "sh"
+    return _shell_path
+
+
 def _run(args: list[str], *, stdin: str | None = None, cwd: str = "", timeout: float) -> subprocess.CompletedProcess:
     return subprocess.run(
-        ["sh", str(LAUNCHER), *args],
+        [_shell(), str(LAUNCHER), *args],
         input=stdin,
         capture_output=True,
         text=True,
