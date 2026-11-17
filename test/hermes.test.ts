@@ -279,3 +279,17 @@ print(mod._shell())
   assert.equal(probe("PATHGIT/cmd/git.exe"), join(root, "PATHGIT/bin/bash.exe"), "next to git.exe on PATH");
   assert.equal(probe(""), join(root, "PF/Git/usr/bin/bash.exe"), "Git for Windows' default folder");
 });
+
+test("hermes shim: finds the Node.js Hermes keeps in <root>/tools, also from a profile's HERMES_HOME", { skip }, async () => {
+  const root = tempDir("ss33-hermes-root-");
+  const node = join(root, "tools", `node-26.12.1-${process.platform}-${process.arch}`, "bin");
+  mkdirSync(node, { recursive: true });
+  symlinkSync(process.execPath, join(node, "node"));
+  mkdirSync(join(root, "tools", "node-9.0.0-old"), { recursive: true }); // no binary: skipped
+  const profile = join(root, "profiles", "work");
+  mkdirSync(profile, { recursive: true });
+  // No SS33_NODE, no node on PATH and downloads fail: only Hermes's tools/node-* can run the CLI.
+  const r = await runShim({ cwd: project(), surface: "cli", env: { HERMES_HOME: profile, SS33_NO_SYSTEM_NODE: "1" } });
+  assert.equal(r.code, 0, r.stderr);
+  assert.match(JSON.parse(r.stdout).search.results, /acme\/github-actions-ci-1001/);
+});

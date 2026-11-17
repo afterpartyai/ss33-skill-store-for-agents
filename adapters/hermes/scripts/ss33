@@ -84,9 +84,18 @@ sha256_of() {
   else return 1; fi
 }
 
+# A path as Windows programs (node.exe, curl.exe) read it: C:/… On Windows, Git Bash usually turns /c/… into C:\…
+# when it starts one, but not with MSYS_NO_PATHCONV=1, which Hermes sets; node.exe then reads /c/Users as
+# C:\c\Users. `pwd -W` gives the Windows form either way. Unchanged elsewhere. The file's folder must exist.
+native_path() {
+  case $plat in win-*) ;; *) printf '%s\n' "$1"; return ;; esac
+  (cd "$(dirname "$1")" 2>/dev/null && printf '%s/%s\n' "$(pwd -W 2>/dev/null || pwd)" "$(basename "$1")") || printf '%s\n' "$1"
+}
+
 download() { # url file
-  if command -v curl >/dev/null 2>&1; then curl -fsSL --retry 2 -o "$2" "$1"
-  elif command -v wget >/dev/null 2>&1; then wget -q -O "$2" "$1"
+  out=$(native_path "$2")
+  if command -v curl >/dev/null 2>&1; then curl -fsSL --retry 2 -o "$out" "$1"
+  elif command -v wget >/dev/null 2>&1; then wget -q -O "$out" "$1"
   else say "needs curl or wget to download Node.js"; return 1; fi
 }
 
@@ -152,7 +161,7 @@ case ${1:-} in
   hook | __prefetch-runtime)
     if node=$(find_node); then
       [ "$1" = __prefetch-runtime ] && exit 0
-      exec "$node" "$bundle" "$@"
+      exec "$node" "$(native_path "$bundle")" "$@"
     fi
     background_fetch
     exit 0
@@ -167,4 +176,4 @@ if ! node=$(find_node); then
   }
   say "done."
 fi
-exec "$node" "$bundle" "$@"
+exec "$node" "$(native_path "$bundle")" "$@"

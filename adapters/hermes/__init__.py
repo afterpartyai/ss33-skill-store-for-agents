@@ -53,15 +53,43 @@ SEARCH_SCHEMA = {
 }
 
 
+def _hermes_homes() -> list[str]:
+    """Where Hermes may live: $HERMES_HOME, the root above it when it is a profile (<root>/profiles/<name>),
+    and the platform defaults (~/.hermes; %LOCALAPPDATA%\\hermes on Windows)."""
+    homes = []
+    env_home = os.environ.get("HERMES_HOME", "").strip()
+    if env_home:
+        homes.append(env_home)
+        parent = os.path.dirname(os.path.normpath(env_home))
+        if os.path.basename(parent) == "profiles":
+            homes.append(os.path.dirname(parent))
+    homes.append(os.path.join(os.path.expanduser("~"), ".hermes"))
+    if os.environ.get("LOCALAPPDATA"):
+        homes.append(os.path.join(os.environ["LOCALAPPDATA"], "hermes"))
+    return list(dict.fromkeys(homes))
+
+
+def _version_key(name: str) -> tuple[int, ...]:
+    """node-26.12.1-win32-x64 → (26, 12, 1)"""
+    parts = name.split("-")[1].split(".") if "-" in name else []
+    return tuple(int(p) for p in parts if p.isdigit())
+
+
 def _hermes_node() -> str | None:
-    """Hermes installs its own Node.js under <HERMES_HOME>/node; reusing it avoids a download."""
-    homes = [os.environ.get("HERMES_HOME"), str(Path.home() / ".hermes")]
-    for home in filter(None, homes):
-        for rel in (("node", "bin", "node"), ("node", "node.exe")):
-            candidate = Path(home, *rel)
-            if candidate.is_file() and os.access(candidate, os.X_OK):
-                return str(candidate)
-    return None
+    """The Node.js Hermes installs for itself, so ss33 needn't download one: <root>/tools/node-<version>-<platform>/
+    (bin/node, or node.exe on Windows), or <home>/node in older releases. The newest wins; the launcher still
+    checks it is v22 or newer."""
+    exe = ("node.exe",) if os.name == "nt" else ("bin", "node")
+    candidates = []
+    for home in _hermes_homes():
+        tools = os.path.join(home, "tools")
+        try:
+            names = sorted((n for n in os.listdir(tools) if n.startswith("node-")), key=_version_key, reverse=True)
+        except OSError:
+            names = []
+        candidates += [os.path.join(tools, n, *exe) for n in names]
+        candidates += [os.path.join(home, "node", "bin", "node"), os.path.join(home, "node", "node.exe")]
+    return next((c for c in candidates if os.path.isfile(c) and os.access(c, os.X_OK)), None)
 
 
 def _api_key() -> str | None:
@@ -85,7 +113,7 @@ def _env() -> dict[str, str]:
     env.pop("SS33_API_KEY", None)
     node = _hermes_node()
     if node:
-        env["SS33_HOST_NODE"] = node
+        env["SS33_HOST_NODE"] = node.replace("\\", "/")  # the launcher is a POSIX script, also on Windows
     key = _api_key()
     if key:
         # Hooks see this; the CLI copies it to its config file so /ss33:* commands, which run in the
@@ -120,7 +148,7 @@ def _shell() -> str:
 
 def _run(args: list[str], *, stdin: str | None = None, cwd: str = "", timeout: float) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [_shell(), str(LAUNCHER), *args],
+        [_shell(), LAUNCHER.as_posix(), *args],
         input=stdin,
         capture_output=True,
         text=True,
