@@ -11,7 +11,7 @@ import { buildQuery, decide, foreignStack, formatNotice, keywords, neutralize, s
 import { parseFrontmatter, referencedFiles, sha256, skillName, stamp, unstamp } from "../src/core/skillfile.js";
 import { candidate, fakeClient, SKILL_MD, tempDir } from "./helpers.js";
 
-const MATCH = { enabled: true, minOverlap: 2, maxHintsPerSession: 3 };
+const MATCH = { enabled: true, minOverlap: 2, maxHintsPerSession: 3, chatApps: false };
 const noSession = { suggested: [], hints: 0 };
 
 test("config: env beats plugin option beats file; key file is 0600", () => {

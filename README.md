@@ -9,7 +9,7 @@ Use the [ss33 Skill Store](https://ss33.ai) from your coding agent without spend
 - **`/ss33:update`**: shows what changed upstream and applies updates only when you say so. It never overwrites your local edits without asking.
 - **Prompt matching (off by default, opt in)**: if a published skill clearly fits what you just asked, you see a one-line note suggesting it (`/ss33:add <ref>` to review it). At most a few per session. It sends your prompt to the store, so it stays off until you turn it on (see [Privacy](#privacy)).
 
-Claude Code and Codex are supported. In Codex the commands are written `$ss33:search`, `$ss33:add`, and so on, and skills install to `.agents/skills/`.
+Claude Code, Codex and [Hermes Agent](https://github.com/NousResearch/hermes-agent) are supported. In Codex the commands are written `$ss33:search`, `$ss33:add`, and so on. In Codex and Hermes, skills install to `.agents/skills/`.
 
 ## Install (Claude Code)
 
@@ -47,6 +47,25 @@ What's different from Claude Code:
 - **Installed skills** go to `.agents/skills/<name>/` and are pinned in `ss33.lock`. Codex loads them in new sessions as `$<name>`.
 - **API key:** Codex plugins have no settings screen. In your own terminal, run the command `$ss33:setup` shows you (`sh <plugin root>/scripts/ss33 config set apiKey <key>`). It writes `~/.config/ss33/config.json` (0600). Don't paste the key into the chat. An `SS33_API_KEY` exported in your shell isn't reliable in Codex: its background app server may have started before you set it.
 - **Prompt matching** is off by default. Turn it on (or off again) with `$ss33:setup`, or disable the ss33 hook in `/hooks`.
+
+## Install (Hermes Agent)
+
+Needs Hermes 0.22.3 or newer (tested with 0.23.2):
+
+```
+hermes plugins install afterpartyai/ss33-skill-store-for-agents/adapters/hermes --enable
+```
+
+Then start a new session inside a project and run `/ss33:setup` to check the connection and, if you want it, turn on prompt matching. Hermes uses its own Node.js for ss33 when it has one, so there's usually nothing to download.
+
+What's different from Claude Code:
+
+- **Commands** (`/ss33:search`, `/ss33:add`, `/ss33:update`, `/ss33:list`, `/ss33:setup`) work in Hermes's interactive terminal, TUI and desktop app. Hermes doesn't offer plugin commands in `hermes chat -q` or in chat apps (Telegram, Slack, …).
+- **Search tool:** the agent can search the store itself with the `ss33_search` tool, and suggests `/ss33:add <ref>` rather than installing anything.
+- **Installed skills** go to `.agents/skills/<name>/` and are pinned in `ss33.lock`. Hermes loads project skills only from repos you trust: run `hermes skills trust` in the repo once. New sessions then have the skill as `/<name>`.
+- **API key:** set it in the desktop app (Settings → Plugins → ss33), or add `SS33_API_KEY=<key>` to `~/.hermes/.env`. The plugin copies it to `~/.config/ss33/config.json` (0600) on your next prompt so `/ss33:*` commands use it too. Don't paste the key into the chat.
+- **Prompt matching** is off by default. Turn it on (or off again) with `/ss33:setup`. Even when it's on, it only runs for sessions inside a project, and never for prompts from chat apps unless you also turn on `match.chatApps`.
+- **Terminal backend:** `/ss33:*` commands run in Hermes's terminal, so they need the local backend (not docker, modal, …). Prompt matching and `ss33_search` run inside Hermes and work with any backend.
 
 ## Commands
 
@@ -89,9 +108,10 @@ See [CLAUDE.md](CLAUDE.md) for the layout, the commands and the conventions.
 npm install
 npm test             # unit, fake-store, end-to-end and matching-regression tests (offline)
 npm run eval:matching  # prompt-matching precision/recall report
-npm run build        # typecheck + rebuild the bundle in adapters/claude-code and adapters/codex (commit both)
+npm run build        # typecheck + rebuild the bundle in adapters/claude-code, adapters/codex and adapters/hermes (commit all three)
 claude --plugin-dir ./adapters/claude-code
 codex plugin marketplace add "$PWD" && codex plugin add ss33@ss33   # Codex, from this checkout
+hermes plugins validate adapters/hermes   # Hermes manifest, registrations and security scan
 ```
 
 ## License

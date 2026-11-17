@@ -1,7 +1,7 @@
 {
   "name": "ss33",
-  "version": "0.3.0",
-  "description": "ss33 Skill Store: harness-agnostic core + CLI, with Claude Code and Codex plugin adapters",
+  "version": "0.4.0",
+  "description": "ss33 Skill Store: harness-agnostic core + CLI, with Claude Code, Codex and Hermes plugin adapters",
   "license": "MIT",
   "private": true,
   "type": "module",
@@ -15,12 +15,13 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build:test": "tsc -p tsconfig.json",
     "bundle": "esbuild src/cli/main.ts --bundle --platform=node --format=cjs --target=node22 --outfile=adapters/claude-code/lib/ss33.cjs",
-    "build": "npm run typecheck && npm run bundle && npm run sync:codex",
+    "build": "npm run typecheck && npm run bundle && npm run sync:codex && npm run sync:hermes",
     "test": "npm run build:test && node --test \"build/test/**/*.test.js\"",
     "test:live": "npm run build:test && SS33_LIVE=1 node --test \"build/test/**/*.test.js\"",
     "fake-store": "npm run build:test --silent && node build/src/fakestore/cli.js",
     "eval:matching": "npm run build:test --silent && node build/test/matching/run.js",
-    "sync:codex": "cp adapters/claude-code/lib/ss33.cjs adapters/codex/lib/ss33.cjs && cp adapters/claude-code/scripts/ss33 adapters/codex/scripts/ss33"
+    "sync:codex": "cp adapters/claude-code/lib/ss33.cjs adapters/codex/lib/ss33.cjs && cp adapters/claude-code/scripts/ss33 adapters/codex/scripts/ss33",
+    "sync:hermes": "mkdir -p adapters/hermes/lib adapters/hermes/scripts && cp adapters/claude-code/lib/ss33.cjs adapters/hermes/lib/ss33.cjs && cp adapters/claude-code/scripts/ss33 adapters/hermes/scripts/ss33"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",

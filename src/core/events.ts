@@ -5,7 +5,9 @@
 import { StoreClient } from "./client.js";
 import { configSources, loadConfig, stateDir, syncPluginApiKey, writeHookStatus, type Config } from "./config.js";
 import { fingerprint } from "./fingerprint.js";
-import { installedSkills, projectRoot } from "./install.js";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { installedSkills, LOCK_FILE, projectRoot } from "./install.js";
 import { buildQuery, decide, shouldSearch, type MatchOutcome } from "./match.js";
 import { debugLog, loadSession, saveSession } from "./state.js";
 import { VERSION } from "./version.js";
@@ -17,6 +19,20 @@ export interface PromptSubmitted {
   harness: string;
   /** The harness's way to invoke the add skill, quoted in hints (default `/ss33:add`). */
   addCommand?: string;
+  /**
+   * Where the prompt came from, for harnesses that serve several clients (Hermes: `cli`, `tui`, `desktop`,
+   * `acp`, or a chat app such as `telegram`). Chat-app prompts are skipped unless `match.chatApps` is on.
+   */
+  surface?: string;
+  /** Skip when `cwd` isn't inside a project (no `.git`, `ss33.lock` or known manifest): a hint needs a project to fit. */
+  requireProject?: boolean;
+}
+
+/** Hermes's local clients. Any other non-empty surface is a chat app (Telegram, Slack, Discord, …). */
+export const LOCAL_SURFACES: ReadonlySet<string> = new Set(["cli", "tui", "desktop", "acp"]);
+
+export function isChatSurface(surface: string | undefined): boolean {
+  return Boolean(surface) && !LOCAL_SURFACES.has(surface!);
 }
 
 export interface EventDeps {
@@ -58,6 +74,15 @@ export async function onPromptSubmitted(ev: PromptSubmitted, deps: EventDeps = {
     return { outcome: { kind: "skip", reason: pre.reason } };
   }
 
+  if (isChatSurface(ev.surface) && !config.match.chatApps) {
+    debugLog(state, `[${ev.harness}] prompt_submitted → skip: chat app (${ev.surface}); turn on with \`ss33 config set match.chatApps true\``);
+    return { outcome: { kind: "skip", reason: "chat app" } };
+  }
+  if (ev.requireProject && !inProject(ev.cwd, env)) {
+    debugLog(state, `[${ev.harness}] prompt_submitted → skip: no project at the session's working directory`);
+    return { outcome: { kind: "skip", reason: "no project" } };
+  }
+
   const root = projectRoot(ev.cwd, env);
   const session = loadSession(state, ev.sessionId);
   if (session.hints >= config.match.maxHintsPerSession) return { outcome: { kind: "skip", reason: "session hint cap reached" } };
@@ -79,4 +104,12 @@ export async function onPromptSubmitted(ev: PromptSubmitted, deps: EventDeps = {
   }
   debugLog(state, `[${ev.harness}] prompt_submitted → ${outcome.kind}${outcome.kind === "suggest" ? ` ${outcome.candidate.ref} (${outcome.overlap.join(",")})` : `: ${outcome.reason}`}`);
   return outcome.kind === "suggest" ? { context: outcome.hint, notice: outcome.notice, outcome } : { outcome };
+}
+
+/** True when `cwd` is inside a git repo or an ss33 project, or itself has a manifest the fingerprint knows. */
+function inProject(cwd: string, env: Record<string, string | undefined>): boolean {
+  if (!cwd) return false;
+  const root = projectRoot(cwd, env);
+  if (existsSync(join(root, ".git")) || existsSync(join(root, LOCK_FILE))) return true;
+  return fingerprint(cwd).summary !== "";
 }
