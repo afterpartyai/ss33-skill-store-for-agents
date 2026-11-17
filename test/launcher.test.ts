@@ -113,3 +113,20 @@ test("launcher: downloads, verifies, unpacks and uses a runtime, even under a pa
     server.close();
   }
 });
+
+test("launcher: uses the first node on PATH that is new enough, skipping an older one ahead of it", { skip }, async () => {
+  // Hermes's terminal puts the user's own tools (here an old Node.js) ahead of Hermes's bundled one.
+  const old = tempDir();
+  writeFileSync(join(old, "node"), "#!/bin/sh\necho 14\n", { mode: 0o755 });
+  const good = tempDir();
+  symlinkSync(process.execPath, join(good, "node"));
+  const r = await run(["version"], {
+    PATH: `${old}:${good}:/usr/bin:/bin`,
+    SS33_NO_SYSTEM_NODE: "",
+    SS33_RUNTIME_DIR: tempDir(),
+    SS33_NODE_DIST: "http://127.0.0.1:9/never",
+  });
+  assert.equal(r.code, 0, r.stderr);
+  assert.match(r.stdout, /^\d+\.\d+\.\d+/);
+  assert.equal(r.stderr, "", "no download");
+});

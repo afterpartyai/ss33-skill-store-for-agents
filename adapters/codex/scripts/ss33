@@ -3,7 +3,7 @@
 #
 # Runtime, first found wins:
 #   1. $SS33_NODE (an explicit path)
-#   2. `node` on PATH, if it is v22 or newer (skipped when SS33_NO_SYSTEM_NODE=1)
+#   2. the first `node` on PATH that is v22 or newer (skipped when SS33_NO_SYSTEM_NODE=1)
 #   3. $SS33_HOST_NODE, a Node.js the host agent ships (the Hermes plugin passes Hermes's own), if v22 or newer
 #   4. a Node.js build this script downloaded earlier, in $SS33_RUNTIME_DIR (default ~/.cache/ss33/runtime)
 #   5. otherwise download the official build from nodejs.org, check it against the SHA-256 pinned below
@@ -67,9 +67,23 @@ node_ok() { # node binary → true if it is v22 or newer
   [ "${major:-0}" -ge 22 ] 2>/dev/null
 }
 
+# The first node on PATH that is v22 or newer, not just the first node: an old one can come first (Hermes's
+# terminal puts the user's own tools ahead of its bundled Node.js).
+path_node() {
+  set -f; old_ifs=$IFS; IFS=:
+  for dir in $PATH; do
+    [ -n "$dir" ] || continue
+    for exe in "$dir/node" "$dir/node.exe"; do
+      if [ -f "$exe" ] && [ -x "$exe" ] && node_ok "$exe"; then IFS=$old_ifs; set +f; printf '%s\n' "$exe"; return 0; fi
+    done
+  done
+  IFS=$old_ifs; set +f
+  return 1
+}
+
 find_node() {
   if [ -n "${SS33_NODE:-}" ]; then printf '%s\n' "$SS33_NODE"; return 0; fi
-  if [ "${SS33_NO_SYSTEM_NODE:-}" != 1 ] && command -v node >/dev/null 2>&1 && node_ok node; then command -v node; return 0; fi
+  if [ "${SS33_NO_SYSTEM_NODE:-}" != 1 ] && path_node; then return 0; fi
   if [ -n "${SS33_HOST_NODE:-}" ] && [ -x "$SS33_HOST_NODE" ] && node_ok "$SS33_HOST_NODE"; then printf '%s\n' "$SS33_HOST_NODE"; return 0; fi
   if [ -x "$cached" ]; then printf '%s\n' "$cached"; return 0; fi  # not echo: dash expands backslashes
   return 1
