@@ -58,6 +58,16 @@ jobs:
           persist-credentials: false
       - name: First run downloads and verifies Node.js
         run: sh adapters/claude-code/scripts/ss33 version
+      - name: Hermes on Windows runs it with MSYS path conversion off
+        if: runner.os == 'Windows'
+        env:
+          MSYS_NO_PATHCONV: "1"
+          MSYS2_ARG_CONV_EXCL: "*"
+          SS33_RUNTIME_DIR: ${{ runner.temp }}/ss33-noconv
+        run: |
+          sh adapters/hermes/scripts/ss33 version
+          sh adapters/hermes/scripts/ss33 version
+          SS33_HOST_NODE="$(cygpath -m "$(command -v node)")" SS33_RUNTIME_DIR="${{ runner.temp }}/ss33-host" sh adapters/hermes/scripts/ss33 version
       - name: Second run uses the cached runtime
         run: |
           out=$(sh adapters/claude-code/scripts/ss33 fingerprint 2>&1)
