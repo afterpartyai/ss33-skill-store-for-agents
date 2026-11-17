@@ -71,7 +71,7 @@ test("packaging: Python stays in the Hermes plugin, which needs no dependencies"
   // Standard library only: these are every module the shim imports at load time.
   const shim = read("adapters/hermes/__init__.py");
   const imports = [...shim.matchAll(/^(?:from (\S+) import|import (\S+))/gm)].map((m) => m[1] ?? m[2]);
-  assert.deepEqual(imports.sort(), ["__future__", "json", "logging", "os", "pathlib", "subprocess"]);
+  assert.deepEqual(imports.sort(), ["__future__", "json", "logging", "os", "pathlib", "shutil", "subprocess"]);
   for (const tool of manifest.match(/^provides_tools:\n((?:  - .+\n)+)/m)![1]!.match(/[a-z0-9_]+$/gm)!) assert.match(shim, new RegExp(`name="${tool}"`));
 });
 

@@ -257,3 +257,25 @@ test("hermes shim: the API key comes only from Hermes's profile-scoped secret, n
     await keyed.close();
   }
 });
+
+test("hermes shim: on Windows, finds Git Bash when sh isn't on the gateway's PATH", { skip }, () => {
+  const root = tempDir("ss33-git-");
+  for (const f of ["PATHGIT/cmd/git.exe", "PATHGIT/bin/bash.exe", "PF/Git/usr/bin/bash.exe"]) {
+    mkdirSync(join(root, f, ".."), { recursive: true });
+    writeFileSync(join(root, f), "");
+  }
+  // Simulated: os.name is "nt", and shutil.which finds only what the case puts on PATH.
+  const probe = (onPath: string) =>
+    execFileSync(python!, ["-I", "-B", "-c", `
+import importlib.util, os, shutil, sys
+root, plugin, on_path = sys.argv[1:4]
+spec = importlib.util.spec_from_file_location("p", plugin + "/__init__.py", submodule_search_locations=[plugin])
+mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+shutil.which = lambda name: os.path.join(root, on_path) if on_path and name == "git" else None
+os.name = "nt"
+os.environ["ProgramFiles"] = os.path.join(root, "PF")
+print(mod._shell())
+`, root, join(process.cwd(), "adapters/hermes"), onPath], { encoding: "utf8" }).trim();
+  assert.equal(probe("PATHGIT/cmd/git.exe"), join(root, "PATHGIT/bin/bash.exe"), "next to git.exe on PATH");
+  assert.equal(probe(""), join(root, "PF/Git/usr/bin/bash.exe"), "Git for Windows' default folder");
+});
