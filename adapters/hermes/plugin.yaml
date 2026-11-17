@@ -1,0 +1,24 @@
+name: ss33
+version: 0.4.0
+description: "ss33 Skill Store for Hermes: project-aware skill search (a short project summary, never source code), native skill install into .agents/skills with a lockfile, and opt-in prompt matching."
+author: ReadyAI <support@readyai.ai>
+license: MIT
+homepage: https://ss33.ai
+tags: [skills, skill-store, ss33]
+manifest_version: 2
+api_version: 1
+# ctx.session_cwd(), ctx.session_surface() and ctx.post_message() first shipped in v0.22.3 (2026-10-21).
+# Without them the hook can't tell which project or client a prompt came from.
+requires_hermes: ">=0.22.3"
+# Python standard library only: no python_dependencies, so Hermes installs nothing for this plugin.
+# The CLI it runs is plain JS (lib/ss33.cjs), started by scripts/ss33 with Hermes's own Node.js when it has one.
+provides_tools:
+  - ss33_search
+provides_hooks:
+  - pre_llm_call
+  - on_session_start
+config_schema:
+  api_key:
+    type: secret
+    env: SS33_API_KEY
+    description: "Optional ss33 API key. Raises the free tier's limit of 5 searches a minute."

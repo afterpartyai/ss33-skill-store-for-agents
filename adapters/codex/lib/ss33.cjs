@@ -25,7 +25,7 @@ __export(main_exports, {
   parseArgs: () => parseArgs
 });
 module.exports = __toCommonJS(main_exports);
-var import_node_fs5 = require("node:fs");
+var import_node_fs6 = require("node:fs");
 
 // src/core/config.ts
 var import_node_fs = require("node:fs");
@@ -34,7 +34,7 @@ var import_node_path = require("node:path");
 var DEFAULT_ENDPOINT = "https://mcp.ss33.ai/mcp";
 var DEFAULT_CONFIG = {
   endpoint: DEFAULT_ENDPOINT,
-  match: { enabled: false, minOverlap: 2, maxHintsPerSession: 3 }
+  match: { enabled: false, minOverlap: 2, maxHintsPerSession: 3, chatApps: false }
 };
 function configDir(env = process.env) {
   if (env.SS33_CONFIG_DIR) return env.SS33_CONFIG_DIR;
@@ -64,7 +64,9 @@ function loadConfig(env = process.env) {
   const match = { ...DEFAULT_CONFIG.match, ...file.match ?? {} };
   const enabled = envFlag(env.SS33_MATCH) ?? envFlag(env.CLAUDE_PLUGIN_OPTION_PROMPT_MATCHING);
   if (enabled !== void 0) match.enabled = enabled;
-  const apiKey = nonEmpty(env.SS33_API_KEY) ?? nonEmpty(env.CLAUDE_PLUGIN_OPTION_API_KEY) ?? nonEmpty(file.apiKey);
+  const chatApps = envFlag(env.SS33_MATCH_CHAT_APPS);
+  if (chatApps !== void 0) match.chatApps = chatApps;
+  const apiKey = nonEmpty(env.SS33_API_KEY) ?? pluginApiKey(env) ?? nonEmpty(file.apiKey);
   return {
     endpoint: nonEmpty(env.SS33_ENDPOINT) ?? nonEmpty(file.endpoint) ?? DEFAULT_ENDPOINT,
     ...apiKey ? { apiKey } : {},
@@ -74,7 +76,10 @@ function loadConfig(env = process.env) {
 function nonEmpty(v) {
   return v && v.trim() ? v.trim() : void 0;
 }
-var SETTABLE = ["apiKey", "endpoint", "match.enabled", "match.minOverlap", "match.maxHintsPerSession"];
+function pluginApiKey(env) {
+  return nonEmpty(env.CLAUDE_PLUGIN_OPTION_API_KEY) ?? nonEmpty(env.SS33_PLUGIN_API_KEY);
+}
+var SETTABLE = ["apiKey", "endpoint", "match.enabled", "match.chatApps", "match.minOverlap", "match.maxHintsPerSession"];
 function isSettableKey(key) {
   return SETTABLE.includes(key);
 }
@@ -90,7 +95,7 @@ function setConfigValue(key, raw, env = process.env) {
   } else {
     const sub = key.slice("match.".length);
     if (raw === void 0 || raw === "") delete match[sub];
-    else if (sub === "enabled") match[sub] = envFlag(raw) ?? false;
+    else if (sub === "enabled" || sub === "chatApps") match[sub] = envFlag(raw) ?? false;
     else {
       const n = Number(raw);
       if (!Number.isInteger(n) || n < 0) throw new Error(`${key} must be a non-negative integer`);
@@ -104,7 +109,7 @@ function setConfigValue(key, raw, env = process.env) {
   (0, import_node_fs.chmodSync)(path, 384);
 }
 function syncPluginApiKey(env = process.env) {
-  const key = env.CLAUDE_PLUGIN_OPTION_API_KEY?.trim();
+  const key = pluginApiKey(env);
   if (!key || readFileConfig(env).apiKey === key) return false;
   setConfigValue("apiKey", key, env);
   return true;
@@ -117,7 +122,7 @@ function redacted(config) {
 }
 function configSources(env = process.env) {
   const file = readFileConfig(env);
-  const apiKey = nonEmpty(env.SS33_API_KEY) ? "SS33 env var" : nonEmpty(env.CLAUDE_PLUGIN_OPTION_API_KEY) ? "plugin option" : nonEmpty(file.apiKey) ? "config file" : "default";
+  const apiKey = nonEmpty(env.SS33_API_KEY) ? "SS33 env var" : pluginApiKey(env) ? "plugin option" : nonEmpty(file.apiKey) ? "config file" : "default";
   const matchEnabled = envFlag(env.SS33_MATCH) !== void 0 ? "SS33 env var" : envFlag(env.CLAUDE_PLUGIN_OPTION_PROMPT_MATCHING) !== void 0 ? "plugin option" : file.match?.enabled !== void 0 ? "config file" : "default";
   return { apiKey, matchEnabled };
 }
@@ -508,6 +513,10 @@ function summarize(fp) {
   const s = parts.join("; ");
   return s.length > MAX_SUMMARY ? s.slice(0, MAX_SUMMARY - 1) + "\u2026" : s;
 }
+
+// src/core/events.ts
+var import_node_fs5 = require("node:fs");
+var import_node_path5 = require("node:path");
 
 // src/core/install.ts
 var import_node_fs3 = require("node:fs");
@@ -1060,9 +1069,13 @@ function debugLog(dir, message) {
 }
 
 // src/core/version.ts
-var VERSION = "0.3.0";
+var VERSION = "0.4.0";
 
 // src/core/events.ts
+var LOCAL_SURFACES = /* @__PURE__ */ new Set(["cli", "tui", "desktop", "acp"]);
+function isChatSurface(surface) {
+  return Boolean(surface) && !LOCAL_SURFACES.has(surface);
+}
 var MATCH_TIMEOUT_MS = 3e3;
 async function onPromptSubmitted(ev, deps = {}) {
   const env = deps.env ?? process.env;
@@ -1091,6 +1104,14 @@ async function onPromptSubmitted(ev, deps = {}) {
     debugLog(state, `[${ev.harness}] prompt_submitted \u2192 skip: ${pre.reason}`);
     return { outcome: { kind: "skip", reason: pre.reason } };
   }
+  if (isChatSurface(ev.surface) && !config.match.chatApps) {
+    debugLog(state, `[${ev.harness}] prompt_submitted \u2192 skip: chat app (${ev.surface}); turn on with \`ss33 config set match.chatApps true\``);
+    return { outcome: { kind: "skip", reason: "chat app" } };
+  }
+  if (ev.requireProject && !inProject(ev.cwd, env)) {
+    debugLog(state, `[${ev.harness}] prompt_submitted \u2192 skip: no project at the session's working directory`);
+    return { outcome: { kind: "skip", reason: "no project" } };
+  }
   const root = projectRoot(ev.cwd, env);
   const session = loadSession(state, ev.sessionId);
   if (session.hints >= config.match.maxHintsPerSession) return { outcome: { kind: "skip", reason: "session hint cap reached" } };
@@ -1109,6 +1130,12 @@ async function onPromptSubmitted(ev, deps = {}) {
   }
   debugLog(state, `[${ev.harness}] prompt_submitted \u2192 ${outcome.kind}${outcome.kind === "suggest" ? ` ${outcome.candidate.ref} (${outcome.overlap.join(",")})` : `: ${outcome.reason}`}`);
   return outcome.kind === "suggest" ? { context: outcome.hint, notice: outcome.notice, outcome } : { outcome };
+}
+function inProject(cwd, env) {
+  if (!cwd) return false;
+  const root = projectRoot(cwd, env);
+  if ((0, import_node_fs5.existsSync)((0, import_node_path5.join)(root, ".git")) || (0, import_node_fs5.existsSync)((0, import_node_path5.join)(root, LOCK_FILE))) return true;
+  return fingerprint(cwd).summary !== "";
 }
 
 // src/adapters/hook-json.ts
@@ -1167,6 +1194,53 @@ function runHook2(event, stdin, deps = {}) {
   return runJsonHook(HARNESS2, EVENTS2, event, stdin, deps);
 }
 
+// src/adapters/hermes.ts
+var HARNESS3 = "hermes";
+var ADD_COMMAND = "/ss33:add";
+var SKILL_INVOCATION = /^\s*\[IMPORTANT: The user has invoked the (?:"([^"]+)" )?/;
+function promptForMatching(prompt) {
+  const m = SKILL_INVOCATION.exec(prompt);
+  return m ? `/${m[1] ?? "skill"}` : prompt;
+}
+async function preLlmCall(stdin, deps = {}) {
+  let input;
+  try {
+    input = JSON.parse(stdin);
+  } catch {
+    return void 0;
+  }
+  if (typeof input.prompt !== "string") return void 0;
+  const { context, notice } = await onPromptSubmitted(
+    {
+      prompt: promptForMatching(input.prompt),
+      // No fallback to process.cwd(): in Hermes that is the gateway's directory, not the session's.
+      cwd: typeof input.cwd === "string" ? input.cwd : "",
+      ...input.session_id ? { sessionId: input.session_id } : {},
+      harness: HARNESS3,
+      addCommand: ADD_COMMAND,
+      surface: typeof input.surface === "string" ? input.surface : "",
+      requireProject: true
+    },
+    deps
+  );
+  if (!context) return void 0;
+  return { context, ...notice ? { notice } : {} };
+}
+var EVENTS3 = {
+  "pre-llm-call": preLlmCall
+};
+async function runHook3(event, stdin, deps = {}) {
+  const handler = EVENTS3[event];
+  if (!handler) return "";
+  try {
+    const out = await handler(stdin, deps);
+    return out ? JSON.stringify(out) : "";
+  } catch (err) {
+    debugLog(stateDir(deps.env ?? process.env), `[${HARNESS3}] ${event} failed: ${err?.message ?? err}`);
+    return "";
+  }
+}
+
 // src/cli/main.ts
 var HELP = `ss33 ${VERSION} \u2014 Skill Store CLI
 
@@ -1180,13 +1254,13 @@ Usage:
   ss33 fingerprint [--json]          the project summary sent with searches
   ss33 config get | set <key> <value> | unset <key> | path
   ss33 doctor [--offline]            which settings are in effect where, and whether the store accepts the key
-  ss33 hook claude-code|codex <event>  (used by the plugins; reads hook JSON on stdin)
+  ss33 hook claude-code|codex|hermes <event>  (used by the plugins; reads hook JSON on stdin)
 
 Options:
   --dir PATH   project root (default: $CLAUDE_PROJECT_DIR, else nearest dir with ss33.lock or .git)
 
 Config keys: ${settableKeys().join(", ")}
-Environment: SS33_API_KEY, SS33_ENDPOINT, SS33_MATCH=1|0, SS33_CONFIG_DIR, SS33_STATE_DIR
+Environment: SS33_API_KEY, SS33_ENDPOINT, SS33_MATCH=1|0, SS33_MATCH_CHAT_APPS=1|0, SS33_CONFIG_DIR, SS33_STATE_DIR
 `;
 var VALUE_FLAGS = /* @__PURE__ */ new Set(["limit", "area", "target", "dir", "tier"]);
 function parseArgs(argv, valueFlags = VALUE_FLAGS) {
@@ -1228,7 +1302,7 @@ function client() {
 }
 function readStdin() {
   try {
-    return (0, import_node_fs5.readFileSync)(0, "utf8");
+    return (0, import_node_fs6.readFileSync)(0, "utf8");
   } catch {
     return "";
   }
@@ -1391,12 +1465,14 @@ ${HIDDEN_NOTE}`);
       return usage(`unknown command "${cmd}"`, out);
   }
 }
-var HOOKS = { "claude-code": runHook, codex: runHook2 };
+var HOOKS = { "claude-code": runHook, codex: runHook2, hermes: runHook3 };
 function pickUpNote(paths, name) {
   const notes = [];
   if (paths.some((p) => p.startsWith(TARGET_DIRS.claude + "/"))) notes.push(`Claude Code picks up new skills automatically; it appears as "${name}".`);
   if (paths.some((p) => p.startsWith(TARGET_DIRS.agents + "/")))
-    notes.push(`Codex and other agents that read ${TARGET_DIRS.agents}/ load it as "${name}" (in Codex, start a new session if it doesn't appear).`);
+    notes.push(
+      `Codex and other agents that read ${TARGET_DIRS.agents}/ load it as "${name}" (in Codex, start a new session if it doesn't appear; Hermes loads it only once the repo is trusted with \`hermes skills trust\`).`
+    );
   return notes.join("\n");
 }
 var HIDDEN_NOTE = "Note: this command runs inside Claude Code, which doesn't pass plugin settings (/plugin configure) to it. The prompt-matching hook does see them, so its settings may differ: run `ss33 doctor` to compare.";

@@ -5,6 +5,7 @@
 import { readFileSync } from "node:fs";
 import { runHook as claudeCodeHook } from "../adapters/claude-code.js";
 import { runHook as codexHook } from "../adapters/codex.js";
+import { runHook as hermesHook } from "../adapters/hermes.js";
 import { StoreClient, StoreError } from "../core/client.js";
 import {
   configPath,
@@ -34,13 +35,13 @@ Usage:
   ss33 fingerprint [--json]          the project summary sent with searches
   ss33 config get | set <key> <value> | unset <key> | path
   ss33 doctor [--offline]            which settings are in effect where, and whether the store accepts the key
-  ss33 hook claude-code|codex <event>  (used by the plugins; reads hook JSON on stdin)
+  ss33 hook claude-code|codex|hermes <event>  (used by the plugins; reads hook JSON on stdin)
 
 Options:
   --dir PATH   project root (default: $CLAUDE_PROJECT_DIR, else nearest dir with ss33.lock or .git)
 
 Config keys: ${settableKeys().join(", ")}
-Environment: SS33_API_KEY, SS33_ENDPOINT, SS33_MATCH=1|0, SS33_CONFIG_DIR, SS33_STATE_DIR
+Environment: SS33_API_KEY, SS33_ENDPOINT, SS33_MATCH=1|0, SS33_MATCH_CHAT_APPS=1|0, SS33_CONFIG_DIR, SS33_STATE_DIR
 `;
 
 interface Parsed {
@@ -263,14 +264,17 @@ export async function main(argv: string[], out = (s: string) => process.stdout.w
   }
 }
 
-const HOOKS: Record<string, (event: string, stdin: string) => Promise<string>> = { "claude-code": claudeCodeHook, codex: codexHook };
+const HOOKS: Record<string, (event: string, stdin: string) => Promise<string>> = { "claude-code": claudeCodeHook, codex: codexHook, hermes: hermesHook };
 
 /** Which agents load the skill from where it was written. */
 function pickUpNote(paths: string[], name: string): string {
   const notes: string[] = [];
   if (paths.some((p) => p.startsWith(TARGET_DIRS.claude + "/"))) notes.push(`Claude Code picks up new skills automatically; it appears as "${name}".`);
   if (paths.some((p) => p.startsWith(TARGET_DIRS.agents + "/")))
-    notes.push(`Codex and other agents that read ${TARGET_DIRS.agents}/ load it as "${name}" (in Codex, start a new session if it doesn't appear).`);
+    notes.push(
+      `Codex and other agents that read ${TARGET_DIRS.agents}/ load it as "${name}" (in Codex, start a new session if it doesn't appear; ` +
+        `Hermes loads it only once the repo is trusted with \`hermes skills trust\`).`,
+    );
   return notes.join("\n");
 }
 

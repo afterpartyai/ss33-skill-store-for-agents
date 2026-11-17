@@ -11,6 +11,11 @@ export interface MatchConfig {
   minOverlap: number;
   /** Cap on suggestions per session, so the hint never becomes noise. */
   maxHintsPerSession: number;
+  /**
+   * Match prompts that arrive through chat apps (Telegram, Slack, … in Hermes). Off by default: those
+   * prompts usually have no project, so a skill suggestion rarely fits (decided 2026-11-13).
+   */
+  chatApps: boolean;
 }
 
 export interface Config {
@@ -21,7 +26,7 @@ export interface Config {
 
 export const DEFAULT_CONFIG: Config = {
   endpoint: DEFAULT_ENDPOINT,
-  match: { enabled: false, minOverlap: 2, maxHintsPerSession: 3 },
+  match: { enabled: false, minOverlap: 2, maxHintsPerSession: 3, chatApps: false },
 };
 
 type Env = Record<string, string | undefined>;
@@ -62,7 +67,9 @@ export function loadConfig(env: Env = process.env): Config {
   // SS33_MATCH beats the Claude Code plugin option, which beats the config file.
   const enabled = envFlag(env.SS33_MATCH) ?? envFlag(env.CLAUDE_PLUGIN_OPTION_PROMPT_MATCHING);
   if (enabled !== undefined) match.enabled = enabled;
-  const apiKey = nonEmpty(env.SS33_API_KEY) ?? nonEmpty(env.CLAUDE_PLUGIN_OPTION_API_KEY) ?? nonEmpty(file.apiKey);
+  const chatApps = envFlag(env.SS33_MATCH_CHAT_APPS);
+  if (chatApps !== undefined) match.chatApps = chatApps;
+  const apiKey = nonEmpty(env.SS33_API_KEY) ?? pluginApiKey(env) ?? nonEmpty(file.apiKey);
   return {
     endpoint: nonEmpty(env.SS33_ENDPOINT) ?? nonEmpty(file.endpoint) ?? DEFAULT_ENDPOINT,
     ...(apiKey ? { apiKey } : {}),
@@ -74,7 +81,15 @@ function nonEmpty(v: string | undefined): string | undefined {
   return v && v.trim() ? v.trim() : undefined;
 }
 
-const SETTABLE = ["apiKey", "endpoint", "match.enabled", "match.minOverlap", "match.maxHintsPerSession"] as const;
+/**
+ * The key a harness's own settings hold, handed to hooks only: Claude Code's plugin option
+ * (`CLAUDE_PLUGIN_OPTION_API_KEY`), or the Hermes plugin's secret, which its shim passes as `SS33_PLUGIN_API_KEY`.
+ */
+function pluginApiKey(env: Env): string | undefined {
+  return nonEmpty(env.CLAUDE_PLUGIN_OPTION_API_KEY) ?? nonEmpty(env.SS33_PLUGIN_API_KEY);
+}
+
+const SETTABLE = ["apiKey", "endpoint", "match.enabled", "match.chatApps", "match.minOverlap", "match.maxHintsPerSession"] as const;
 export type SettableKey = (typeof SETTABLE)[number];
 
 export function isSettableKey(key: string): key is SettableKey {
@@ -95,7 +110,7 @@ export function setConfigValue(key: SettableKey, raw: string | undefined, env: E
   } else {
     const sub = key.slice("match.".length);
     if (raw === undefined || raw === "") delete match[sub];
-    else if (sub === "enabled") match[sub] = envFlag(raw) ?? false;
+    else if (sub === "enabled" || sub === "chatApps") match[sub] = envFlag(raw) ?? false;
     else {
       const n = Number(raw);
       if (!Number.isInteger(n) || n < 0) throw new Error(`${key} must be a non-negative integer`);
@@ -111,11 +126,12 @@ export function setConfigValue(key: SettableKey, raw: string | undefined, env: E
 
 /**
  * Claude Code hands the keychain-stored plugin option only to hooks, never to commands Claude runs
- * through Bash. The hook copies it into the config file (0600) so `/ss33:*` commands use the same
- * key and users have one place to set it. Returns true when the file was written.
+ * through Bash; Hermes keeps plugin secrets out of the model's terminal. The hook copies the key into
+ * the config file (0600) so `/ss33:*` commands use the same key and users have one place to set it.
+ * Returns true when the file was written.
  */
 export function syncPluginApiKey(env: Env = process.env): boolean {
-  const key = env.CLAUDE_PLUGIN_OPTION_API_KEY?.trim();
+  const key = pluginApiKey(env);
   if (!key || readFileConfig(env).apiKey === key) return false;
   setConfigValue("apiKey", key, env);
   return true;
@@ -136,7 +152,7 @@ export function configSources(env: Env = process.env): { apiKey: Source; matchEn
   const file = readFileConfig(env);
   const apiKey: Source = nonEmpty(env.SS33_API_KEY)
     ? "SS33 env var"
-    : nonEmpty(env.CLAUDE_PLUGIN_OPTION_API_KEY)
+    : pluginApiKey(env)
       ? "plugin option"
       : nonEmpty(file.apiKey)
         ? "config file"
