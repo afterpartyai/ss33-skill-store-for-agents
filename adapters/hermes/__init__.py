@@ -5,8 +5,11 @@ Claude Code and Codex plugins share. Python standard library only, and no Hermes
 level, so the plugin adds no dependencies.
 
 - pre_llm_call: pipes the prompt to `ss33 hook hermes pre-llm-call`. Hermes appends the returned context
-  to the turn's user message, and the one-line notice goes to the user with ctx.post_message.
-- on_session_start: starts the Node.js runtime download in the background if no runtime is found.
+  to the turn's user message, and the one-line notice goes to the user with ctx.post_message. While prompt
+  matching is off (the default) it returns at once without starting a process; that check is the shim's one
+  piece of logic, reading the same setting the CLI does.
+- on_session_start: `ss33 hook hermes session-start` copies the plugin's API key for /ss33:* commands and
+  records the hook's view for `ss33 doctor`; a missing Node.js runtime is fetched in the background.
 - ss33_search tool: the model's way to search the store. Plugin skills (skills/) are the user's
   /ss33:<skill> commands.
 
@@ -51,6 +54,28 @@ SEARCH_SCHEMA = {
         "required": ["query"],
     },
 }
+
+
+_TRUE = ("1", "true", "yes", "on")
+
+
+def _matching_on() -> bool:
+    """Prompt matching on? The CLI's precedence: SS33_MATCH, then match.enabled in ss33's config.json, then off.
+    A config file that can't be read leaves the decision to the CLI."""
+    flag = os.environ.get("SS33_MATCH", "")
+    if flag:
+        return flag.lower() in _TRUE
+    config_dir = os.environ.get("SS33_CONFIG_DIR") or os.path.join(
+        os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config"), "ss33"
+    )
+    try:
+        with open(os.path.join(config_dir, "config.json"), encoding="utf-8") as f:
+            match = json.load(f).get("match") or {}
+    except FileNotFoundError:
+        return False
+    except Exception:
+        return True
+    return match.get("enabled") is True
 
 
 def _hermes_homes() -> list[str]:
@@ -205,6 +230,8 @@ def _description(skill_md: Path) -> str:
 def register(ctx):
     def pre_llm_call(session_id: str = "", user_message="", platform: str = "", **kwargs):
         try:
+            if not _matching_on():
+                return None
             prompt = _prompt_text(user_message)
             if not prompt:
                 return None
@@ -225,8 +252,8 @@ def register(ctx):
 
     def on_session_start(**kwargs):
         try:
-            # Returns at once: a missing runtime is fetched by a detached background process.
-            _run(["__prefetch-runtime"], timeout=5)
+            # Quick: a missing runtime is fetched by a detached background process instead.
+            _run(["hook", "hermes", "session-start"], stdin="{}", timeout=5)
         except Exception as exc:
             logger.debug("ss33: runtime prefetch skipped: %s", exc)
 

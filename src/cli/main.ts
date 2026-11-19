@@ -207,8 +207,10 @@ export async function main(argv: string[], out = (s: string) => process.stdout.w
     case "remove": {
       const name = rest[0];
       if (!name) return usage("remove needs a skill name (see `ss33 list`)", out);
-      const entry = remove(root(), name);
-      out(`Removed "${name}" (${entry.ref}): ${entry.paths.join(", ")}`);
+      const { entry, removed, ignored } = remove(root(), name);
+      out(`Removed "${name}" (${entry.ref}) from ss33.lock${removed.length ? `: ${removed.join(", ")}` : ""}`);
+      // A lock path ss33 wouldn't create (../.., absolute, through a symlink) is never deleted.
+      for (const i of ignored) out(`  Left alone: ${i.path} (${i.reason}). Check where this ss33.lock came from.`);
       return 0;
     }
 
@@ -218,7 +220,8 @@ export async function main(argv: string[], out = (s: string) => process.stdout.w
       if (!s.length) out("No skills installed from the Skill Store in this project.");
       for (const { name, entry, files } of s) {
         out(`• ${name}  (${entry.ref}, installed ${entry.installedAt.slice(0, 10)})`);
-        for (const f of files) out(`    ${f.status === "ok" ? "✓" : f.status === "modified" ? "✎ modified" : "✗ missing"}  ${f.path}`);
+        const mark = { ok: "✓", modified: "✎ modified", missing: "✗ missing", ignored: "⚠ ignored" } as const;
+        for (const f of files) out(`    ${mark[f.status]}  ${f.path}${f.reason ? ` (${f.reason})` : ""}`);
       }
       return 0;
     }
@@ -296,10 +299,10 @@ async function doctor(offline: boolean, out: (s: string) => void): Promise<numbe
   out(`  prompt matching: ${config.match.enabled ? "on" : "off"} (${sources.matchEnabled})`);
   const hook = readHookStatus();
   if (hook) {
-    out(`Prompt-matching hook (as of the last prompt, ${hook.seenAt}):`);
+    out(`Prompt-matching hook (as of its last run, ${hook.seenAt}):`);
     out(`  API key set: ${yesNo(hook.apiKeySet)} (${hook.apiKeySource})`);
     out(`  prompt matching: ${hook.matchEnabled ? "on" : "off"} (${hook.matchSource})`);
-  } else out(`Prompt-matching hook: no record yet (it writes one on the next prompt).`);
+  } else out(`Prompt-matching hook: no record yet (it writes one on the next prompt, or next session in Hermes).`);
 
   const problems: string[] = [];
   if (hook && hook.apiKeySet && !config.apiKey) {

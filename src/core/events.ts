@@ -45,20 +45,22 @@ export interface EventDeps {
 export const MATCH_TIMEOUT_MS = 3000;
 
 /** `context` goes to the model; `notice` is shown to the user (harnesses that can't show it fall back to context only). */
-export async function onPromptSubmitted(ev: PromptSubmitted, deps: EventDeps = {}): Promise<{ context?: string; notice?: string; outcome: MatchOutcome }> {
-  const env = deps.env ?? process.env;
-  const config = deps.config ?? loadConfig(env);
+/**
+ * What every hook run does first: copy the plugin's API key to the config file (plugin settings don't reach the
+ * /ss33:* commands), and record what the hook sees for `ss33 doctor`.
+ */
+function recordHookRun(harness: string, env: Record<string, string | undefined>, config: Config): void {
   const state = stateDir(env);
   try {
-    if (syncPluginApiKey(env)) debugLog(state, `[${ev.harness}] copied the plugin's API key to the config file for /ss33 commands`);
+    if (syncPluginApiKey(env)) debugLog(state, `[${harness}] copied the plugin's API key to the config file for /ss33 commands`);
   } catch (err) {
-    debugLog(state, `[${ev.harness}] could not copy the plugin's API key: ${(err as Error).message}`);
+    debugLog(state, `[${harness}] could not copy the plugin's API key: ${(err as Error).message}`);
   }
   const sources = configSources(env);
   writeHookStatus(
     {
       seenAt: new Date().toISOString(),
-      harness: ev.harness,
+      harness,
       matchEnabled: config.match.enabled,
       matchSource: sources.matchEnabled,
       apiKeySet: Boolean(config.apiKey),
@@ -66,6 +68,22 @@ export async function onPromptSubmitted(ev: PromptSubmitted, deps: EventDeps = {
     },
     env,
   );
+}
+
+/**
+ * Session start, for harnesses whose prompt hook doesn't run the CLI while matching is off (Hermes checks the
+ * setting before starting a process): the key copy and the doctor record happen here instead.
+ */
+export function onSessionStarted(ev: { harness: string }, deps: EventDeps = {}): void {
+  const env = deps.env ?? process.env;
+  recordHookRun(ev.harness, env, deps.config ?? loadConfig(env));
+}
+
+export async function onPromptSubmitted(ev: PromptSubmitted, deps: EventDeps = {}): Promise<{ context?: string; notice?: string; outcome: MatchOutcome }> {
+  const env = deps.env ?? process.env;
+  const config = deps.config ?? loadConfig(env);
+  const state = stateDir(env);
+  recordHookRun(ev.harness, env, config);
   if (!config.match.enabled) return { outcome: { kind: "skip", reason: "matching disabled (turn on with `ss33 config set match.enabled true`)" } };
   const pre = shouldSearch(ev.prompt);
   if (!pre.ok) {

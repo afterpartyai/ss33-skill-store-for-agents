@@ -5,7 +5,7 @@
  */
 import assert from "node:assert/strict";
 import { execFile, execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
 import { promptForMatching, runHook } from "../src/adapters/hermes.js";
@@ -292,4 +292,32 @@ test("hermes shim: finds the Node.js Hermes keeps in <root>/tools, also from a p
   const r = await runShim({ cwd: project(), surface: "cli", env: { HERMES_HOME: profile, SS33_NO_SYSTEM_NODE: "1" } });
   assert.equal(r.code, 0, r.stderr);
   assert.match(JSON.parse(r.stdout).search.results, /acme\/github-actions-ci-1001/);
+});
+
+test("hermes shim: with matching off, a prompt starts no process; session start still copies the API key", { skip }, async () => {
+  // A stand-in node that counts launches, then runs the real one.
+  const bin = tempDir("ss33-countnode-");
+  const log = join(bin, "launches");
+  writeFileSync(join(bin, "node"), `#!/bin/sh\necho x >> "${log}"\nexec "${process.execPath}" "$@"\n`, { mode: 0o755 });
+  const secrets = tempDir("ss33-secrets-");
+  mkdirSync(join(secrets, "agent"));
+  writeFileSync(join(secrets, "agent", "__init__.py"), "");
+  writeFileSync(join(secrets, "agent", "secret_scope.py"), 'def get_secret(name):\n    return "ss33_from_settings" if name == "SS33_API_KEY" else None\n');
+  const launches = () => (existsSync(log) ? readFileSync(log, "utf8").split("\n").filter(Boolean).length : 0);
+  const cfg = tempDir("ss33-cfg-");
+  const env = { SS33_NODE: join(bin, "node"), SS33_MATCH: "", SS33_CONFIG_DIR: cfg };
+
+  // The driver runs: the prompt hook, the search tool, then session start.
+  const off = await runShim({ cwd: project(), surface: "cli", env, secrets });
+  assert.equal(off.code, 0, off.stderr);
+  assert.equal(JSON.parse(off.stdout).context, null);
+  assert.equal(launches(), 2, "only the tool and session start ran the CLI");
+  assert.equal(JSON.parse(readFileSync(join(cfg, "config.json"), "utf8")).apiKey, "ss33_from_settings", "session start copied the key");
+  assert.equal(readHookStatus({ SS33_CONFIG_DIR: cfg })?.harness, "hermes");
+
+  // Turned on in the config file (what /ss33:setup does), the next prompt runs the hook.
+  writeFileSync(join(cfg, "config.json"), JSON.stringify({ apiKey: "ss33_from_settings", match: { enabled: true } }));
+  const on = await runShim({ cwd: project(), surface: "cli", env, secrets });
+  assert.match(JSON.parse(on.stdout).context?.context ?? "", /acme\/github-actions-ci-1001/);
+  assert.equal(launches(), 5);
 });
