@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, statSync, symlinkSync, writeFileSync } from "node:fs";
+import { join, relative } from "node:path";
 import { test } from "node:test";
 import { describeNetworkError, parseSse, StoreClient, StoreError } from "../src/core/client.js";
 import { configPath, configSources, loadConfig, pluginOptionsHidden, setConfigValue, syncPluginApiKey } from "../src/core/config.js";
 import { lineDiff } from "../src/core/diff.js";
 import { fingerprint } from "../src/core/fingerprint.js";
-import { install, LOCK_FILE, projectRoot, readLock, remove, status, update } from "../src/core/install.js";
+import { install, lockPathProblem, LOCK_FILE, projectRoot, readLock, remove, status, update } from "../src/core/install.js";
 import { buildQuery, decide, foreignStack, formatNotice, keywords, neutralize, shouldSearch, vendorSpecific } from "../src/core/match.js";
 import { parseFrontmatter, referencedFiles, sha256, skillName, stamp, unstamp } from "../src/core/skillfile.js";
 import { candidate, fakeClient, SKILL_MD, tempDir } from "./helpers.js";
@@ -233,6 +233,60 @@ test("install: add, list, conflicts, update with diff, remove", async () => {
   assert.equal(existsSync(join(root, ".claude/skills/vitest-testing")), false);
   assert.equal(existsSync(join(root, LOCK_FILE)), false);
   await assert.rejects(install(client, root, "nope/x-1", { targets: ["claude"] }), (e: Error) => e instanceof StoreError && e.kind === "not_found");
+});
+
+test("install: a hostile ss33.lock can't make ss33 read or delete anything outside its own skill files", async () => {
+  // ss33.lock is committed, so a cloned repo's lock is untrusted.
+  const outside = tempDir();
+  const victim = join(outside, "victim.txt");
+  const project = () => {
+    const root = join(tempDir(), "repo");
+    mkdirSync(join(root, ".git"), { recursive: true });
+    writeFileSync(victim, "keep me");
+    return root;
+  };
+  const lockWith = (root: string, skills: Record<string, unknown>) => writeFileSync(join(root, LOCK_FILE), JSON.stringify({ version: 1, skills }));
+
+  const cases: [string, (root: string) => Record<string, unknown>][] = [
+    ["../ traversal", (root) => ({ "vitest-testing": { ref: "s/vitest-1", sha256: "x", paths: [relative(root, victim)], installedAt: "" } })],
+    ["absolute path", () => ({ "vitest-testing": { ref: "s/vitest-1", sha256: "x", paths: [victim], installedAt: "" } })],
+    ["dot-dot inside the skill path", () => ({ "vitest-testing": { ref: "s/vitest-1", sha256: "x", paths: [".agents/skills/vitest-testing/../../../victim.txt"], installedAt: "" } })],
+    ["another skill's folder", () => ({ "vitest-testing": { ref: "s/vitest-1", sha256: "x", paths: [".agents/skills/other/SKILL.md"], installedAt: "" } })],
+    ["a name with a path in it", () => ({ "../../x": { ref: "s/vitest-1", sha256: "x", paths: [".agents/skills/../../x/SKILL.md"], installedAt: "" } })],
+  ];
+  for (const [label, skills] of cases) {
+    const root = project();
+    lockWith(root, skills(root));
+    const [name] = Object.keys(skills(root));
+    const listed = status(root)[0]!;
+    assert.ok(listed.files.every((f) => f.status === "ignored"), `${label}: list marks it ignored`);
+    const upd = (await update(fakeClient({ skills: { "s/vitest-1": SKILL_MD } }), root, { apply: true, force: true }))[0]!;
+    assert.equal(upd.state, "error", `${label}: update skips it`);
+    assert.match(upd.error ?? "", /doesn't manage/);
+    const removed = remove(root, name!);
+    assert.equal(removed.ignored.length, 1, `${label}: remove reports it`);
+    assert.equal(readFileSync(victim, "utf8"), "keep me", `${label}: the file outside is untouched`);
+  }
+
+  // A symlinked .agents/skills in a cloned repo: the path has the right shape but leads outside.
+  const root = project();
+  mkdirSync(join(outside, "skills", "vitest-testing"), { recursive: true });
+  writeFileSync(join(outside, "skills", "vitest-testing", "SKILL.md"), "not yours");
+  mkdirSync(join(root, ".agents"));
+  symlinkSync(join(outside, "skills"), join(root, ".agents", "skills"));
+  assert.match(lockPathProblem(root, "vitest-testing", ".agents/skills/vitest-testing/SKILL.md") ?? "", /symlink/);
+  lockWith(root, { "vitest-testing": { ref: "s/vitest-1", sha256: "x", paths: [".agents/skills/vitest-testing/SKILL.md"], installedAt: "" } });
+  remove(root, "vitest-testing");
+  assert.equal(readFileSync(join(outside, "skills", "vitest-testing", "SKILL.md"), "utf8"), "not yours", "symlink: nothing deleted");
+  // …and an install doesn't write through it either.
+  await assert.rejects(install(fakeClient({ skills: { "s/vitest-1": SKILL_MD } }), root, "s/vitest-1", { targets: ["agents"], force: true }), /outside the project/);
+  assert.equal(readFileSync(join(outside, "skills", "vitest-testing", "SKILL.md"), "utf8"), "not yours", "symlink: nothing written");
+  assert.equal(existsSync(join(root, LOCK_FILE)), false);
+
+  // The normal case still works.
+  const ok = project();
+  await install(fakeClient({ skills: { "s/vitest-1": SKILL_MD } }), ok, "s/vitest-1", { targets: ["agents"] });
+  assert.deepEqual(remove(ok, "vitest-testing").removed, [".agents/skills/vitest-testing/SKILL.md"]);
 });
 
 test("client: parses SSE, maps 401 to auth error, sends key", async () => {

@@ -608,6 +608,44 @@ function unstamp(md) {
 // src/core/install.ts
 var TARGET_DIRS = { claude: ".claude/skills", agents: ".agents/skills" };
 var LOCK_FILE = "ss33.lock";
+var SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+function lockPathProblem(root, name, rel) {
+  if (!SKILL_NAME.test(name)) return `"${name}" isn't a skill name ss33 creates`;
+  if (typeof rel !== "string" || !Object.values(TARGET_DIRS).some((d) => rel === `${d}/${name}/SKILL.md`)) {
+    return `not a path ss33 manages for "${name}"`;
+  }
+  if (!insideProject(root, (0, import_node_path3.join)(root, rel))) return "leads outside the project through a symlink";
+  return void 0;
+}
+function insideProject(root, file) {
+  try {
+    const realRoot = (0, import_node_fs3.realpathSync)(root);
+    let p = file;
+    while (!(0, import_node_fs3.existsSync)(p)) {
+      const parent = (0, import_node_path3.dirname)(p);
+      if (parent === p) return false;
+      p = parent;
+    }
+    const real = (0, import_node_fs3.realpathSync)(p);
+    return real === realRoot || real.startsWith(realRoot.endsWith(import_node_path3.sep) ? realRoot : realRoot + import_node_path3.sep);
+  } catch {
+    return false;
+  }
+}
+function lockPaths(root, name, entry) {
+  const all = Array.isArray(entry?.paths) ? entry.paths : [];
+  const paths = [];
+  const ignored = [];
+  for (const p of all) {
+    const reason = lockPathProblem(root, name, p);
+    if (reason) ignored.push({ path: String(p), reason });
+    else paths.push(p);
+  }
+  return { paths, ignored };
+}
+function describeIgnored(ignored) {
+  return ignored.map((i) => `${i.path} (${i.reason})`).join(", ");
+}
 function projectRoot(start, env = process.env, explicit) {
   if (explicit) return (0, import_node_path3.resolve)(explicit);
   if (env.CLAUDE_PROJECT_DIR) return (0, import_node_path3.resolve)(env.CLAUDE_PROJECT_DIR);
@@ -638,7 +676,7 @@ function writeLock(root, lock) {
 function installedSkills(root) {
   return Object.entries(readLock(root).skills).map(([name, entry]) => {
     let description = "";
-    for (const p of entry.paths) {
+    for (const p of lockPaths(root, name, entry).paths) {
       try {
         description = parseFrontmatter((0, import_node_fs3.readFileSync)((0, import_node_path3.join)(root, p), "utf8"))?.frontmatter.description ?? "";
         if (description) break;
@@ -662,7 +700,7 @@ function planInstall(root, ref, skill, targets) {
     throw new InstallError(`A different skill is already installed as "${name}" (${existing.ref}). Remove it first with \`ss33 remove ${name}\`.`);
   }
   const paths = targets.map((t) => `${TARGET_DIRS[t]}/${name}/SKILL.md`);
-  const managed = new Set(existing?.paths ?? []);
+  const managed = new Set(existing ? lockPaths(root, name, existing).paths : []);
   const conflicts = paths.filter((p) => (0, import_node_fs3.existsSync)((0, import_node_path3.join)(root, p)) && !managed.has(p));
   const missingFiles = referencedFiles(parsed.body);
   const sourceUrl = skill.filesNotStored || missingFiles.length || skill.files.length ? skill.sourceUrl : void 0;
@@ -682,6 +720,8 @@ function planInstall(root, ref, skill, targets) {
   };
 }
 function applyInstall(root, plan, opts = {}) {
+  const outside = plan.paths.filter((p) => lockPathProblem(root, plan.name, p));
+  if (outside.length) throw new InstallError(`Not installing: ${outside.join(", ")} would land outside the project (a symlinked folder). Nothing was changed.`);
   if (plan.conflicts.length && !opts.force) {
     throw new InstallError(`Not overwriting files ss33 doesn't manage: ${plan.conflicts.join(", ")} (use --force to replace them)`);
   }
@@ -692,7 +732,7 @@ function applyInstall(root, plan, opts = {}) {
     });
   }
   const lock = readLock(root);
-  const stale = (plan.replacing?.paths ?? []).filter((p) => !plan.paths.includes(p));
+  const stale = (plan.replacing ? lockPaths(root, plan.name, plan.replacing).paths : []).filter((p) => !plan.paths.includes(p));
   for (const p of stale) removeSkillFile(root, p);
   lock.skills[plan.name] = { ref: plan.ref, sha256: plan.sha256, paths: plan.paths, installedAt: (/* @__PURE__ */ new Date()).toISOString() };
   writeLock(root, lock);
@@ -725,23 +765,25 @@ function removeSkillFile(root, rel) {
 }
 function remove(root, name) {
   const lock = readLock(root);
-  const entry = lock.skills[name];
+  const entry = Object.prototype.hasOwnProperty.call(lock.skills, name) ? lock.skills[name] : void 0;
   if (!entry) throw new InstallError(`No skill named "${name}" in ${LOCK_FILE}`);
-  for (const p of entry.paths) removeSkillFile(root, p);
+  const { paths, ignored } = lockPaths(root, name, entry);
+  for (const p of paths) removeSkillFile(root, p);
   delete lock.skills[name];
   writeLock(root, lock);
-  return entry;
+  return { entry, removed: paths, ignored };
 }
 function status(root) {
-  return Object.entries(readLock(root).skills).map(([name, entry]) => ({
-    name,
-    entry,
-    files: entry.paths.map((path) => {
+  return Object.entries(readLock(root).skills).map(([name, entry]) => {
+    const { paths, ignored } = lockPaths(root, name, entry);
+    const files = paths.map((path) => {
       const full = (0, import_node_path3.join)(root, path);
       if (!(0, import_node_fs3.existsSync)(full)) return { path, status: "missing" };
       return { path, status: sha256(unstamp((0, import_node_fs3.readFileSync)(full, "utf8"))) === entry.sha256 ? "ok" : "modified" };
-    })
-  }));
+    });
+    for (const i of ignored) files.push({ path: i.path, status: "ignored", reason: i.reason });
+    return { name, entry, files };
+  });
 }
 async function update(client2, root, opts = {}) {
   const results = [];
@@ -749,9 +791,19 @@ async function update(client2, root, opts = {}) {
   const lock = readLock(root);
   const names = opts.names?.length ? opts.names : Object.keys(lock.skills);
   for (const name of names) {
-    const entry = lock.skills[name];
+    const entry = Object.prototype.hasOwnProperty.call(lock.skills, name) ? lock.skills[name] : void 0;
     if (!entry) {
       results.push({ name, ref: "?", state: "error", error: `not in ${LOCK_FILE}` });
+      continue;
+    }
+    const { paths, ignored } = lockPaths(root, name, entry);
+    if (ignored.length) {
+      results.push({
+        name,
+        ref: String(entry.ref),
+        state: "error",
+        error: `${LOCK_FILE} lists paths ss33 doesn't manage, so this skill was skipped: ${describeIgnored(ignored)}. Check where this lock came from.`
+      });
       continue;
     }
     try {
@@ -763,7 +815,7 @@ async function update(client2, root, opts = {}) {
         results.push({ name, ref: entry.ref, state: "unchanged" });
         continue;
       }
-      const currentPath = entry.paths.find((p) => (0, import_node_fs3.existsSync)((0, import_node_path3.join)(root, p)));
+      const currentPath = paths.find((p) => (0, import_node_fs3.existsSync)((0, import_node_path3.join)(root, p)));
       const current = currentPath ? unstamp((0, import_node_fs3.readFileSync)((0, import_node_path3.join)(root, currentPath), "utf8")) : "";
       const diff = lineDiff(current, fetched);
       if (!opts.apply) {
@@ -774,7 +826,7 @@ async function update(client2, root, opts = {}) {
         results.push({ name, ref: entry.ref, state: "blocked-local-edits", diff });
         continue;
       }
-      const targets = Object.keys(TARGET_DIRS).filter((t) => entry.paths.some((p) => p.startsWith(TARGET_DIRS[t] + "/")));
+      const targets = Object.keys(TARGET_DIRS).filter((t) => paths.some((p) => p.startsWith(TARGET_DIRS[t] + "/")));
       const plan = planInstall(root, entry.ref, skill, targets.length ? targets : ["claude"]);
       applyInstall(root, { ...plan, conflicts: [] });
       results.push({ name, ref: entry.ref, state: "updated", diff });
@@ -1069,7 +1121,7 @@ function debugLog(dir, message) {
 }
 
 // src/core/version.ts
-var VERSION = "0.4.3";
+var VERSION = "0.4.4";
 
 // src/core/events.ts
 var LOCAL_SURFACES = /* @__PURE__ */ new Set(["cli", "tui", "desktop", "acp"]);
@@ -1077,20 +1129,18 @@ function isChatSurface(surface) {
   return Boolean(surface) && !LOCAL_SURFACES.has(surface);
 }
 var MATCH_TIMEOUT_MS = 3e3;
-async function onPromptSubmitted(ev, deps = {}) {
-  const env = deps.env ?? process.env;
-  const config = deps.config ?? loadConfig(env);
+function recordHookRun(harness, env, config) {
   const state = stateDir(env);
   try {
-    if (syncPluginApiKey(env)) debugLog(state, `[${ev.harness}] copied the plugin's API key to the config file for /ss33 commands`);
+    if (syncPluginApiKey(env)) debugLog(state, `[${harness}] copied the plugin's API key to the config file for /ss33 commands`);
   } catch (err) {
-    debugLog(state, `[${ev.harness}] could not copy the plugin's API key: ${err.message}`);
+    debugLog(state, `[${harness}] could not copy the plugin's API key: ${err.message}`);
   }
   const sources = configSources(env);
   writeHookStatus(
     {
       seenAt: (/* @__PURE__ */ new Date()).toISOString(),
-      harness: ev.harness,
+      harness,
       matchEnabled: config.match.enabled,
       matchSource: sources.matchEnabled,
       apiKeySet: Boolean(config.apiKey),
@@ -1098,6 +1148,16 @@ async function onPromptSubmitted(ev, deps = {}) {
     },
     env
   );
+}
+function onSessionStarted(ev, deps = {}) {
+  const env = deps.env ?? process.env;
+  recordHookRun(ev.harness, env, deps.config ?? loadConfig(env));
+}
+async function onPromptSubmitted(ev, deps = {}) {
+  const env = deps.env ?? process.env;
+  const config = deps.config ?? loadConfig(env);
+  const state = stateDir(env);
+  recordHookRun(ev.harness, env, config);
   if (!config.match.enabled) return { outcome: { kind: "skip", reason: "matching disabled (turn on with `ss33 config set match.enabled true`)" } };
   const pre = shouldSearch(ev.prompt);
   if (!pre.ok) {
@@ -1226,8 +1286,13 @@ async function preLlmCall(stdin, deps = {}) {
   if (!context) return void 0;
   return { context, ...notice ? { notice } : {} };
 }
+async function sessionStart(_stdin, deps = {}) {
+  onSessionStarted({ harness: HARNESS3 }, deps);
+  return void 0;
+}
 var EVENTS3 = {
-  "pre-llm-call": preLlmCall
+  "pre-llm-call": preLlmCall,
+  "session-start": sessionStart
 };
 async function runHook3(event, stdin, deps = {}) {
   const handler = EVENTS3[event];
@@ -1414,8 +1479,9 @@ ${pickUpNote(plan.paths, plan.name)}`);
     case "remove": {
       const name = rest[0];
       if (!name) return usage("remove needs a skill name (see `ss33 list`)", out);
-      const entry = remove(root(), name);
-      out(`Removed "${name}" (${entry.ref}): ${entry.paths.join(", ")}`);
+      const { entry, removed, ignored } = remove(root(), name);
+      out(`Removed "${name}" (${entry.ref}) from ss33.lock${removed.length ? `: ${removed.join(", ")}` : ""}`);
+      for (const i of ignored) out(`  Left alone: ${i.path} (${i.reason}). Check where this ss33.lock came from.`);
       return 0;
     }
     case "list": {
@@ -1424,7 +1490,8 @@ ${pickUpNote(plan.paths, plan.name)}`);
       if (!s.length) out("No skills installed from the Skill Store in this project.");
       for (const { name, entry, files } of s) {
         out(`\u2022 ${name}  (${entry.ref}, installed ${entry.installedAt.slice(0, 10)})`);
-        for (const f of files) out(`    ${f.status === "ok" ? "\u2713" : f.status === "modified" ? "\u270E modified" : "\u2717 missing"}  ${f.path}`);
+        const mark = { ok: "\u2713", modified: "\u270E modified", missing: "\u2717 missing", ignored: "\u26A0 ignored" };
+        for (const f of files) out(`    ${mark[f.status]}  ${f.path}${f.reason ? ` (${f.reason})` : ""}`);
       }
       return 0;
     }
@@ -1488,10 +1555,10 @@ async function doctor(offline, out) {
   out(`  prompt matching: ${config.match.enabled ? "on" : "off"} (${sources.matchEnabled})`);
   const hook = readHookStatus();
   if (hook) {
-    out(`Prompt-matching hook (as of the last prompt, ${hook.seenAt}):`);
+    out(`Prompt-matching hook (as of its last run, ${hook.seenAt}):`);
     out(`  API key set: ${yesNo(hook.apiKeySet)} (${hook.apiKeySource})`);
     out(`  prompt matching: ${hook.matchEnabled ? "on" : "off"} (${hook.matchSource})`);
-  } else out(`Prompt-matching hook: no record yet (it writes one on the next prompt).`);
+  } else out(`Prompt-matching hook: no record yet (it writes one on the next prompt, or next session in Hermes).`);
   const problems = [];
   if (hook && hook.apiKeySet && !config.apiKey) {
     problems.push(

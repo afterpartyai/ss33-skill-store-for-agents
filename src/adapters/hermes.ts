@@ -9,9 +9,13 @@
  * The shim returns `{"context": context}` to Hermes (appended to the turn's user message) and shows
  * `notice` with `ctx.post_message`. Unlike Claude Code and Codex, Hermes serves chat apps too:
  * those prompts, and sessions outside a project, are skipped (see core/events.ts).
+ *
+ * The shim only runs this while prompt matching is on: it reads the setting itself, so a turn with matching off
+ * starts no process. `ss33 hook hermes session-start` (once per session) does the work every hook run must do
+ * instead: copying the plugin's API key for /ss33:* commands and the `ss33 doctor` record.
  */
 import { stateDir } from "../core/config.js";
-import { onPromptSubmitted, type EventDeps } from "../core/events.js";
+import { onPromptSubmitted, onSessionStarted, type EventDeps } from "../core/events.js";
 import { debugLog } from "../core/state.js";
 
 export const HARNESS = "hermes";
@@ -68,8 +72,14 @@ export async function preLlmCall(stdin: string, deps: EventDeps = {}): Promise<H
   return { context, ...(notice ? { notice } : {}) };
 }
 
+async function sessionStart(_stdin: string, deps: EventDeps = {}): Promise<undefined> {
+  onSessionStarted({ harness: HARNESS }, deps);
+  return undefined;
+}
+
 const EVENTS: Record<string, (stdin: string, deps?: EventDeps) => Promise<HermesHookOutput | undefined>> = {
   "pre-llm-call": preLlmCall,
+  "session-start": sessionStart,
 };
 
 /** Entry point for `ss33 hook hermes <event>`. Always resolves; errors go to the debug log only. */

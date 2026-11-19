@@ -63,7 +63,7 @@ What's different from Claude Code:
 - **Commands** (`/ss33:search`, `/ss33:add`, `/ss33:update`, `/ss33:list`, `/ss33:setup`) work in Hermes's interactive terminal, TUI and desktop app. Hermes doesn't offer plugin commands in `hermes chat -q` or in chat apps (Telegram, Slack, …).
 - **Search tool:** the agent can search the store itself with the `ss33_search` tool, and suggests `/ss33:add <ref>` rather than installing anything.
 - **Installed skills** go to `.agents/skills/<name>/` and are pinned in `ss33.lock`. Hermes loads project skills only from repos you trust: run `hermes skills trust` in the repo once. New sessions then have the skill as `/<name>`.
-- **API key:** set it in the desktop app (Settings → Plugins → ss33), or add `SS33_API_KEY=<key>` to `~/.hermes/.env`. The plugin copies it to `~/.config/ss33/config.json` (0600) on your next prompt so `/ss33:*` commands use it too. Don't paste the key into the chat.
+- **API key:** set it in the desktop app (Settings → Plugins → ss33), or add `SS33_API_KEY=<key>` to `~/.hermes/.env`. The plugin copies it to `~/.config/ss33/config.json` (0600) when your next session starts, so `/ss33:*` commands use it too. Don't paste the key into the chat.
 - **Prompt matching** is off by default. Turn it on (or off again) with `/ss33:setup`. Even when it's on, it only runs for sessions inside a project, and never for prompts from chat apps unless you also turn on `match.chatApps`.
 - **Terminal backend:** `/ss33:*` commands run in Hermes's terminal, so they need the local backend (not docker, modal, …). Prompt matching and `ss33_search` run inside Hermes and work with any backend.
 

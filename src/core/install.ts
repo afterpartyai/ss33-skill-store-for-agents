@@ -3,8 +3,8 @@
  * `ss33.lock` with their content hash. Claude Code (and other harnesses that read SKILL.md) then
  * load them natively — only the description sits in context until the skill is needed.
  */
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, readdirSync, rmdirSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync, readdirSync, rmdirSync } from "node:fs";
+import { dirname, join, resolve, sep } from "node:path";
 import type { StoreClient } from "./client.js";
 import { lineDiff } from "./diff.js";
 import { parseFrontmatter, referencedFiles, sha256, skillName, stamp, unstamp } from "./skillfile.js";
@@ -27,6 +27,63 @@ export interface Lock {
 }
 
 export const LOCK_FILE = "ss33.lock";
+
+/**
+ * ss33.lock is a committed project file, so a cloned repo's lock is untrusted: it could name `../../x`, an absolute
+ * path, or reach outside through a symlinked folder. ss33 only ever reads, hashes, writes or deletes a path it would
+ * create itself: `<.agents|.claude>/skills/<name>/SKILL.md` for that entry's name (the shape skillName produces), still
+ * inside the project once symlinks are followed. Anything else is skipped and reported.
+ */
+const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** Why ss33 won't touch this lock path, or undefined when it's one ss33 manages. */
+export function lockPathProblem(root: string, name: string, rel: unknown): string | undefined {
+  if (!SKILL_NAME.test(name)) return `"${name}" isn't a skill name ss33 creates`;
+  if (typeof rel !== "string" || !Object.values(TARGET_DIRS).some((d) => rel === `${d}/${name}/SKILL.md`)) {
+    return `not a path ss33 manages for "${name}"`;
+  }
+  if (!insideProject(root, join(root, rel))) return "leads outside the project through a symlink";
+  return undefined;
+}
+
+/** The file, or its nearest existing parent, is inside the project once symlinks are followed. */
+function insideProject(root: string, file: string): boolean {
+  try {
+    const realRoot = realpathSync(root);
+    let p = file;
+    while (!existsSync(p)) {
+      const parent = dirname(p);
+      if (parent === p) return false;
+      p = parent;
+    }
+    const real = realpathSync(p);
+    return real === realRoot || real.startsWith(realRoot.endsWith(sep) ? realRoot : realRoot + sep);
+  } catch {
+    return false;
+  }
+}
+
+export interface IgnoredPath {
+  path: string;
+  reason: string;
+}
+
+/** An entry's paths split into the ones ss33 may use and the ones it ignores. */
+export function lockPaths(root: string, name: string, entry: LockEntry): { paths: string[]; ignored: IgnoredPath[] } {
+  const all: unknown[] = Array.isArray(entry?.paths) ? entry.paths : [];
+  const paths: string[] = [];
+  const ignored: IgnoredPath[] = [];
+  for (const p of all) {
+    const reason = lockPathProblem(root, name, p);
+    if (reason) ignored.push({ path: String(p), reason });
+    else paths.push(p as string);
+  }
+  return { paths, ignored };
+}
+
+function describeIgnored(ignored: IgnoredPath[]): string {
+  return ignored.map((i) => `${i.path} (${i.reason})`).join(", ");
+}
 
 /** Explicit dir, then the harness's project dir, then the nearest ancestor with ss33.lock or .git. */
 export function projectRoot(start: string, env: Record<string, string | undefined> = process.env, explicit?: string): string {
@@ -64,7 +121,7 @@ export function writeLock(root: string, lock: Lock): void {
 export function installedSkills(root: string): { ref: string; name: string; description: string }[] {
   return Object.entries(readLock(root).skills).map(([name, entry]) => {
     let description = "";
-    for (const p of entry.paths) {
+    for (const p of lockPaths(root, name, entry).paths) {
       try {
         description = parseFrontmatter(readFileSync(join(root, p), "utf8"))?.frontmatter.description ?? "";
         if (description) break;
@@ -109,7 +166,7 @@ export function planInstall(root: string, ref: string, skill: FetchedSkill, targ
     throw new InstallError(`A different skill is already installed as "${name}" (${existing.ref}). Remove it first with \`ss33 remove ${name}\`.`);
   }
   const paths = targets.map((t) => `${TARGET_DIRS[t]}/${name}/SKILL.md`);
-  const managed = new Set(existing?.paths ?? []);
+  const managed = new Set(existing ? lockPaths(root, name, existing).paths : []);
   const conflicts = paths.filter((p) => existsSync(join(root, p)) && !managed.has(p));
   const missingFiles = referencedFiles(parsed.body);
   const sourceUrl = skill.filesNotStored || missingFiles.length || skill.files.length ? skill.sourceUrl : undefined;
@@ -130,6 +187,10 @@ export function planInstall(root: string, ref: string, skill: FetchedSkill, targ
 }
 
 export function applyInstall(root: string, plan: InstallPlan, opts: { force?: boolean } = {}): void {
+  // A symlinked .agents/skills (or .claude/skills) in a cloned repo could send the write elsewhere. Checked first:
+  // --force must not get past it.
+  const outside = plan.paths.filter((p) => lockPathProblem(root, plan.name, p));
+  if (outside.length) throw new InstallError(`Not installing: ${outside.join(", ")} would land outside the project (a symlinked folder). Nothing was changed.`);
   if (plan.conflicts.length && !opts.force) {
     throw new InstallError(`Not overwriting files ss33 doesn't manage: ${plan.conflicts.join(", ")} (use --force to replace them)`);
   }
@@ -140,7 +201,7 @@ export function applyInstall(root: string, plan: InstallPlan, opts: { force?: bo
     });
   }
   const lock = readLock(root);
-  const stale = (plan.replacing?.paths ?? []).filter((p) => !plan.paths.includes(p));
+  const stale = (plan.replacing ? lockPaths(root, plan.name, plan.replacing).paths : []).filter((p) => !plan.paths.includes(p));
   for (const p of stale) removeSkillFile(root, p);
   lock.skills[plan.name] = { ref: plan.ref, sha256: plan.sha256, paths: plan.paths, installedAt: new Date().toISOString() };
   writeLock(root, lock);
@@ -189,28 +250,31 @@ function removeSkillFile(root: string, rel: string): void {
   }
 }
 
-export function remove(root: string, name: string): LockEntry {
+/** Removes the skill's files and its lock entry. Paths ss33 doesn't manage are left alone and returned as `ignored`. */
+export function remove(root: string, name: string): { entry: LockEntry; removed: string[]; ignored: IgnoredPath[] } {
   const lock = readLock(root);
-  const entry = lock.skills[name];
+  const entry = Object.prototype.hasOwnProperty.call(lock.skills, name) ? lock.skills[name] : undefined;
   if (!entry) throw new InstallError(`No skill named "${name}" in ${LOCK_FILE}`);
-  for (const p of entry.paths) removeSkillFile(root, p);
+  const { paths, ignored } = lockPaths(root, name, entry);
+  for (const p of paths) removeSkillFile(root, p);
   delete lock.skills[name];
   writeLock(root, lock);
-  return entry;
+  return { entry, removed: paths, ignored };
 }
 
-export type FileStatus = "ok" | "modified" | "missing";
+export type FileStatus = "ok" | "modified" | "missing" | "ignored";
 
-export function status(root: string): { name: string; entry: LockEntry; files: { path: string; status: FileStatus }[] }[] {
-  return Object.entries(readLock(root).skills).map(([name, entry]) => ({
-    name,
-    entry,
-    files: entry.paths.map((path) => {
+export function status(root: string): { name: string; entry: LockEntry; files: { path: string; status: FileStatus; reason?: string }[] }[] {
+  return Object.entries(readLock(root).skills).map(([name, entry]) => {
+    const { paths, ignored } = lockPaths(root, name, entry);
+    const files: { path: string; status: FileStatus; reason?: string }[] = paths.map((path) => {
       const full = join(root, path);
       if (!existsSync(full)) return { path, status: "missing" as const };
       return { path, status: sha256(unstamp(readFileSync(full, "utf8"))) === entry.sha256 ? ("ok" as const) : ("modified" as const) };
-    }),
-  }));
+    });
+    for (const i of ignored) files.push({ path: i.path, status: "ignored", reason: i.reason });
+    return { name, entry, files };
+  });
 }
 
 export interface UpdateResult {
@@ -232,9 +296,19 @@ export async function update(
   const lock = readLock(root);
   const names = opts.names?.length ? opts.names : Object.keys(lock.skills);
   for (const name of names) {
-    const entry = lock.skills[name];
+    const entry = Object.prototype.hasOwnProperty.call(lock.skills, name) ? lock.skills[name] : undefined;
     if (!entry) {
       results.push({ name, ref: "?", state: "error", error: `not in ${LOCK_FILE}` });
+      continue;
+    }
+    const { paths, ignored } = lockPaths(root, name, entry);
+    if (ignored.length) {
+      results.push({
+        name,
+        ref: String(entry.ref),
+        state: "error",
+        error: `${LOCK_FILE} lists paths ss33 doesn't manage, so this skill was skipped: ${describeIgnored(ignored)}. Check where this lock came from.`,
+      });
       continue;
     }
     try {
@@ -246,7 +320,7 @@ export async function update(
         results.push({ name, ref: entry.ref, state: "unchanged" });
         continue;
       }
-      const currentPath = entry.paths.find((p) => existsSync(join(root, p)));
+      const currentPath = paths.find((p) => existsSync(join(root, p)));
       const current = currentPath ? unstamp(readFileSync(join(root, currentPath), "utf8")) : "";
       const diff = lineDiff(current, fetched);
       if (!opts.apply) {
@@ -257,7 +331,7 @@ export async function update(
         results.push({ name, ref: entry.ref, state: "blocked-local-edits", diff });
         continue;
       }
-      const targets = (Object.keys(TARGET_DIRS) as Target[]).filter((t) => entry.paths.some((p) => p.startsWith(TARGET_DIRS[t] + "/")));
+      const targets = (Object.keys(TARGET_DIRS) as Target[]).filter((t) => paths.some((p) => p.startsWith(TARGET_DIRS[t] + "/")));
       const plan = planInstall(root, entry.ref, skill, targets.length ? targets : ["claude"]);
       applyInstall(root, { ...plan, conflicts: [] });
       results.push({ name, ref: entry.ref, state: "updated", diff });

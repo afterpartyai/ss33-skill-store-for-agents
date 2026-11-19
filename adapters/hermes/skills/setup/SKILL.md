@@ -32,7 +32,7 @@ Run the ss33 CLI with the terminal tool as `sh "${HERMES_SKILL_DIR}/../../script
 
      This writes `~/.config/ss33/config.json` with permissions 0600.
 
-   The plugin's hook copies a key set in Hermes into that config file on the next prompt, so ss33 commands use it too.
+   The plugin's hook copies a key set in Hermes into that config file when a session starts, so ss33 commands use it too. A key added mid-session reaches the commands in the next session.
 
    **Prompt matching.** It's off by default. When it's on, each prompt from Hermes's terminal, TUI, desktop app or editor clients, for sessions inside a project, plus a short project summary (never source code) is sent to the Skill Store, and the user may see a one-line "a published skill may fit this task" note, at most a few per session. If it's off, ask the user whether they'd like to turn it on, and say what it sends. When they say yes, run:
 

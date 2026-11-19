@@ -1,6 +1,6 @@
 {
   "name": "ss33",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "ss33 Skill Store: harness-agnostic core + CLI, with Claude Code, Codex and Hermes plugin adapters",
   "license": "MIT",
   "private": true,
