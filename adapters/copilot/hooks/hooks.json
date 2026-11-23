@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "sh \"$PLUGIN_ROOT/scripts/ss33\" __prefetch-runtime",
+        "powershell": "sh \"$env:PLUGIN_ROOT/scripts/ss33\" __prefetch-runtime",
+        "timeoutSec": 5
+      }
+    ],
+    "userPromptSubmitted": [
+      {
+        "type": "command",
+        "bash": "sh \"$PLUGIN_ROOT/scripts/ss33\" hook copilot user-prompt-submitted",
+        "powershell": "$input | sh \"$env:PLUGIN_ROOT/scripts/ss33\" hook copilot user-prompt-submitted",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}

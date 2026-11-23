@@ -4,32 +4,38 @@
 
 Use the [ss33 Skill Store](https://ss33.ai) from your coding agent without spending model tokens on searching:
 
-- **`/ss33:search`**: finds skills that fit *this* project. A short summary of the stack goes with the search: package manager, versions, services. It's built from manifest files only, never your source code.
-- **`/ss33:add <ref>`**: reviews a skill with you, then installs it as a native skill (`.claude/skills/<name>/SKILL.md`), pinned in `ss33.lock` so your team gets the same version.
-- **`/ss33:update`**: shows what changed upstream and applies updates only when you say so. It never overwrites your local edits without asking.
-- **Prompt matching (off by default, opt in)**: if a published skill clearly fits what you just asked, you see a one-line note suggesting it (`/ss33:add <ref>` to review it). At most a few per session. It sends your prompt to the store, so it stays off until you turn it on (see [Privacy](#privacy)).
+- **search** finds skills that fit *this* project. A short summary of the stack goes with the search: package manager, versions, services. It's built from manifest files only, never your source code.
+- **add** reviews a skill with you, then installs it as a native skill (`<skills folder>/<name>/SKILL.md`), pinned in `ss33.lock` so your team gets the same version.
+- **update** shows what changed upstream and applies updates only when you say so. It never overwrites your local edits without asking.
+- **list** shows the installed skills and whether their files still match the lock. **setup** checks your settings and connection.
+- **Prompt matching** (off by default, opt in): if a published skill clearly fits what you just asked, you see a one-line note suggesting it. At most a few per session. It sends your prompt to the store, so it stays off until you turn it on (see [Privacy](#privacy)).
 
-Claude Code, Codex, [Hermes Agent](https://github.com/NousResearch/hermes-agent) and Cursor are supported. In Codex the commands are written `$ss33:search`, `$ss33:add`, and so on; in Cursor, `/ss33-search`, `/ss33-add`, … In Codex, Hermes and Cursor, skills install to `.agents/skills/`.
+## Supported agents
 
-## Install (Claude Code)
+| Agent | Commands look like | Skills install to | Prompt matching | Install |
+|---|---|---|---|---|
+| Claude Code | `/ss33:search` | `.claude/skills/` | ✓ | [below](#claude-code) |
+| Codex | `$ss33:search` | `.agents/skills/` | ✓ | [below](#codex) |
+| Hermes Agent | `/ss33:search` | `.agents/skills/` | ✓ | [below](#hermes-agent) |
+| Cursor (app and CLI) | `/ss33-search` | `.agents/skills/` | not available in Cursor | [below](#cursor) |
+| GitHub Copilot CLI | `/ss33:search` | `.agents/skills/` | ✓ (the agent passes it on) | [below](#github-copilot) |
+
+The rest of this page writes commands the Claude Code way (`/ss33:add`). Use your agent's form.
+
+ss33 runs on Node.js but needs no install. It uses your Node.js if it's version 22 or newer. Otherwise it downloads the official build once (about 30 MB, checked against a pinned checksum) into `~/.cache/ss33/runtime`, in the background when your first session starts.
+
+## Install
+
+### Claude Code
 
 ```
 /plugin marketplace add afterpartyai/ss33-skill-store-for-agents
 /plugin install ss33@ss33
 ```
 
-Claude Code asks for the two settings below when you install. Change them later with `/plugin configure ss33@ss33`, or run `/ss33:setup`.
+Claude Code asks for the API key and the prompt-matching switch when you install. Change them later with `/plugin configure ss33@ss33`. To get updates automatically, turn on auto-update for the `ss33` marketplace under `/plugin` → Marketplaces (it's off by default for marketplaces other than Anthropic's).
 
-To get updates automatically, turn on auto-update for the `ss33` marketplace under `/plugin` → Marketplaces (it's off by default for marketplaces other than Anthropic's).
-
-Settings:
-
-- **API key**: create one at https://ss33.ai/skills/account (the free tier allows 5 searches/minute). It's stored in your OS keychain; on your next prompt the plugin also copies it to `~/.config/ss33/config.json` (0600) so `/ss33:search` and `/ss33:add` use it too. `/ss33:setup` checks that the store accepts it.
-- **Prompt matching**: off by default; switch it on here if you want suggestions.
-
-No other installs are needed. ss33 runs on Node.js: it uses yours if you have version 22 or newer, and otherwise downloads the official Node.js build once (about 30 MB, checked against a pinned checksum) into `~/.cache/ss33/runtime`. The download starts in the background when your first session starts, so it never holds up a prompt.
-
-## Install (Codex)
+### Codex
 
 Needs Codex 0.164 or newer (tested with 0.164 and 0.167):
 
@@ -38,17 +44,11 @@ codex plugin marketplace add afterpartyai/ss33-skill-store-for-agents
 codex plugin add ss33@ss33
 ```
 
-Then start a new Codex session and run `$ss33:setup` to set your API key and, if you want it, turn on prompt matching. Codex will also say **"Hooks need review"**: trust the two ss33 hooks (or review them in `/hooks`). Without that, the commands still work but prompt matching can't run. Codex asks again after every plugin update, because trust is tied to the plugin's contents.
+Start a new session and run `$ss33:setup`. Codex will say **"Hooks need review"**: trust the two ss33 hooks (or review them in `/hooks`), otherwise prompt matching can't run. Codex asks again after every plugin update.
 
-What's different from Claude Code:
+- **Approvals:** Codex's sandbox blocks network access and keeps `.agents/` read-only, so Codex asks before each ss33 command. Allow the `sh …/scripts/ss33` prefix to stop being asked.
 
-- **Commands** are skills: `$ss33:search <task>`, `$ss33:add <ref>`, `$ss33:update`, `$ss33:list`, `$ss33:setup`.
-- **Approvals:** Codex's default sandbox blocks network access and keeps `.agents/` read-only, so Codex asks you to approve each ss33 command. To stop being asked, choose the option that allows the `sh …/scripts/ss33` prefix.
-- **Installed skills** go to `.agents/skills/<name>/` and are pinned in `ss33.lock`. Codex loads them in new sessions as `$<name>`.
-- **API key:** Codex plugins have no settings screen. In your own terminal, run the command `$ss33:setup` shows you (`sh <plugin root>/scripts/ss33 config set apiKey <key>`). It writes `~/.config/ss33/config.json` (0600). Don't paste the key into the chat. An `SS33_API_KEY` exported in your shell isn't reliable in Codex: its background app server may have started before you set it.
-- **Prompt matching** is off by default. Turn it on (or off again) with `$ss33:setup`, or disable the ss33 hook in `/hooks`.
-
-## Install (Hermes Agent)
+### Hermes Agent
 
 Needs Hermes 0.22.3 or newer (tested with 0.23.2):
 
@@ -56,55 +56,80 @@ Needs Hermes 0.22.3 or newer (tested with 0.23.2):
 hermes plugins install afterpartyai/ss33-skill-store-for-agents/adapters/hermes --enable
 ```
 
-Then start a new session inside a project and run `/ss33:setup` to check the connection and, if you want it, turn on prompt matching. Hermes uses its own Node.js for ss33 when it has one, so there's usually nothing to download.
+Start a new session inside a project and run `/ss33:setup`. Hermes uses its own Node.js for ss33 when it has one.
 
-What's different from Claude Code:
+- **Commands** work in the interactive terminal, TUI and desktop app. They don't work in `hermes chat -q` or in chat apps (Telegram, Slack, …). They also need the local terminal backend (not docker, modal, …).
+- **Search tool:** the agent can also search the store itself with the `ss33_search` tool. It suggests `/ss33:add <ref>` rather than installing anything.
+- **Trust:** Hermes loads project skills only from repos you trust. Run `hermes skills trust` in the repo once.
+- **Prompt matching** only runs in sessions inside a project. It never runs for prompts from chat apps unless you also turn on `match.chatApps`.
 
-- **Commands** (`/ss33:search`, `/ss33:add`, `/ss33:update`, `/ss33:list`, `/ss33:setup`) work in Hermes's interactive terminal, TUI and desktop app. Hermes doesn't offer plugin commands in `hermes chat -q` or in chat apps (Telegram, Slack, …).
-- **Search tool:** the agent can search the store itself with the `ss33_search` tool, and suggests `/ss33:add <ref>` rather than installing anything.
-- **Installed skills** go to `.agents/skills/<name>/` and are pinned in `ss33.lock`. Hermes loads project skills only from repos you trust: run `hermes skills trust` in the repo once. New sessions then have the skill as `/<name>`.
-- **API key:** set it in the desktop app (Settings → Plugins → ss33), or add `SS33_API_KEY=<key>` to `~/.hermes/.env`. The plugin copies it to `~/.config/ss33/config.json` (0600) when your next session starts, so `/ss33:*` commands use it too. Don't paste the key into the chat.
-- **Prompt matching** is off by default. Turn it on (or off again) with `/ss33:setup`. Even when it's on, it only runs for sessions inside a project, and never for prompts from chat apps unless you also turn on `match.chatApps`.
-- **Terminal backend:** `/ss33:*` commands run in Hermes's terminal, so they need the local backend (not docker, modal, …). Prompt matching and `ss33_search` run inside Hermes and work with any backend.
+### Cursor
 
-## Install (Cursor)
+Works in the Cursor app and the Cursor CLI (`agent`, tested with 2026.11.22):
 
-Works in the Cursor app and the Cursor CLI (`agent`, tested with 2026.11.22). Add this repo as a plugin marketplace and install `ss33` from it:
+```
+agent plugin marketplace add https://github.com/afterpartyai/ss33-skill-store-for-agents
+```
 
-- **Cursor CLI:** run `/plugin marketplace add https://github.com/afterpartyai/ss33-skill-store-for-agents`, then install `ss33` from `/plugin`.
-- **Cursor app:** paste `https://github.com/afterpartyai/ss33-skill-store-for-agents` into the plugin search, and install `ss33`.
+Then, in `agent`, install `ss33` from `/plugins` → Marketplace. In the app, paste the repo URL into the plugin search instead. Start a new chat and run `/ss33-setup`.
 
-Then start a new chat and run `/ss33-setup` to check the connection.
+- **Commands** are `/ss33-search`, `/ss33-add`, and so on, because Cursor doesn't give plugin skills a `ss33:` prefix.
+- **No prompt matching:** Cursor's prompt hook can't add a note for the agent. The agent can still search the store on its own when a task needs a specialised procedure.
+- **Approvals:** Cursor asks before each ss33 command, and a plugin can't pre-approve its own commands (allowlisting `sh` doesn't cover them either). Approve them as they come, or use auto-review mode (`agent --auto-review`), which runs commands Cursor judges safe without asking.
+- **Windows:** the commands need Git for Windows (`sh`) on your PATH.
 
-What's different from Claude Code:
+### GitHub Copilot
 
-- **Commands** are `/ss33-search`, `/ss33-add`, `/ss33-update`, `/ss33-list` and `/ss33-setup`, because Cursor doesn't give plugin skills a `ss33:` prefix.
-- **No prompt matching.** Cursor's prompt hook can't add a note for the agent (and the CLI doesn't run it at all), so the Cursor plugin doesn't offer it. The agent can still search the store on its own when a task needs a specialised procedure.
-- **Approvals:** Cursor asks you to approve each ss33 command unless it's on your allowlist.
-- **Installed skills** go to `.agents/skills/<name>/` and are pinned in `ss33.lock`. Cursor loads them in new chats as `/<name>`.
-- **API key:** Cursor plugins have no settings screen. In your own terminal, run the command `/ss33-setup` shows you (`sh <plugin root>/scripts/ss33 config set apiKey <key>`), which writes `~/.config/ss33/config.json` (0600), or export `SS33_API_KEY` before starting Cursor. Don't paste the key into the chat.
-- **Windows:** the commands run the launcher with `sh`, so they need Git for Windows (Git Bash) on your PATH. Not yet tested on native Windows.
+Works in the Copilot CLI (tested with 1.0.114):
+
+```
+copilot plugin marketplace add afterpartyai/ss33-skill-store-for-agents
+copilot plugin install ss33@ss33
+```
+
+Start a new session and run `/ss33:setup`.
+
+- **Prompt matching:** Copilot can't show you a note from a plugin, so when a published skill clearly fits, the agent mentions it in one line at the end of its reply.
+- **Approvals:** Copilot asks for access to the plugin's folder (choose to remember it for the session), then before each ss33 command.
+- **VS Code:** Copilot's agent plugins in VS Code read the same plugin, but haven't been tested yet.
+- **Windows:** the commands need Git for Windows (`sh`) on your PATH.
+
+## Settings
+
+**API key** (optional). The free tier allows 5 searches a minute. Create a key at https://ss33.ai/skills/account for more. Never paste the key into the chat. Set it where your agent keeps plugin settings:
+
+| Agent | Where to set the key |
+|---|---|
+| Claude Code | `/plugin configure ss33@ss33` (stored in your OS keychain) |
+| Hermes Agent | In the desktop app (Settings → Plugins → ss33), or as `SS33_API_KEY=<key>` in `~/.hermes/.env` |
+| Codex, Cursor, Copilot | These have no plugin settings screen. In your own terminal, run the `config set apiKey` command that `setup` shows you |
+
+Every route ends up in `~/.config/ss33/config.json` (0600), which all the ss33 commands read. An `SS33_API_KEY` environment variable also works where your agent passes it through. Codex may not: its background server may have started before you set it. `/ss33:setup` checks that the store accepts the key.
+
+**Prompt matching** is off by default. Turn it on or off with `/ss33:setup`, or in Claude Code with `/plugin configure`.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `/ss33:search <task>` | Search the store (Claude may also use this on its own for specialised tasks) |
+| `/ss33:search <task>` | Search the store (the agent may also use this on its own for specialised tasks) |
 | `/ss33:add <ref>` | Preview, review and install a skill |
 | `/ss33:update [name…]` | Check for and apply updates |
 | `/ss33:list` | Installed skills, and whether their files still match the lock |
 | `/ss33:setup` | Show settings, check that the store accepts your key, and explain any problems |
 
-The same operations are available as a CLI (`ss33 search | add | update | remove | list | fingerprint | config | doctor`). Run `ss33 help` for details.
+Installed skills load as ordinary skills (`/<name>`, or `$<name>` in Codex). Start a new session if one doesn't appear. Commit the skill folder and `ss33.lock` so your team gets the same pinned version.
 
-Claude Code puts `ss33` on the PATH only for commands it runs itself, not in your own terminal. To use it there, install it globally (this route needs npm, so Node.js ≥ 22):
+### Command-line tool
+
+The same operations are available as a CLI: `ss33 search | add | update | remove | list | fingerprint | config | doctor`. Run `ss33 help` for details. The plugins run it for you. To use it in your own terminal, install it globally (this needs Node.js ≥ 22 and npm):
 
 ```
 git clone https://github.com/afterpartyai/ss33-skill-store-for-agents.git
 npm install -g ./ss33-skill-store-for-agents
 ```
 
-This links to the clone, so `git pull` there updates the CLI. (Installing straight from GitHub with `npm install -g github:…` doesn't work: npm links to a temporary clone that it then deletes.)
+This links to the clone, so `git pull` there updates the CLI. Installing straight from GitHub (`npm install -g github:…`) doesn't work: npm links to a temporary clone that it then deletes.
 
 ## Privacy
 
@@ -124,13 +149,15 @@ See [CLAUDE.md](CLAUDE.md) for the layout, the commands and the conventions.
 
 ```
 npm install
-npm test             # unit, fake-store, end-to-end and matching-regression tests (offline)
+npm test               # unit, fake-store, end-to-end and matching-regression tests (offline)
 npm run eval:matching  # prompt-matching precision/recall report
-npm run build        # typecheck + rebuild the bundle in every adapters/* plugin (commit them all)
-claude --plugin-dir ./adapters/claude-code
-codex plugin marketplace add "$PWD" && codex plugin add ss33@ss33   # Codex, from this checkout
-hermes plugins validate adapters/hermes   # Hermes manifest, registrations and security scan
-agent --plugin-dir ./adapters/cursor     # Cursor CLI, from this checkout
+npm run build          # typecheck + rebuild the bundle in every adapters/* plugin (commit them all)
+
+claude --plugin-dir ./adapters/claude-code                          # Claude Code, from this checkout
+codex plugin marketplace add "$PWD" && codex plugin add ss33@ss33   # Codex
+hermes plugins validate adapters/hermes                             # Hermes manifest and security scan
+agent --plugin-dir ./adapters/cursor                                # Cursor CLI
+copilot --plugin-dir ./adapters/copilot                             # GitHub Copilot CLI
 ```
 
 ## License

@@ -171,7 +171,7 @@ test("e2e hook: codex gets the same suggestion, with Codex's install command, an
   const add = await ss33(["add", CI_REF, "--target", "agents"], { cwd: dir });
   assert.equal(add.code, 0, add.stdout);
   assert.match(add.stdout, /\.agents\/skills\/[^/]+\/SKILL\.md/);
-  assert.match(add.stdout, /Codex, Cursor and other agents/);
+  assert.match(add.stdout, /Codex, Copilot, Cursor and other agents/);
   assert.doesNotMatch(add.stdout, /Claude Code picks up/);
   assert.ok(!existsSync(join(dir, ".claude")), "nothing written for Claude Code");
 });

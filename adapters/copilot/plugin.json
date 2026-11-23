@@ -1,0 +1,12 @@
+{
+  "name": "ss33",
+  "version": "0.4.4",
+  "description": "ss33 Skill Store for GitHub Copilot: project-aware skill search, native skill install with a lockfile, and opt-in prompt matching.",
+  "author": { "name": "ReadyAI", "email": "support@readyai.ai" },
+  "homepage": "https://ss33.ai",
+  "repository": "https://github.com/afterpartyai/ss33-skill-store-for-agents",
+  "license": "MIT",
+  "keywords": ["skills", "skill-store", "ss33"],
+  "skills": "skills/",
+  "hooks": "hooks/hooks.json"
+}
