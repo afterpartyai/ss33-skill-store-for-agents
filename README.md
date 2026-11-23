@@ -74,7 +74,7 @@ Then, in `agent`, install `ss33` from `/plugins` → Marketplace. In the app, pa
 
 - **Commands** are `/ss33-search`, `/ss33-add`, and so on, because Cursor doesn't give plugin skills a `ss33:` prefix.
 - **No prompt matching:** Cursor's prompt hook can't add a note for the agent. The agent can still search the store on its own when a task needs a specialised procedure.
-- **Approvals:** Cursor asks before each ss33 command unless it's on your allowlist.
+- **Approvals:** Cursor asks before each ss33 command, and a plugin can't pre-approve its own commands (allowlisting `sh` doesn't cover them either). Approve them as they come, or use auto-review mode (`agent --auto-review`), which runs commands Cursor judges safe without asking.
 - **Windows:** the commands need Git for Windows (`sh`) on your PATH.
 
 ## Settings
