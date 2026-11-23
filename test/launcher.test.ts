@@ -130,3 +130,15 @@ test("launcher: uses the first node on PATH that is new enough, skipping an olde
   assert.match(r.stdout, /^\d+\.\d+\.\d+/);
   assert.equal(r.stderr, "", "no download");
 });
+
+test("launcher: works when started without its tools on PATH (Git for Windows' sh from PowerShell)", { skip }, async () => {
+  const empty = tempDir(); // a PATH with no dirname, uname, …
+  const r = await new Promise<{ code: number; stdout: string; stderr: string }>((resolve) =>
+    execFile("/bin/sh", [LAUNCHER, "version"], { env: { PATH: empty, HOME: tempDir(), SS33_NODE: process.execPath, SS33_RUNTIME_DIR: tempDir() }, timeout: 20_000 }, (err, stdout, stderr) =>
+      resolve({ code: err ? ((err as { code?: number }).code ?? 1) : 0, stdout, stderr }),
+    ),
+  );
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.stderr, "");
+  assert.match(r.stdout, /^\d+\.\d+\.\d+/);
+});

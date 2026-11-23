@@ -13,6 +13,13 @@
 # a missing runtime is fetched in the background and the command exits 0 with no output.
 set -u
 
+# Git for Windows' sh.exe, started from PowerShell or cmd (VS Code's Copilot terminal), can come without its own
+# tools (dirname, uname, …) on PATH. /usr/bin is Git's usr\bin there. A no-op where they're already found.
+if ! command -v dirname >/dev/null 2>&1 || ! command -v uname >/dev/null 2>&1; then
+  PATH=/usr/bin:/bin${PATH:+:$PATH}
+  export PATH
+fi
+
 NODE_VERSION=v24.22.2
 NODE_DIST=${SS33_NODE_DIST:-https://nodejs.org/dist}
 
