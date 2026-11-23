@@ -1,5 +1,5 @@
 name: ss33
-version: 0.4.4
+version: 0.4.5
 description: "ss33 Skill Store for Hermes: project-aware skill search (a short project summary, never source code), native skill install into .agents/skills with a lockfile, and opt-in prompt matching."
 author: ReadyAI <support@readyai.ai>
 license: MIT
