@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 Run the ss33 CLI with `sh "<plugin root>/scripts/ss33" <command>`, using the absolute path. It is not on PATH. The plugin root is two folders above this SKILL.md, which sits at `<plugin root>/skills/ss33-add/SKILL.md`. If the output mentions `ss33 <command>`, it means the same command.
 
+On Windows, check once that `sh` is found (`Get-Command sh` in PowerShell): Git for Windows often doesn't put it on PATH. If it isn't found, use Git for Windows' `sh.exe` by its full path: usually `C:\Program Files\Git\bin\sh.exe`, otherwise `bin\sh.exe` in the folder above the one holding `git.exe`. In PowerShell, run `& "<path to sh.exe>" "<plugin root>/scripts/ss33" <command>`. If Git for Windows isn't installed, tell the user ss33 needs it.
+
 Cursor asks the user to approve each shell command that isn't on their allowlist. That is expected: run the command and let the user approve it. The CLI needs network access to `mcp.ss33.ai`. If a command fails with a network error (for example because the session runs in Cursor's sandbox), tell the user and offer to run it again outside the sandbox. Don't try to work around it another way.
 
 Install the Skill Store skill whose ref the user gave with `/ss33-add`, after the user has reviewed it. If no ref was given, ask for one (it comes from `/ss33-search`).

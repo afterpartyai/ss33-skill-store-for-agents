@@ -176,6 +176,18 @@ test("e2e hook: codex gets the same suggestion, with Codex's install command, an
   assert.ok(!existsSync(join(dir, ".claude")), "nothing written for Claude Code");
 });
 
+test("e2e hook: copilot's Windows PowerShell hook input (UTF-8 BOM, CRLF) still parses", async () => {
+  const dir = project();
+  const prompt = "Set up a GitHub Actions CI pipeline that runs lint and tests on every PR";
+  const r = await ss33(["hook", "copilot", "user-prompt-submitted"], {
+    cwd: dir,
+    input: `\uFEFF${JSON.stringify({ sessionId: "copilot-bom", cwd: dir, prompt })}\r\n`,
+    env: { SS33_MATCH: "1" },
+  });
+  assert.equal(r.code, 0);
+  assert.match(JSON.parse(r.stdout).additionalContext, new RegExp(`/ss33:add ${CI_REF}`));
+});
+
 test("e2e: a read-only .agents (Codex's sandbox) gets a clear message, not a stack trace, and no lock entry", { skip: process.getuid?.() === 0 ? "root ignores permissions" : false }, async () => {
   const dir = project();
   mkdirSync(join(dir, ".agents"), { mode: 0o555 });

@@ -61,4 +61,5 @@ test("copilot hook: silent when disabled, on bad input, unknown events and store
   assert.equal(await runHook("unknown-event", "{}", d), "");
   assert.equal(await runHook("user-prompt-submitted", input(prompt), { ...d, client: fakeClient({ status: 401 }) }), "");
   assert.match(readFileSync(join(d.env.SS33_STATE_DIR, "hook.log"), "utf8"), /failed: Skill Store rejected the API key/);
+  assert.match(readFileSync(join(d.env.SS33_STATE_DIR, "hook.log"), "utf8"), /user-prompt-submitted failed: stdin is not JSON/);
 });

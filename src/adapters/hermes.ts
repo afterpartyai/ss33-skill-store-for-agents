@@ -52,7 +52,7 @@ export async function preLlmCall(stdin: string, deps: EventDeps = {}): Promise<H
   try {
     input = JSON.parse(stdin) as PreLlmCallInput;
   } catch {
-    return undefined;
+    throw new Error("stdin is not JSON"); // fixed text: the parser's message would quote the prompt into hook.log
   }
   if (typeof input.prompt !== "string") return undefined;
   const { context, notice } = await onPromptSubmitted(

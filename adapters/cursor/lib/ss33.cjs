@@ -1213,7 +1213,7 @@ function userPromptSubmitHandler(harness, addCommand) {
     try {
       input = JSON.parse(stdin);
     } catch {
-      return void 0;
+      throw new Error("stdin is not JSON");
     }
     if (typeof input.prompt !== "string") return void 0;
     const { context, notice } = await onPromptSubmitted(
@@ -1275,7 +1275,7 @@ async function userPromptSubmitted(stdin, deps = {}) {
   try {
     input = JSON.parse(stdin);
   } catch {
-    return void 0;
+    throw new Error("stdin is not JSON");
   }
   if (typeof input.prompt !== "string") return void 0;
   const sessionId = input.sessionId ?? input.session_id;
@@ -1320,7 +1320,7 @@ async function preLlmCall(stdin, deps = {}) {
   try {
     input = JSON.parse(stdin);
   } catch {
-    return void 0;
+    throw new Error("stdin is not JSON");
   }
   if (typeof input.prompt !== "string") return void 0;
   const { context, notice } = await onPromptSubmitted(
@@ -1420,7 +1420,7 @@ function client() {
 }
 function readStdin() {
   try {
-    return (0, import_node_fs6.readFileSync)(0, "utf8");
+    return (0, import_node_fs6.readFileSync)(0, "utf8").replace(/^\uFEFF/, "");
   } catch {
     return "";
   }

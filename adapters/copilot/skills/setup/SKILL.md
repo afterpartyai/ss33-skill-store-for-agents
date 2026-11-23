@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 Run the ss33 CLI with `sh "<plugin root>/scripts/ss33" <command>`, using the absolute path. It is not on PATH. The plugin root is two folders above this SKILL.md, which sits at `<plugin root>/skills/setup/SKILL.md`. If the output mentions `ss33 <command>`, it means the same command.
 
+On Windows, check once that `sh` is found (`Get-Command sh` in PowerShell): Git for Windows often doesn't put it on PATH. If it isn't found, use Git for Windows' `sh.exe` by its full path: usually `C:\Program Files\Git\bin\sh.exe`, otherwise `bin\sh.exe` in the folder above the one holding `git.exe`. In PowerShell, run `& "<path to sh.exe>" "<plugin root>/scripts/ss33" <command>`. If Git for Windows isn't installed, tell the user ss33 needs it.
+
 Copilot asks the user to approve shell commands. That is expected: run the command and let the user approve it. The CLI needs network access to `mcp.ss33.ai`. If a command fails with a network error (for example because the session runs in Copilot's sandbox), tell the user, and don't try to work around it.
 
 1. Check the current settings:
