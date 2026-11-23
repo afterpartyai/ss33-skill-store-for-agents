@@ -1,5 +1,5 @@
 /**
- * The three plugin roots must ship the same CLI, agree on the version, and each speak its own harness's dialect.
+ * The plugin roots must ship the same CLI, agree on the version, and each speak its own harness's dialect.
  * Runs from the repo root (npm test), against the source tree rather than build/.
  */
 import assert from "node:assert/strict";
@@ -22,17 +22,53 @@ test("packaging: the Hermes plugin carries the same bundle and launcher as the C
   assert.equal(read("adapters/hermes/scripts/ss33"), read("adapters/claude-code/scripts/ss33"), "run `npm run build` (it copies the launcher)");
 });
 
+test("packaging: the Cursor plugin carries the same bundle and launcher as the Claude Code plugin", () => {
+  assert.equal(read("adapters/cursor/lib/ss33.cjs"), read("adapters/claude-code/lib/ss33.cjs"), "run `npm run build` (it copies the bundle)");
+  assert.equal(read("adapters/cursor/scripts/ss33"), read("adapters/claude-code/scripts/ss33"), "run `npm run build` (it copies the launcher)");
+});
+
 test("packaging: one version everywhere", () => {
   assert.equal(json("package.json").version, VERSION);
   assert.equal(json("adapters/claude-code/.claude-plugin/plugin.json").version, VERSION);
   assert.equal(json("adapters/codex/.codex-plugin/plugin.json").version, VERSION);
   assert.match(read("adapters/hermes/plugin.yaml"), new RegExp(`^version: ${VERSION.replace(/\./g, "\\.")}$`, "m"));
+  assert.equal(json("adapters/cursor/.cursor-plugin/plugin.json").version, VERSION);
 });
 
 test("packaging: marketplaces point each harness at its own plugin root", () => {
   assert.equal(json(".claude-plugin/marketplace.json").plugins[0].source, "./adapters/claude-code");
   // Codex prefers .agents/plugins/marketplace.json over .claude-plugin/marketplace.json in the same repo.
   assert.deepEqual(json(".agents/plugins/marketplace.json").plugins[0].source, { source: "local", path: "./adapters/codex" });
+  const cursor = json(".cursor-plugin/marketplace.json").plugins[0];
+  assert.equal(cursor.source, "./adapters/cursor");
+  assert.equal(cursor.name, json("adapters/cursor/.cursor-plugin/plugin.json").name, "Cursor requires the marketplace name to match plugin.json");
+});
+
+test("packaging: Cursor manifest, hooks and skills use Cursor's conventions", () => {
+  // Cursor's plugin schema sets additionalProperties: false, so an unknown key fails validation.
+  const allowed = ["name", "displayName", "description", "version", "minClientVersions", "author", "publisher", "homepage", "repository", "license", "logo",
+    "keywords", "category", "tags", "commands", "agents", "skills", "rules", "hooks", "variables", "mcpServers"];
+  const manifest = json("adapters/cursor/.cursor-plugin/plugin.json");
+  for (const k of Object.keys(manifest)) assert.ok(allowed.includes(k), `unknown plugin.json key ${k}`);
+  assert.ok(statSync(join(root, "adapters/cursor", manifest.logo)).isFile());
+  // Cursor drops the whole hooks file on an unknown event name (seen with UserPromptSubmit, CLI 2026.11.22), and
+  // beforeSubmitPrompt can't add context, so the plugin only uses sessionStart.
+  const hooks = json("adapters/cursor/hooks/hooks.json");
+  assert.equal(hooks.version, 1);
+  assert.deepEqual(Object.keys(hooks.hooks), ["sessionStart"]);
+  assert.match(hooks.hooks.sessionStart[0].command, /^sh "\$\{CURSOR_PLUGIN_ROOT\}\/scripts\/ss33" __prefetch-runtime$/);
+  // Cursor doesn't namespace plugin skills, so each one carries the ss33- prefix (/ss33-search, not /search).
+  const skills = readdirSync(join(root, "adapters/cursor/skills"));
+  assert.deepEqual(skills.sort(), readdirSync(join(root, "adapters/claude-code/skills")).map((s) => `ss33-${s}`).sort(), "same skills in every plugin");
+  for (const s of skills) {
+    const md = read(`adapters/cursor/skills/${s}/SKILL.md`);
+    assert.match(md, new RegExp(`^---\\nname: ${s}\\n`), `${s}: frontmatter name`);
+    assert.doesNotMatch(md, /CLAUDE_PLUGIN_ROOT|\$ARGUMENTS|allowed-tools|\/ss33:|\$ss33:|\.claude\/skills|Codex|escalat/, s);
+    assert.match(md, new RegExp(`<plugin root>/skills/${s}/SKILL\\.md`), `${s}: locates the plugin root`);
+    if (s === "ss33-add") assert.match(md, /--target agents/);
+    if (s === "ss33-search") assert.doesNotMatch(md, /disable-model-invocation/);
+    else assert.match(md, /^disable-model-invocation: true$/m, `${s}: user-only`);
+  }
 });
 
 test("packaging: Codex hooks and skills use Codex's conventions", () => {
@@ -60,7 +96,7 @@ function files(dir: string, prefix = ""): string[] {
 }
 
 test("packaging: Python stays in the Hermes plugin, which needs no dependencies", () => {
-  for (const r of ["adapters/claude-code", "adapters/codex"]) {
+  for (const r of ["adapters/claude-code", "adapters/codex", "adapters/cursor"]) {
     assert.deepEqual(files(r).filter((f) => f.endsWith(".py") || f.endsWith(".yaml") && !f.endsWith("openai.yaml")), [], `${r}: nothing Hermes-specific`);
   }
   assert.deepEqual(files("adapters/hermes").filter((f) => f.endsWith(".py")), ["__init__.py"]);

@@ -9,7 +9,7 @@ Use the [ss33 Skill Store](https://ss33.ai) from your coding agent without spend
 - **`/ss33:update`**: shows what changed upstream and applies updates only when you say so. It never overwrites your local edits without asking.
 - **Prompt matching (off by default, opt in)**: if a published skill clearly fits what you just asked, you see a one-line note suggesting it (`/ss33:add <ref>` to review it). At most a few per session. It sends your prompt to the store, so it stays off until you turn it on (see [Privacy](#privacy)).
 
-Claude Code, Codex and [Hermes Agent](https://github.com/NousResearch/hermes-agent) are supported. In Codex the commands are written `$ss33:search`, `$ss33:add`, and so on. In Codex and Hermes, skills install to `.agents/skills/`.
+Claude Code, Codex, [Hermes Agent](https://github.com/NousResearch/hermes-agent) and Cursor are supported. In Codex the commands are written `$ss33:search`, `$ss33:add`, and so on; in Cursor, `/ss33-search`, `/ss33-add`, … In Codex, Hermes and Cursor, skills install to `.agents/skills/`.
 
 ## Install (Claude Code)
 
@@ -67,6 +67,24 @@ What's different from Claude Code:
 - **Prompt matching** is off by default. Turn it on (or off again) with `/ss33:setup`. Even when it's on, it only runs for sessions inside a project, and never for prompts from chat apps unless you also turn on `match.chatApps`.
 - **Terminal backend:** `/ss33:*` commands run in Hermes's terminal, so they need the local backend (not docker, modal, …). Prompt matching and `ss33_search` run inside Hermes and work with any backend.
 
+## Install (Cursor)
+
+Works in the Cursor app and the Cursor CLI (`agent`, tested with 2026.11.22). Add this repo as a plugin marketplace and install `ss33` from it:
+
+- **Cursor CLI:** run `/plugin marketplace add https://github.com/afterpartyai/ss33-skill-store-for-agents`, then install `ss33` from `/plugin`.
+- **Cursor app:** paste `https://github.com/afterpartyai/ss33-skill-store-for-agents` into the plugin search, and install `ss33`.
+
+Then start a new chat and run `/ss33-setup` to check the connection.
+
+What's different from Claude Code:
+
+- **Commands** are `/ss33-search`, `/ss33-add`, `/ss33-update`, `/ss33-list` and `/ss33-setup`, because Cursor doesn't give plugin skills a `ss33:` prefix.
+- **No prompt matching.** Cursor's prompt hook can't add a note for the agent (and the CLI doesn't run it at all), so the Cursor plugin doesn't offer it. The agent can still search the store on its own when a task needs a specialised procedure.
+- **Approvals:** Cursor asks you to approve each ss33 command unless it's on your allowlist.
+- **Installed skills** go to `.agents/skills/<name>/` and are pinned in `ss33.lock`. Cursor loads them in new chats as `/<name>`.
+- **API key:** Cursor plugins have no settings screen. In your own terminal, run the command `/ss33-setup` shows you (`sh <plugin root>/scripts/ss33 config set apiKey <key>`), which writes `~/.config/ss33/config.json` (0600), or export `SS33_API_KEY` before starting Cursor. Don't paste the key into the chat.
+- **Windows:** the commands run the launcher with `sh`, so they need Git for Windows (Git Bash) on your PATH. Not yet tested on native Windows.
+
 ## Commands
 
 | Command | What it does |
@@ -108,10 +126,11 @@ See [CLAUDE.md](CLAUDE.md) for the layout, the commands and the conventions.
 npm install
 npm test             # unit, fake-store, end-to-end and matching-regression tests (offline)
 npm run eval:matching  # prompt-matching precision/recall report
-npm run build        # typecheck + rebuild the bundle in adapters/claude-code, adapters/codex and adapters/hermes (commit all three)
+npm run build        # typecheck + rebuild the bundle in every adapters/* plugin (commit them all)
 claude --plugin-dir ./adapters/claude-code
 codex plugin marketplace add "$PWD" && codex plugin add ss33@ss33   # Codex, from this checkout
 hermes plugins validate adapters/hermes   # Hermes manifest, registrations and security scan
+agent --plugin-dir ./adapters/cursor     # Cursor CLI, from this checkout
 ```
 
 ## License

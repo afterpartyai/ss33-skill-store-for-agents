@@ -1,0 +1,15 @@
+{
+  "name": "ss33",
+  "displayName": "ss33 Skill Store",
+  "version": "0.4.4",
+  "description": "ss33 Skill Store for Cursor: project-aware skill search and native skill install with a lockfile.",
+  "author": { "name": "ReadyAI", "email": "support@readyai.ai" },
+  "homepage": "https://ss33.ai",
+  "repository": "https://github.com/afterpartyai/ss33-skill-store-for-agents",
+  "license": "MIT",
+  "logo": "assets/icon.png",
+  "keywords": ["skills", "skill-store", "ss33"],
+  "category": "developer-tools",
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
+}
