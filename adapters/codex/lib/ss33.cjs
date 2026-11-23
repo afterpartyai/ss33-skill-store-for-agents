@@ -1538,7 +1538,7 @@ function pickUpNote(paths, name) {
   if (paths.some((p) => p.startsWith(TARGET_DIRS.claude + "/"))) notes.push(`Claude Code picks up new skills automatically; it appears as "${name}".`);
   if (paths.some((p) => p.startsWith(TARGET_DIRS.agents + "/")))
     notes.push(
-      `Codex and other agents that read ${TARGET_DIRS.agents}/ load it as "${name}" (in Codex, start a new session if it doesn't appear; Hermes loads it only once the repo is trusted with \`hermes skills trust\`).`
+      `Codex, Cursor and other agents that read ${TARGET_DIRS.agents}/ load it as "${name}" (in Codex or Cursor, start a new session if it doesn't appear; Hermes loads it only once the repo is trusted with \`hermes skills trust\`).`
     );
   return notes.join("\n");
 }

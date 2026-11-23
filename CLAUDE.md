@@ -1,8 +1,8 @@
 # CLAUDE.md: ss33 Skill Store for agents
 
-This repo holds a harness-agnostic core and CLI for the ss33 Skill Store (an MCP server at `https://mcp.ss33.ai/mcp`), plus three plugin adapters: **Claude Code**, **Codex** and **Hermes Agent**. The core turns the store into three features:
+This repo holds a harness-agnostic core and CLI for the ss33 Skill Store (an MCP server at `https://mcp.ss33.ai/mcp`), plus four plugin adapters: **Claude Code**, **Codex**, **Hermes Agent** and **Cursor**. The core turns the store into three features:
 
-1. **Prompt matching (off by default; users opt in).** A prompt hook (`UserPromptSubmit`, or Hermes's `pre_llm_call`) adds a one-line "this skill may be relevant" note, only when a candidate passes local fit checks.
+1. **Prompt matching (off by default; users opt in).** A prompt hook (`UserPromptSubmit`, or Hermes's `pre_llm_call`) adds a one-line "this skill may be relevant" note, only when a candidate passes local fit checks. Cursor has no prompt matching (see Cursor specifics).
 2. **Project-aware search.** A short project summary, built from manifests only (never source), is sent with every search.
 3. **Native skill install.** Skills are written as regular `SKILL.md` files, pinned by content hash in `ss33.lock`.
 
@@ -44,8 +44,15 @@ adapters/hermes/         the Hermes plugin root (`hermes plugins install afterpa
                                on_session_start → runtime prefetch; the ss33_search tool; registers the skills
   skills/{search,add,update,list,setup}/SKILL.md   → /ss33:search, … (hidden from the model by fallback_for_toolsets)
   scripts/ss33, lib/ss33.cjs   COPIES made by `npm run build`; never edit them here
+adapters/cursor/         the Cursor plugin root (IDE and the `agent` CLI)
+  .cursor-plugin/plugin.json   manifest (Cursor's schema rejects unknown keys)
+  hooks/hooks.json             sessionStart → runtime prefetch (no prompt hook: see Cursor specifics)
+  skills/ss33-{search,add,update,list,setup}/SKILL.md   → /ss33-search, /ss33-add, …  (user-only: disable-model-invocation)
+  scripts/ss33, lib/ss33.cjs   COPIES made by `npm run build`; never edit them here
+  assets/icon.png
 .claude-plugin/marketplace.json   Claude Code installs straight from this GitHub repo
 .agents/plugins/marketplace.json  Codex installs from this repo (Codex prefers it over .claude-plugin/)
+.cursor-plugin/marketplace.json   Cursor installs from this repo
 src/fakestore/   local stand-in for the store (tests, evals, manual runs). Compiled, never bundled into the plugin.
   server.ts        scripted skills → cassettes → (record mode) the real store; auth, free tier, faults, /_admin
   cassettes.ts     recorded responses, one JSON file per (tool, args)
@@ -67,11 +74,12 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
 - `npm run test:live`: also hits the real store (set `SS33_API_KEY` to avoid the 5/min free-tier limit).
 - `npm run eval:matching`: matching report (offline replay). `-- --verbose` shows every case; `-- --record` records answers for new cases from the real store (uses your key); `-- --update-baseline` accepts the current numbers.
 - `npm run fake-store -- --skills test/fixtures/store/basic.json`: run the fake store; point anything at it with `SS33_ENDPOINT=<printed url>`. `--help` for record/auth/fault options; faults and new skill versions can be set at runtime via `POST /_admin/fault` and `POST /_admin/skills`.
-- `npm run build`: typechecks, bundles `src/cli/main.ts` → `adapters/claude-code/lib/ss33.cjs`, then copies the bundle and the launcher into `adapters/codex/` and `adapters/hermes/`. **Run this and commit all three plugins after any `src/` or launcher change.** CI and `test/packaging.test.ts` fail if a copy is stale.
+- `npm run build`: typechecks, bundles `src/cli/main.ts` → `adapters/claude-code/lib/ss33.cjs`, then copies the bundle and the launcher into `adapters/codex/`, `adapters/hermes/` and `adapters/cursor/`. **Run this and commit every plugin after any `src/` or launcher change.** CI and `test/packaging.test.ts` fail if a copy is stale.
 - `claude plugin validate adapters/claude-code --strict` and `claude plugin validate .`: manifest checks.
 - Try it in Claude Code without installing: `claude --plugin-dir ./adapters/claude-code` (use `SS33_MATCH=1` to force matching on).
 - Try it in Codex: `codex plugin marketplace add "$PWD" && codex plugin add ss33@ss33`, start a new session and trust the hooks. Use a throwaway `CODEX_HOME` (copy `auth.json` into it) to keep your own Codex setup clean. The TUI runs hooks in a long-lived app-server daemon that keeps the environment it started with, so stop that daemon before testing with different `SS33_*` variables.
 - Hermes: `hermes plugins validate adapters/hermes` (the catalog's admission checks). Try it with a throwaway Hermes (its own checkout and `HERMES_HOME`, plus `SS33_CONFIG_DIR`/`SS33_STATE_DIR`) so your own setup stays clean: `hermes plugins install "file://$PWD#adapters/hermes" --ref $(git rev-parse HEAD) --enable` installs a committed checkout. Hermes runs plugins inside its gateway, which keeps the environment it started with: run `hermes gateway stop` before testing with different `SS33_*` variables. Plugin commands (`/ss33:*`) only exist in the interactive CLI, TUI and desktop, not in `hermes chat -q`.
+- Cursor: `agent --plugin-dir ./adapters/cursor --workspace <project>` loads this checkout without installing (CLI). Set `SS33_CONFIG_DIR`/`SS33_STATE_DIR` to keep your own ss33 config clean, and when starting `agent` from inside Claude Code, unset `CLAUDECODE` and `CLAUDE_PROJECT_DIR` (they leak into Cursor's hooks and shells). There's no official validator; the JSON schemas are in `cursor/plugins` (`schemas/plugin.schema.json`, `schemas/marketplace.schema.json`). For the IDE, copy (don't symlink) the folder to `~/.cursor/plugins/local/ss33` and reload the window.
 - Debug the hook: `echo '{"session_id":"x","cwd":"'$PWD'","prompt":"set up github actions ci for lint and tests"}' | SS33_MATCH=1 sh adapters/claude-code/scripts/ss33 hook claude-code user-prompt-submit`. Decisions are logged to `<state dir>/hook.log`.
 
 ## Conventions
@@ -107,10 +115,20 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
   - Per turn, the shim checks whether matching is on (`SS33_MATCH`, then `match.enabled` in config.json, the CLI's precedence) before starting any process, so with matching off (the default) a turn costs nothing. The key copy and the `doctor` record that the prompt hook does in Claude Code and Codex run at session start in Hermes (`ss33 hook hermes session-start`, `onSessionStarted`). Keep the Python check in step with `loadConfig` if the precedence changes.
   - **`ss33.lock` is untrusted** (it's committed, so it may come from a cloned repo). `install.ts` only reads, hashes, writes or deletes `<.agents|.claude>/skills/<name>/SKILL.md` for an entry's own name, inside the project after following symlinks (`lockPathProblem`); anything else is skipped and reported. Raised in the Hermes catalog review.
   - Hermes plugin catalog: the entry lives in `NousResearch/hermes-agent` at `plugin-catalog/ss33.yaml`, pinned to a full commit SHA; every release needs a SHA-bump PR there. The Node.js download in `scripts/ss33` is allowed under rules 3 and 17 (third-party runtime, official source, pinned checksum, never touches plugin files) and passes the CI self-updater gate because it never fetches from GitHub. Keep it that way.
+- **Cursor specifics** (probed with the Cursor CLI 2026.11.22 on Linux, 2026-11-23).
+  - **No prompt matching.** `beforeSubmitPrompt` accepts only `{continue, user_message}` (no context for the model, per the docs), and the CLI never fires it, not even in the interactive TUI. `sessionStart` does fire and its `additional_context` reaches the model, but it runs before there's a prompt. So the plugin ships no prompt hook and `src/adapters/` has no Cursor file and the CLI no `hook cursor` route. If Cursor adds context to `beforeSubmitPrompt`, add a `cursor.ts` like `codex.ts` (payload: `conversation_id`, `workspace_roots[0]`, `prompt`).
+  - Cursor drops the **whole** hooks file if it names an event it doesn't know (a `UserPromptSubmit` key silenced `sessionStart` too). Use Cursor's event names only.
+  - Plugin hooks run with cwd = the plugin root and get `CURSOR_PLUGIN_ROOT`, `CURSOR_PROJECT_DIR`, and also `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PROJECT_DIR` (so `projectRoot` works unchanged).
+  - Plugin skills are **not namespaced** (`/<skill name>`), so the folders and `name:` carry an `ss33-` prefix to avoid clashing with the user's own `/search` or `/add`. The hint text would therefore say `/ss33-add`.
+  - Skills locate the launcher as "two folders above this SKILL.md" (Cursor tells the model the skill's path; no `${…}` substitution in skill bodies). Shell commands need the user's approval (allowlist); the CLI's default (non-sandboxed) shell reached `mcp.ss33.ai` fine.
+  - Cursor reads project skills from `.agents/skills`, `.cursor/skills`, `.claude/skills` and `.codex/skills`; `add` uses `--target agents`, shared with Codex and Hermes.
+  - No plugin user settings: `variables` in plugin.json are set by team admins and documented only for MCP configs, so the key goes through `ss33 config set apiKey` or `SS33_API_KEY`.
+  - Unverified: the Cursor IDE (hooks there run through PowerShell on Windows, so `sh "${CURSOR_PLUGIN_ROOT}/…"` may not expand; the hook only prefetches Node, so a failure costs nothing), native Windows, and installing from the GitHub marketplace (only `--plugin-dir` was tested).
+  - Official marketplace listing: submit at cursor.com/marketplace/publish (manual review, open source required).
 - **Supporting files:** the store returns only `SKILL.md`. `add` warns about linked files that won't be installed and points to the author's folder.
 
 ## Releasing
 
-1. Bump the version in `package.json`, `src/core/version.ts` and all three plugin manifests (including `adapters/hermes/plugin.yaml`) (`test/packaging.test.ts` fails if they disagree).
-2. `npm run build`, then `npm test`, and commit the bundle in `adapters/claude-code`, `adapters/codex` and `adapters/hermes`. For Hermes, also run `hermes plugins validate adapters/hermes`.
+1. Bump the version in `package.json`, `src/core/version.ts` and every plugin manifest (including `adapters/hermes/plugin.yaml` and `adapters/cursor/.cursor-plugin/plugin.json`) (`test/packaging.test.ts` fails if they disagree).
+2. `npm run build`, then `npm test`, and commit the bundle in every `adapters/*` plugin. For Hermes, also run `hermes plugins validate adapters/hermes`.
 3. Users of the GitHub marketplace get the update when the version changes. Codex asks users to re-trust the hooks after every update, so release Codex changes less often.

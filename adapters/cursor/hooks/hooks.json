@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "sh \"${CURSOR_PLUGIN_ROOT}/scripts/ss33\" __prefetch-runtime",
+        "timeout": 5
+      }
+    ]
+  }
+}
