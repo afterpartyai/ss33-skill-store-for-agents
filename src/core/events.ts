@@ -19,6 +19,8 @@ export interface PromptSubmitted {
   harness: string;
   /** The harness's way to invoke the add skill, quoted in hints (default `/ss33:add`). */
   addCommand?: string;
+  /** False when the harness can't show `notice` to the user (Copilot); see match.ts formatHint. */
+  noticeShown?: boolean;
   /**
    * Where the prompt came from, for harnesses that serve several clients (Hermes: `cli`, `tui`, `desktop`,
    * `acp`, or a chat app such as `telegram`). Chat-app prompts are skipped unless `match.chatApps` is on.
@@ -116,7 +118,7 @@ export async function onPromptSubmitted(ev: PromptSubmitted, deps: EventDeps = {
     });
   const summary = fingerprint(root).summary;
   const result = await client.search(buildQuery(ev.prompt, summary), { limit: 3 });
-  const outcome = decide({ prompt: ev.prompt, projectSummary: summary, installed: installedSkills(root), session, config: config.match, ...(ev.addCommand ? { addCommand: ev.addCommand } : {}) }, result);
+  const outcome = decide({ prompt: ev.prompt, projectSummary: summary, installed: installedSkills(root), session, config: config.match, ...(ev.addCommand ? { addCommand: ev.addCommand } : {}), ...(ev.noticeShown === false ? { noticeShown: false } : {}) }, result);
   if (outcome.kind === "suggest") {
     saveSession(state, ev.sessionId, { suggested: [...session.suggested, outcome.candidate.ref], hints: session.hints + 1 });
   }

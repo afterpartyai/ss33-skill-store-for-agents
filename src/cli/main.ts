@@ -5,6 +5,7 @@
 import { readFileSync } from "node:fs";
 import { runHook as claudeCodeHook } from "../adapters/claude-code.js";
 import { runHook as codexHook } from "../adapters/codex.js";
+import { runHook as copilotHook } from "../adapters/copilot.js";
 import { runHook as hermesHook } from "../adapters/hermes.js";
 import { StoreClient, StoreError } from "../core/client.js";
 import {
@@ -35,7 +36,7 @@ Usage:
   ss33 fingerprint [--json]          the project summary sent with searches
   ss33 config get | set <key> <value> | unset <key> | path
   ss33 doctor [--offline]            which settings are in effect where, and whether the store accepts the key
-  ss33 hook claude-code|codex|hermes <event>  (used by the plugins; reads hook JSON on stdin)
+  ss33 hook claude-code|codex|copilot|hermes <event>  (used by the plugins; reads hook JSON on stdin)
 
 Options:
   --dir PATH   project root (default: $CLAUDE_PROJECT_DIR, else nearest dir with ss33.lock or .git)
@@ -267,7 +268,7 @@ export async function main(argv: string[], out = (s: string) => process.stdout.w
   }
 }
 
-const HOOKS: Record<string, (event: string, stdin: string) => Promise<string>> = { "claude-code": claudeCodeHook, codex: codexHook, hermes: hermesHook };
+const HOOKS: Record<string, (event: string, stdin: string) => Promise<string>> = { "claude-code": claudeCodeHook, codex: codexHook, copilot: copilotHook, hermes: hermesHook };
 
 /** Which agents load the skill from where it was written. */
 function pickUpNote(paths: string[], name: string): string {
@@ -275,7 +276,7 @@ function pickUpNote(paths: string[], name: string): string {
   if (paths.some((p) => p.startsWith(TARGET_DIRS.claude + "/"))) notes.push(`Claude Code picks up new skills automatically; it appears as "${name}".`);
   if (paths.some((p) => p.startsWith(TARGET_DIRS.agents + "/")))
     notes.push(
-      `Codex, Cursor and other agents that read ${TARGET_DIRS.agents}/ load it as "${name}" (in Codex or Cursor, start a new session if it doesn't appear; ` +
+      `Codex, Copilot, Cursor and other agents that read ${TARGET_DIRS.agents}/ load it as "${name}" (in Codex, Copilot or Cursor, start a new session if it doesn't appear; ` +
         `Hermes loads it only once the repo is trusted with \`hermes skills trust\`).`,
     );
   return notes.join("\n");

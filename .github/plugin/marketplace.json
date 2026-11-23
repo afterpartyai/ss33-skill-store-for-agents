@@ -1,0 +1,12 @@
+{
+  "name": "ss33",
+  "owner": { "name": "ReadyAI", "email": "support@readyai.ai" },
+  "metadata": { "description": "ss33 Skill Store plugins" },
+  "plugins": [
+    {
+      "name": "ss33",
+      "source": "./adapters/copilot",
+      "description": "Project-aware Skill Store search, native skill install with a lockfile, and opt-in prompt matching."
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 # CLAUDE.md: ss33 Skill Store for agents
 
-This repo holds a harness-agnostic core and CLI for the ss33 Skill Store (an MCP server at `https://mcp.ss33.ai/mcp`), plus four plugin adapters: **Claude Code**, **Codex**, **Hermes Agent** and **Cursor**. The core turns the store into three features:
+This repo holds a harness-agnostic core and CLI for the ss33 Skill Store (an MCP server at `https://mcp.ss33.ai/mcp`), plus five plugin adapters: **Claude Code**, **Codex**, **Hermes Agent**, **Cursor** and **GitHub Copilot**. The core turns the store into three features:
 
-1. **Prompt matching (off by default; users opt in).** A prompt hook (`UserPromptSubmit`, or Hermes's `pre_llm_call`) adds a one-line "this skill may be relevant" note, only when a candidate passes local fit checks. Cursor has no prompt matching (see Cursor specifics).
+1. **Prompt matching (off by default; users opt in).** A prompt hook (`UserPromptSubmit`, Copilot's `userPromptSubmitted`, or Hermes's `pre_llm_call`) adds a one-line "this skill may be relevant" note, only when a candidate passes local fit checks. Cursor has no prompt matching (see Cursor specifics).
 2. **Project-aware search.** A short project summary, built from manifests only (never source), is sent with every search.
 3. **Native skill install.** Skills are written as regular `SKILL.md` files, pinned by content hash in `ss33.lock`.
 
@@ -23,6 +23,7 @@ src/adapters/
   hook-json.ts     shared stdin/stdout JSON plumbing (Claude Code and Codex use the same hook dialect)
   claude-code.ts   Claude Code mapping: harness name, `/ss33:add`
   codex.ts         Codex mapping: harness name, `$ss33:add`
+  copilot.ts       Copilot mapping: `ss33 hook copilot user-prompt-submitted` gets {sessionId, cwd, prompt}, prints {additionalContext}
   hermes.ts        Hermes mapping: `ss33 hook hermes pre-llm-call` gets {session_id, cwd, prompt, surface}, prints {context, notice}
 src/cli/main.ts  `ss33` CLI: the contract every adapter calls
 adapters/claude-code/    the Claude Code plugin root (what gets installed)
@@ -50,9 +51,15 @@ adapters/cursor/         the Cursor plugin root (IDE and the `agent` CLI)
   skills/ss33-{search,add,update,list,setup}/SKILL.md   → /ss33-search, /ss33-add, …  (user-only: disable-model-invocation)
   scripts/ss33, lib/ss33.cjs   COPIES made by `npm run build`; never edit them here
   assets/icon.png
+adapters/copilot/        the GitHub Copilot plugin root (Copilot CLI; VS Code agent plugins read the same format)
+  plugin.json                  manifest (Copilot's legacy format, with skills/hooks paths)
+  hooks/hooks.json             Copilot's own format: sessionStart → runtime prefetch; userPromptSubmitted → ss33 hook copilot user-prompt-submitted
+  skills/{search,add,update,list,setup}/SKILL.md   → /ss33:search, /ss33:add, …  (user-only: disable-model-invocation)
+  scripts/ss33, lib/ss33.cjs   COPIES made by `npm run build`; never edit them here
 .claude-plugin/marketplace.json   Claude Code installs straight from this GitHub repo
 .agents/plugins/marketplace.json  Codex installs from this repo (Codex prefers it over .claude-plugin/)
 .cursor-plugin/marketplace.json   Cursor installs from this repo
+.github/plugin/marketplace.json   Copilot installs from this repo (Copilot prefers it over .claude-plugin/)
 src/fakestore/   local stand-in for the store (tests, evals, manual runs). Compiled, never bundled into the plugin.
   server.ts        scripted skills → cassettes → (record mode) the real store; auth, free tier, faults, /_admin
   cassettes.ts     recorded responses, one JSON file per (tool, args)
@@ -74,12 +81,13 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
 - `npm run test:live`: also hits the real store (set `SS33_API_KEY` to avoid the 5/min free-tier limit).
 - `npm run eval:matching`: matching report (offline replay). `-- --verbose` shows every case; `-- --record` records answers for new cases from the real store (uses your key); `-- --update-baseline` accepts the current numbers.
 - `npm run fake-store -- --skills test/fixtures/store/basic.json`: run the fake store; point anything at it with `SS33_ENDPOINT=<printed url>`. `--help` for record/auth/fault options; faults and new skill versions can be set at runtime via `POST /_admin/fault` and `POST /_admin/skills`.
-- `npm run build`: typechecks, bundles `src/cli/main.ts` → `adapters/claude-code/lib/ss33.cjs`, then copies the bundle and the launcher into `adapters/codex/`, `adapters/hermes/` and `adapters/cursor/`. **Run this and commit every plugin after any `src/` or launcher change.** CI and `test/packaging.test.ts` fail if a copy is stale.
+- `npm run build`: typechecks, bundles `src/cli/main.ts` → `adapters/claude-code/lib/ss33.cjs`, then copies the bundle and the launcher into `adapters/codex/`, `adapters/hermes/`, `adapters/cursor/` and `adapters/copilot/`. **Run this and commit every plugin after any `src/` or launcher change.** CI and `test/packaging.test.ts` fail if a copy is stale.
 - `claude plugin validate adapters/claude-code --strict` and `claude plugin validate .`: manifest checks.
 - Try it in Claude Code without installing: `claude --plugin-dir ./adapters/claude-code` (use `SS33_MATCH=1` to force matching on).
 - Try it in Codex: `codex plugin marketplace add "$PWD" && codex plugin add ss33@ss33`, start a new session and trust the hooks. Use a throwaway `CODEX_HOME` (copy `auth.json` into it) to keep your own Codex setup clean. The TUI runs hooks in a long-lived app-server daemon that keeps the environment it started with, so stop that daemon before testing with different `SS33_*` variables.
 - Hermes: `hermes plugins validate adapters/hermes` (the catalog's admission checks). Try it with a throwaway Hermes (its own checkout and `HERMES_HOME`, plus `SS33_CONFIG_DIR`/`SS33_STATE_DIR`) so your own setup stays clean: `hermes plugins install "file://$PWD#adapters/hermes" --ref $(git rev-parse HEAD) --enable` installs a committed checkout. Hermes runs plugins inside its gateway, which keeps the environment it started with: run `hermes gateway stop` before testing with different `SS33_*` variables. Plugin commands (`/ss33:*`) only exist in the interactive CLI, TUI and desktop, not in `hermes chat -q`.
 - Cursor: `agent --plugin-dir ./adapters/cursor --workspace <project>` loads this checkout without installing (CLI). Set `SS33_CONFIG_DIR`/`SS33_STATE_DIR` to keep your own ss33 config clean, and when starting `agent` from inside Claude Code, unset `CLAUDECODE` and `CLAUDE_PROJECT_DIR` (they leak into Cursor's hooks and shells). There's no official validator; the JSON schemas are in `cursor/plugins` (`schemas/plugin.schema.json`, `schemas/marketplace.schema.json`). For the IDE, copy (don't symlink) the folder to `~/.cursor/plugins/local/ss33` and reload the window.
+- Copilot: `copilot --plugin-dir ./adapters/copilot` loads this checkout without installing (`-p "…" -s` for headless runs). Set `COPILOT_HOME` to a scratch folder to try `copilot plugin install`/`marketplace add` without touching your own setup; `plugin install` reports manifest fields it ignores. Same env caveats as Cursor when starting it from inside Claude Code.
 - Debug the hook: `echo '{"session_id":"x","cwd":"'$PWD'","prompt":"set up github actions ci for lint and tests"}' | SS33_MATCH=1 sh adapters/claude-code/scripts/ss33 hook claude-code user-prompt-submit`. Decisions are logged to `<state dir>/hook.log`.
 
 ## Conventions
@@ -127,10 +135,20 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
   - No plugin user settings: `variables` in plugin.json are set by team admins and documented only for MCP configs, so the key goes through `ss33 config set apiKey` or `SS33_API_KEY`.
   - Unverified: the Cursor IDE (hooks there run through PowerShell on Windows, so `sh "${CURSOR_PLUGIN_ROOT}/…"` may not expand; the hook only prefetches Node, so a failure costs nothing), native Windows, and installing from the GitHub marketplace (only `--plugin-dir` was tested).
   - Official marketplace listing: submit at cursor.com/marketplace/publish (manual review, open source required).
+- **Copilot specifics** (probed with the Copilot CLI 1.0.114 on Linux, 2026-11-23).
+  - Copilot reads Claude Code plugins (`.claude-plugin/`) and Claude-style hook names, but ignores Claude Code's hook output (`hookSpecificOutput`, `systemMessage`), so it gets its own plugin and adapter. Its prompt hook (`userPromptSubmitted`, or `UserPromptSubmit`) does add a top-level `{"additionalContext"}` to the model's context, despite the docs saying command-hook output is dropped. `sessionStart` takes the same shape.
+  - The hooks file uses Copilot's own format (camelCase events, `bash` + `powershell` commands, `timeoutSec`), so Windows gets a PowerShell command (`$input | sh "$env:PLUGIN_ROOT/…"`, not yet tested). Hooks run with cwd = the plugin root and get `PLUGIN_ROOT`, `COPILOT_PLUGIN_ROOT`, `CLAUDE_PLUGIN_ROOT`, `COPILOT_PROJECT_DIR` and `CLAUDE_PROJECT_DIR`. The native payload is camelCase (`sessionId`); Claude-style names switch it to snake_case, and the adapter accepts both.
+  - **The user never sees a notice**, so the hint is the `noticeShown: false` variant (`match.ts formatHint`): it tells the model the user can't see it and to end its reply with one line about the skill only if it clearly fits. In live runs the model passed it on when the prompt allowed it.
+  - Copilot expands a skill slash command before the prompt hook, starting with `The user explicitly invoked the "/<skill>" skill`; the adapter maps it back to `/<skill>` so the core skips it.
+  - Plugin skills are namespaced (`/ss33:search`, like Claude Code). Skill bodies get `$ARGUMENTS` but not `${CLAUDE_PLUGIN_ROOT}`; the model is given the SKILL.md path, so skills locate the launcher as "two folders above this SKILL.md".
+  - Copilot asks for path access to the plugin folder (outside the workspace) before the first ss33 command, then for each shell command; it offers no "always allow" for `sh`.
+  - Copilot reads project skills from `.github/skills`, `.agents/skills` and `.claude/skills`; `add` uses `--target agents`.
+  - Direct installs (`copilot plugin install <path or repo>`) are deprecated; document marketplace installs only.
+  - Unverified: VS Code agent plugins, native Windows.
 - **Supporting files:** the store returns only `SKILL.md`. `add` warns about linked files that won't be installed and points to the author's folder.
 
 ## Releasing
 
-1. Bump the version in `package.json`, `src/core/version.ts` and every plugin manifest (including `adapters/hermes/plugin.yaml` and `adapters/cursor/.cursor-plugin/plugin.json`) (`test/packaging.test.ts` fails if they disagree).
+1. Bump the version in `package.json`, `src/core/version.ts` and every plugin manifest (including `adapters/hermes/plugin.yaml`, `adapters/cursor/.cursor-plugin/plugin.json` and `adapters/copilot/plugin.json`) (`test/packaging.test.ts` fails if they disagree).
 2. `npm run build`, then `npm test`, and commit the bundle in every `adapters/*` plugin. For Hermes, also run `hermes plugins validate adapters/hermes`.
 3. Users of the GitHub marketplace get the update when the version changes. Codex asks users to re-trust the hooks after every update, so release Codex changes less often.

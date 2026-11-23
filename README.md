@@ -18,6 +18,7 @@ Use the [ss33 Skill Store](https://ss33.ai) from your coding agent without spend
 | Codex | `$ss33:search` | `.agents/skills/` | ✓ | [below](#codex) |
 | Hermes Agent | `/ss33:search` | `.agents/skills/` | ✓ | [below](#hermes-agent) |
 | Cursor (app and CLI) | `/ss33-search` | `.agents/skills/` | not available in Cursor | [below](#cursor) |
+| GitHub Copilot CLI | `/ss33:search` | `.agents/skills/` | ✓ (the agent passes it on) | [below](#github-copilot) |
 
 The rest of this page writes commands the Claude Code way (`/ss33:add`). Use your agent's form.
 
@@ -77,6 +78,22 @@ Then, in `agent`, install `ss33` from `/plugins` → Marketplace. In the app, pa
 - **Approvals:** Cursor asks before each ss33 command, and a plugin can't pre-approve its own commands (allowlisting `sh` doesn't cover them either). Approve them as they come, or use auto-review mode (`agent --auto-review`), which runs commands Cursor judges safe without asking.
 - **Windows:** the commands need Git for Windows (`sh`) on your PATH.
 
+### GitHub Copilot
+
+Works in the Copilot CLI (tested with 1.0.114):
+
+```
+copilot plugin marketplace add afterpartyai/ss33-skill-store-for-agents
+copilot plugin install ss33@ss33
+```
+
+Start a new session and run `/ss33:setup`.
+
+- **Prompt matching:** Copilot can't show you a note from a plugin, so when a published skill clearly fits, the agent mentions it in one line at the end of its reply.
+- **Approvals:** Copilot asks for access to the plugin's folder (choose to remember it for the session), then before each ss33 command.
+- **VS Code:** Copilot's agent plugins in VS Code read the same plugin, but haven't been tested yet.
+- **Windows:** the commands need Git for Windows (`sh`) on your PATH.
+
 ## Settings
 
 **API key** (optional). The free tier allows 5 searches a minute. Create a key at https://ss33.ai/skills/account for more. Never paste the key into the chat. Set it where your agent keeps plugin settings:
@@ -85,7 +102,7 @@ Then, in `agent`, install `ss33` from `/plugins` → Marketplace. In the app, pa
 |---|---|
 | Claude Code | `/plugin configure ss33@ss33` (stored in your OS keychain) |
 | Hermes Agent | In the desktop app (Settings → Plugins → ss33), or as `SS33_API_KEY=<key>` in `~/.hermes/.env` |
-| Codex, Cursor | These have no plugin settings screen. In your own terminal, run the `config set apiKey` command that `setup` shows you |
+| Codex, Cursor, Copilot | These have no plugin settings screen. In your own terminal, run the `config set apiKey` command that `setup` shows you |
 
 Every route ends up in `~/.config/ss33/config.json` (0600), which all the ss33 commands read. An `SS33_API_KEY` environment variable also works where your agent passes it through. Codex may not: its background server may have started before you set it. `/ss33:setup` checks that the store accepts the key.
 
@@ -140,6 +157,7 @@ claude --plugin-dir ./adapters/claude-code                          # Claude Cod
 codex plugin marketplace add "$PWD" && codex plugin add ss33@ss33   # Codex
 hermes plugins validate adapters/hermes                             # Hermes manifest and security scan
 agent --plugin-dir ./adapters/cursor                                # Cursor CLI
+copilot --plugin-dir ./adapters/copilot                             # GitHub Copilot CLI
 ```
 
 ## License
