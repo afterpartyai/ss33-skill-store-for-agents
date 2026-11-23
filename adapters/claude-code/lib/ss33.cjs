@@ -1307,9 +1307,49 @@ async function runHook3(event, stdin, deps = {}) {
   }
 }
 
+// src/adapters/dsh.ts
+var HARNESS4 = "dsh";
+var ADD_COMMAND2 = "/ss33-add";
+async function preStep(stdin, deps = {}) {
+  let input;
+  try {
+    input = JSON.parse(stdin);
+  } catch {
+    throw new Error("stdin is not JSON");
+  }
+  if (typeof input.prompt !== "string") return void 0;
+  const { context, notice } = await onPromptSubmitted(
+    {
+      prompt: input.prompt,
+      // No fallback to process.cwd(): that is the DSH host's directory, which serves every session.
+      cwd: typeof input.cwd === "string" ? input.cwd : "",
+      ...input.session_id ? { sessionId: input.session_id } : {},
+      harness: HARNESS4,
+      addCommand: ADD_COMMAND2
+    },
+    deps
+  );
+  if (!context) return void 0;
+  return { context, ...notice ? { notice } : {} };
+}
+var EVENTS4 = {
+  "pre-step": preStep
+};
+async function runHook4(event, stdin, deps = {}) {
+  const handler = EVENTS4[event];
+  if (!handler) return "";
+  try {
+    const out = await handler(stdin, deps);
+    return out ? JSON.stringify(out) : "";
+  } catch (err) {
+    debugLog(stateDir(deps.env ?? process.env), `[${HARNESS4}] ${event} failed: ${err?.message ?? err}`);
+    return "";
+  }
+}
+
 // src/adapters/hermes.ts
-var HARNESS4 = "hermes";
-var ADD_COMMAND2 = "/ss33:add";
+var HARNESS5 = "hermes";
+var ADD_COMMAND3 = "/ss33:add";
 var SKILL_INVOCATION2 = /^\s*\[IMPORTANT: The user has invoked the (?:"([^"]+)" )?/;
 function promptForMatching2(prompt) {
   const m = SKILL_INVOCATION2.exec(prompt);
@@ -1329,8 +1369,8 @@ async function preLlmCall(stdin, deps = {}) {
       // No fallback to process.cwd(): in Hermes that is the gateway's directory, not the session's.
       cwd: typeof input.cwd === "string" ? input.cwd : "",
       ...input.session_id ? { sessionId: input.session_id } : {},
-      harness: HARNESS4,
-      addCommand: ADD_COMMAND2,
+      harness: HARNESS5,
+      addCommand: ADD_COMMAND3,
       surface: typeof input.surface === "string" ? input.surface : "",
       requireProject: true
     },
@@ -1340,21 +1380,21 @@ async function preLlmCall(stdin, deps = {}) {
   return { context, ...notice ? { notice } : {} };
 }
 async function sessionStart(_stdin, deps = {}) {
-  onSessionStarted({ harness: HARNESS4 }, deps);
+  onSessionStarted({ harness: HARNESS5 }, deps);
   return void 0;
 }
-var EVENTS4 = {
+var EVENTS5 = {
   "pre-llm-call": preLlmCall,
   "session-start": sessionStart
 };
-async function runHook4(event, stdin, deps = {}) {
-  const handler = EVENTS4[event];
+async function runHook5(event, stdin, deps = {}) {
+  const handler = EVENTS5[event];
   if (!handler) return "";
   try {
     const out = await handler(stdin, deps);
     return out ? JSON.stringify(out) : "";
   } catch (err) {
-    debugLog(stateDir(deps.env ?? process.env), `[${HARNESS4}] ${event} failed: ${err?.message ?? err}`);
+    debugLog(stateDir(deps.env ?? process.env), `[${HARNESS5}] ${event} failed: ${err?.message ?? err}`);
     return "";
   }
 }
@@ -1372,7 +1412,7 @@ Usage:
   ss33 fingerprint [--json]          the project summary sent with searches
   ss33 config get | set <key> <value> | unset <key> | path
   ss33 doctor [--offline]            which settings are in effect where, and whether the store accepts the key
-  ss33 hook claude-code|codex|copilot|hermes <event>  (used by the plugins; reads hook JSON on stdin)
+  ss33 hook claude-code|codex|copilot|dsh|hermes <event>  (used by the plugins; reads hook JSON on stdin)
 
 Options:
   --dir PATH   project root (default: $CLAUDE_PROJECT_DIR, else nearest dir with ss33.lock or .git)
@@ -1585,7 +1625,7 @@ ${HIDDEN_NOTE}`);
       return usage(`unknown command "${cmd}"`, out);
   }
 }
-var HOOKS = { "claude-code": runHook, codex: runHook2, copilot: runHook3, hermes: runHook4 };
+var HOOKS = { "claude-code": runHook, codex: runHook2, copilot: runHook3, dsh: runHook4, hermes: runHook5 };
 function pickUpNote(paths, name) {
   const notes = [];
   if (paths.some((p) => p.startsWith(TARGET_DIRS.claude + "/"))) notes.push(`Claude Code picks up new skills automatically; it appears as "${name}".`);

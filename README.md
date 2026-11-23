@@ -19,6 +19,7 @@ Use the [ss33 Skill Store](https://ss33.ai) from your coding agent without spend
 | Hermes Agent | `/ss33:search` | `.agents/skills/` | ✓ | [below](#hermes-agent) |
 | Cursor (app and CLI) | `/ss33-search` | `.agents/skills/` | not available in Cursor | [below](#cursor) |
 | GitHub Copilot CLI | `/ss33:search` | `.agents/skills/` | ✓ (the agent passes it on) | [below](#github-copilot) |
+| DeepSeek Harness (DSH) | `/ss33-search` | `.agents/skills/` | ✓ | [below](#deepseek-harness-dsh) |
 
 The rest of this page writes commands the Claude Code way (`/ss33:add`). Use your agent's form.
 
@@ -94,6 +95,20 @@ Start a new session and run `/ss33:setup`.
 - **VS Code:** Copilot's agent plugins in VS Code read the same plugin, but haven't been tested yet.
 - **Windows:** needs [Git for Windows](https://git-scm.com/download/win). ss33 finds its `sh.exe` even when it isn't on your PATH.
 
+### DeepSeek Harness (DSH)
+
+Works in DSH 0.2.2 and later. Add it to a profile (here `web`; use the profile you run):
+
+```
+dsh plugin --profile web add "github:afterpartyai/ss33-skill-store-for-agents#path:adapters/dsh"
+```
+
+This needs `pnpm` on your PATH. Restart DSH, start a new session and run `/ss33-setup`.
+
+- **Commands** are `/ss33-search`, `/ss33-add`, and so on, because DSH doesn't give plugin skills a `ss33:` prefix.
+- **Sandbox:** ss33 commands run in DSH's shell sandbox. Searching needs network access to `mcp.ss33.ai`. Settings commands write `~/.config/ss33`, outside your workspace, so DSH may ask you to approve them.
+- **Prompt matching:** the note appears in the conversation, collapsed to one line.
+
 ## Settings
 
 **API key** (optional). The free tier allows 5 searches a minute. Create a key at https://ss33.ai/skills/account for more. Never paste the key into the chat. Set it where your agent keeps plugin settings:
@@ -102,7 +117,7 @@ Start a new session and run `/ss33:setup`.
 |---|---|
 | Claude Code | `/plugin configure ss33@ss33` (stored in your OS keychain) |
 | Hermes Agent | In the desktop app (Settings → Plugins → ss33), or as `SS33_API_KEY=<key>` in `~/.hermes/.env` |
-| Codex, Cursor, Copilot | These have no plugin settings screen. In your own terminal, run the `config set apiKey` command that `setup` shows you |
+| Codex, Cursor, Copilot, DSH | These have no plugin settings screen. In your own terminal, run the `config set apiKey` command that `setup` shows you |
 
 Every route ends up in `~/.config/ss33/config.json` (0600), which all the ss33 commands read. An `SS33_API_KEY` environment variable also works where your agent passes it through. Codex may not: its background server may have started before you set it. `/ss33:setup` checks that the store accepts the key.
 
@@ -158,6 +173,7 @@ codex plugin marketplace add "$PWD" && codex plugin add ss33@ss33   # Codex
 hermes plugins validate adapters/hermes                             # Hermes manifest and security scan
 agent --plugin-dir ./adapters/cursor                                # Cursor CLI
 copilot --plugin-dir ./adapters/copilot                             # GitHub Copilot CLI
+dsh plugin --profile <profile> add "$PWD/adapters/dsh"              # DeepSeek Harness (links this checkout)
 ```
 
 ## License

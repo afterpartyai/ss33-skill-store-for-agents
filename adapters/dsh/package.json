@@ -1,0 +1,22 @@
+{
+  "name": "dsh-ss33",
+  "version": "0.4.6",
+  "description": "ss33 Skill Store for DeepSeek Harness: project-aware skill search, native skill install with a lockfile, and opt-in prompt matching.",
+  "type": "module",
+  "main": "index.js",
+  "files": ["index.js", "cordis.patch.yml", "skills", "scripts", "lib"],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "author": "ReadyAI <support@readyai.ai>",
+  "homepage": "https://ss33.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afterpartyai/ss33-skill-store-for-agents.git",
+    "directory": "adapters/dsh"
+  },
+  "keywords": ["dsh-plugin", "skills", "skill-store", "ss33"],
+  "license": "MIT"
+}

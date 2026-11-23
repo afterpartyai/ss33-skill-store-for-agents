@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 import { runHook as claudeCodeHook } from "../adapters/claude-code.js";
 import { runHook as codexHook } from "../adapters/codex.js";
 import { runHook as copilotHook } from "../adapters/copilot.js";
+import { runHook as dshHook } from "../adapters/dsh.js";
 import { runHook as hermesHook } from "../adapters/hermes.js";
 import { StoreClient, StoreError } from "../core/client.js";
 import {
@@ -36,7 +37,7 @@ Usage:
   ss33 fingerprint [--json]          the project summary sent with searches
   ss33 config get | set <key> <value> | unset <key> | path
   ss33 doctor [--offline]            which settings are in effect where, and whether the store accepts the key
-  ss33 hook claude-code|codex|copilot|hermes <event>  (used by the plugins; reads hook JSON on stdin)
+  ss33 hook claude-code|codex|copilot|dsh|hermes <event>  (used by the plugins; reads hook JSON on stdin)
 
 Options:
   --dir PATH   project root (default: $CLAUDE_PROJECT_DIR, else nearest dir with ss33.lock or .git)
@@ -269,7 +270,7 @@ export async function main(argv: string[], out = (s: string) => process.stdout.w
   }
 }
 
-const HOOKS: Record<string, (event: string, stdin: string) => Promise<string>> = { "claude-code": claudeCodeHook, codex: codexHook, copilot: copilotHook, hermes: hermesHook };
+const HOOKS: Record<string, (event: string, stdin: string) => Promise<string>> = { "claude-code": claudeCodeHook, codex: codexHook, copilot: copilotHook, dsh: dshHook, hermes: hermesHook };
 
 /** Which agents load the skill from where it was written. */
 function pickUpNote(paths: string[], name: string): string {
