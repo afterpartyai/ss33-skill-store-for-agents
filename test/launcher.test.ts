@@ -48,6 +48,11 @@ test("launcher: runs the bundle with an explicit or cached runtime, not needing 
 
   const prefetch = await run(["__prefetch-runtime"], { SS33_RUNTIME_DIR: cachedRuntime() });
   assert.deepEqual([prefetch.code, prefetch.stdout, prefetch.stderr], [0, "", ""]);
+
+  // DeepSeek Harness gives its shell commands the executable running it; no download needed.
+  const dsh = await run(["version"], { DSH_NODE_EXECUTABLE: process.execPath, SS33_RUNTIME_DIR: tempDir(), SS33_NODE_DIST: "http://127.0.0.1:9/never" });
+  assert.equal(dsh.code, 0, dsh.stderr);
+  assert.equal(dsh.stderr, "", "no download");
 });
 
 test("launcher: a hook with no runtime exits 0 silently and fetches in the background", { skip }, async () => {

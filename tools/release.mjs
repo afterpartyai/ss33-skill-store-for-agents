@@ -23,6 +23,7 @@ const FILES = [
   ["adapters/hermes/plugin.yaml", (old) => new RegExp(`^(version: )${v(old)}()$`, "m"), 1],
   ["adapters/cursor/.cursor-plugin/plugin.json", (old) => new RegExp(`^(  "version": ")${v(old)}(")`, "m"), 1],
   ["adapters/copilot/plugin.json", (old) => new RegExp(`^(  "version": ")${v(old)}(")`, "m"), 1],
+  ["adapters/dsh/package.json", (old) => new RegExp(`^(  "version": ")${v(old)}(")`, "m"), 1],
 ];
 
 function fail(msg) {

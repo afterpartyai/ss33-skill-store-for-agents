@@ -1,8 +1,8 @@
 # CLAUDE.md: ss33 Skill Store for agents
 
-This repo holds a harness-agnostic core and CLI for the ss33 Skill Store (an MCP server at `https://mcp.ss33.ai/mcp`), plus five plugin adapters: **Claude Code**, **Codex**, **Hermes Agent**, **Cursor** and **GitHub Copilot**. The core turns the store into three features:
+This repo holds a harness-agnostic core and CLI for the ss33 Skill Store (an MCP server at `https://mcp.ss33.ai/mcp`), plus six plugin adapters: **Claude Code**, **Codex**, **Hermes Agent**, **Cursor**, **GitHub Copilot** and **DeepSeek Harness (DSH)**. The core turns the store into three features:
 
-1. **Prompt matching (off by default; users opt in).** A prompt hook (`UserPromptSubmit`, Copilot's `userPromptSubmitted`, or Hermes's `pre_llm_call`) adds a one-line "this skill may be relevant" note, only when a candidate passes local fit checks. Cursor has no prompt matching (see Cursor specifics).
+1. **Prompt matching (off by default; users opt in).** A prompt hook (`UserPromptSubmit`, Copilot's `userPromptSubmitted`, Hermes's `pre_llm_call`, or DSH's `agent/pre-step`) adds a one-line "this skill may be relevant" note, only when a candidate passes local fit checks. Cursor has no prompt matching (see Cursor specifics).
 2. **Project-aware search.** A short project summary, built from manifests only (never source), is sent with every search.
 3. **Native skill install.** Skills are written as regular `SKILL.md` files, pinned by content hash in `ss33.lock`.
 
@@ -24,6 +24,7 @@ src/adapters/
   claude-code.ts   Claude Code mapping: harness name, `/ss33:add`
   codex.ts         Codex mapping: harness name, `$ss33:add`
   copilot.ts       Copilot mapping: `ss33 hook copilot user-prompt-submitted` gets {sessionId, cwd, prompt}, prints {additionalContext}
+  dsh.ts           DSH mapping: `ss33 hook dsh pre-step` gets {session_id, cwd, prompt}, prints {context, notice}
   hermes.ts        Hermes mapping: `ss33 hook hermes pre-llm-call` gets {session_id, cwd, prompt, surface}, prints {context, notice}
 src/cli/main.ts  `ss33` CLI: the contract every adapter calls
 adapters/claude-code/    the Claude Code plugin root (what gets installed)
@@ -56,6 +57,13 @@ adapters/copilot/        the GitHub Copilot plugin root (Copilot CLI; VS Code ag
   hooks/hooks.json             Copilot's own format: sessionStart → runtime prefetch; userPromptSubmitted → ss33 hook copilot user-prompt-submitted
   skills/{search,add,update,list,setup}/SKILL.md   → /ss33:search, /ss33:add, …  (user-only: disable-model-invocation)
   scripts/ss33, lib/ss33.cjs   COPIES made by `npm run build`; never edit them here
+adapters/dsh/            the DeepSeek Harness plugin: an npm-style bundle package (`dsh plugin add "github:…#path:adapters/dsh"`)
+  package.json                 name dsh-ss33, `dsh.bundle.patch`; no dependencies
+  cordis.patch.yml             the bundle layer: inserts the `ss33` row (name: dsh-ss33)
+  index.js                     Cordis plugin, node: imports only: registers the skills, DSH_SS33_PLUGIN_ROOT for shells,
+                               and the agent/pre-step listener → ss33 CLI → a `notice` message
+  skills/ss33-{search,add,update,list,setup}/SKILL.md   → /ss33-search, /ss33-add, …  (user-only: disable-model-invocation)
+  scripts/ss33, lib/ss33.cjs   COPIES made by `npm run build`; never edit them here
 .claude-plugin/marketplace.json   Claude Code installs straight from this GitHub repo
 .agents/plugins/marketplace.json  Codex installs from this repo (Codex prefers it over .claude-plugin/)
 .cursor-plugin/marketplace.json   Cursor installs from this repo
@@ -81,13 +89,14 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
 - `npm run test:live`: also hits the real store (set `SS33_API_KEY` to avoid the 5/min free-tier limit).
 - `npm run eval:matching`: matching report (offline replay). `-- --verbose` shows every case; `-- --record` records answers for new cases from the real store (uses your key); `-- --update-baseline` accepts the current numbers.
 - `npm run fake-store -- --skills test/fixtures/store/basic.json`: run the fake store; point anything at it with `SS33_ENDPOINT=<printed url>`. `--help` for record/auth/fault options; faults and new skill versions can be set at runtime via `POST /_admin/fault` and `POST /_admin/skills`.
-- `npm run build`: typechecks, bundles `src/cli/main.ts` → `adapters/claude-code/lib/ss33.cjs`, then copies the bundle and the launcher into `adapters/codex/`, `adapters/hermes/`, `adapters/cursor/` and `adapters/copilot/`. **Run this and commit every plugin after any `src/` or launcher change.** CI and `test/packaging.test.ts` fail if a copy is stale.
+- `npm run build`: typechecks, bundles `src/cli/main.ts` → `adapters/claude-code/lib/ss33.cjs`, then copies the bundle and the launcher into `adapters/codex/`, `adapters/hermes/`, `adapters/cursor/`, `adapters/copilot/` and `adapters/dsh/`. **Run this and commit every plugin after any `src/` or launcher change.** CI and `test/packaging.test.ts` fail if a copy is stale.
 - `claude plugin validate adapters/claude-code --strict` and `claude plugin validate .`: manifest checks.
 - Try it in Claude Code without installing: `claude --plugin-dir ./adapters/claude-code` (use `SS33_MATCH=1` to force matching on).
 - Try it in Codex: `codex plugin marketplace add "$PWD" && codex plugin add ss33@ss33`, start a new session and trust the hooks. Use a throwaway `CODEX_HOME` (copy `auth.json` into it) to keep your own Codex setup clean. The TUI runs hooks in a long-lived app-server daemon that keeps the environment it started with, so stop that daemon before testing with different `SS33_*` variables.
 - Hermes: `hermes plugins validate adapters/hermes` (the catalog's admission checks). Try it with a throwaway Hermes (its own checkout and `HERMES_HOME`, plus `SS33_CONFIG_DIR`/`SS33_STATE_DIR`) so your own setup stays clean: `hermes plugins install "file://$PWD#adapters/hermes" --ref $(git rev-parse HEAD) --enable` installs a committed checkout. Hermes runs plugins inside its gateway, which keeps the environment it started with: run `hermes gateway stop` before testing with different `SS33_*` variables. Plugin commands (`/ss33:*`) only exist in the interactive CLI, TUI and desktop, not in `hermes chat -q`.
 - Cursor: `agent --plugin-dir ./adapters/cursor --workspace <project>` loads this checkout without installing (CLI). Set `SS33_CONFIG_DIR`/`SS33_STATE_DIR` to keep your own ss33 config clean, and when starting `agent` from inside Claude Code, unset `CLAUDECODE` and `CLAUDE_PROJECT_DIR` (they leak into Cursor's hooks and shells). There's no official validator; the JSON schemas are in `cursor/plugins` (`schemas/plugin.schema.json`, `schemas/marketplace.schema.json`). For the IDE, copy (don't symlink) the folder to `~/.cursor/plugins/local/ss33` and reload the window.
 - Copilot: `copilot --plugin-dir ./adapters/copilot` loads this checkout without installing (`-p "…" -s` for headless runs). Set `COPILOT_HOME` to a scratch folder to try `copilot plugin install`/`marketplace add` without touching your own setup; `plugin install` reports manifest fields it ignores. Same env caveats as Cursor when starting it from inside Claude Code.
+- DSH: there's no global `dsh`; run it with `npx @deepseek-ai/dsh@<version>` or from a scratch `npm install`. Create a profile with `dsh --profile ss33 --from-default-profile headless --dump-config >/dev/null` (or `web`), link this checkout with `dsh plugin --profile ss33 add "$PWD/adapters/dsh"` (needs pnpm), and check the row with `dsh --profile ss33 --dump-config | grep -A2 dsh-ss33`. Headless: `dsh --profile ss33 "/ss33-search …"` from inside a project. A throwaway `DSH_HOME` keeps `~/.dsh` clean, but model runs then need `DEEPSEEK_API_KEY` exported (the key lives in `<DSH_HOME>/.credentials.yaml`, written by the web Models page). `index.js` is read from the linked folder at startup: restart DSH after editing it.
 - Debug the hook: `echo '{"session_id":"x","cwd":"'$PWD'","prompt":"set up github actions ci for lint and tests"}' | SS33_MATCH=1 sh adapters/claude-code/scripts/ss33 hook claude-code user-prompt-submit`. Decisions are logged to `<state dir>/hook.log`.
 
 ## Conventions
@@ -146,6 +155,20 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
   - Direct installs (`copilot plugin install <path or repo>`) are deprecated; document marketplace installs only.
   - VS Code: `/plugin marketplace add …` in Copilot chat ran the `copilot` CLI, and the plugin landed in `~/.copilot/installed-plugins/ss33/ss33` (the Copilot version). Search works on Windows from the CLI and VS Code, and so does prompt matching (with the BOM fix above).
   - Git for Windows' `usr\bin\sh.exe` started from PowerShell lacks `dirname`/`uname` on PATH; the launcher adds `/usr/bin:/bin` itself. `Git\bin\sh.exe` (a wrapper) sets PATH up already.
+- **DSH specifics** (built against DSH 0.2.2-rc.5's packages and types, 2026-11-23).
+  - **Verified live** (headless profile, DSH 0.2.2-rc.5, Linux, 2026-11-23, plugin linked with `dsh plugin add <path>`): `/ss33-search` loads the skill, runs the CLI in the shell sandbox and reaches the store; `/ss33-add` previews and reviews without writing, then asks; with `SS33_MATCH=1` the pre-step hook suggested the right skill and the session log holds the hint as `{"kind":"ss33","form":"notice","summary":…}`, and the model didn't repeat it. The user confirmed the notice shows in the web UI. Not yet checked: an actual install inside the sandbox, a GitHub-spec install, Desktop (Electron), Windows.
+  - Headless runs here got `MISSING_CREDENTIAL` even after the key was saved on the web Models page (both 0.2.1-rc.2 and 0.2.2-rc.5); exporting `DEEPSEEK_API_KEY` worked.
+  - DSH plugins are in-process Cordis modules, not shell hooks. A third-party plugin is a package with `dsh.bundle.patch`, installed per profile with pnpm (`dsh plugin --profile <p> add <spec>`, or the web Plugins page). The pnpm spec can be a git subfolder, `github:afterpartyai/ss33-skill-store-for-agents#path:adapters/dsh`; DSH can update a git install in place only when it's pinned to a full commit SHA (`#<sha>&path:adapters/dsh`). Publishing `dsh-ss33` to npm, or listing it in a plugin index (the experimental plugin market), are later options.
+  - `index.js` imports only `node:` modules: a profile's `node_modules` holds the packages it installed, not DSH's own, so `@deepseek-ai/*` imports could fail. The hint message is built by hand in the shape `dsh-llm`'s `createUserMessage` makes (`{id, role: 'user', content, source}`).
+  - `inject: ['skills']` is the only required service. `shellEnv`, `workingDirectory` and `agents` are optional (`ctx.inject([...], fn)`), so the plugin still loads in compositions without them (e.g. no shell tool).
+  - **Prompt matching** listens to `agent/pre-step` (a waterfall: `await next()`, then append to `messages`), only on step 1 of a turn and only for messages with `source.kind === 'user'` (not other plugins' injections or skill bodies; DSH injects a `/skill` body as a separate message, and the `/ss33-…` token in the user's text makes the core skip it as a slash command). It reads the matching setting first, as the Hermes shim does (`matchingOn`, keep in step with `loadConfig`), so with matching off a turn starts no process. Then it runs `lib/ss33.cjs` with `process.execPath` and `ELECTRON_RUN_AS_NODE=1` (DSH Desktop runs on Electron), outside the shell sandbox. Subagent sessions are skipped.
+  - The hint is appended as a user-role message with `source: {kind: 'ss33', form: 'notice', summary: <notice>}`. DSH documents a notice's summary as shown as a one-line row, so the hint uses the "user has been shown a note" variant (Claude Code's). The user confirmed it shows in the web UI (2026-11-23).
+  - cwd: `workingDirectory.ensure(agent)` (follows folder changes), else the session header's `cwd`. Never `process.cwd()`: one DSH host serves every session.
+  - Skills are registered at runtime (`ctx.skills.register`, `resourceBase` = the skill folder), with `invocation.modelInvocable: false` for the user-only ones. DSH doesn't namespace plugin skills, so they're `ss33-*` like Cursor's, and the hint says `/ss33-add`. A `/name` token anywhere in a user message injects that skill.
+  - Skills find the launcher through `DSH_SS33_PLUGIN_ROOT`, which the plugin adds to every shell command with `shellEnv.register` (contributed keys must start with `DSH_`). If it's missing, they fall back to two folders above the skill.
+  - DSH gives shell commands `DSH_NODE_EXECUTABLE` (the executable running DSH; Electron under Desktop). The launcher uses it as `SS33_HOST_NODE` with `ELECTRON_RUN_AS_NODE=1`, because the shell sandbox (writes only in the workspace and /tmp) would block the Node.js download into `~/.cache`.
+  - DSH reads project skills from `.dsh/skills`, `.agents/skills` and `~/.dsh/skills`; `add` uses `--target agents`.
+  - No API key option yet: plugin config lives in plain YAML (`cordis.patch.yml`), so the key goes through `ss33 config set apiKey` or `SS33_API_KEY`, as for Cursor. DSH has a credentials service (`ctx.credentials`) that could hold it later.
 - **Supporting files:** the store returns only `SKILL.md`. `add` warns about linked files that won't be installed and points to the author's folder.
 
 ## Releasing

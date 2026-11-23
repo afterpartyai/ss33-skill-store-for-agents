@@ -1,0 +1,4 @@
+# Bundle patch: mounts the plugin (index.js), which registers the /ss33-* skills and opt-in prompt matching.
+- insert:
+    - id: ss33
+      name: dsh-ss33

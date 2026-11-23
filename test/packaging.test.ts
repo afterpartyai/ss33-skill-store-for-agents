@@ -32,6 +32,11 @@ test("packaging: the Copilot plugin carries the same bundle and launcher as the 
   assert.equal(read("adapters/copilot/scripts/ss33"), read("adapters/claude-code/scripts/ss33"), "run `npm run build` (it copies the launcher)");
 });
 
+test("packaging: the DSH plugin carries the same bundle and launcher as the Claude Code plugin", () => {
+  assert.equal(read("adapters/dsh/lib/ss33.cjs"), read("adapters/claude-code/lib/ss33.cjs"), "run `npm run build` (it copies the bundle)");
+  assert.equal(read("adapters/dsh/scripts/ss33"), read("adapters/claude-code/scripts/ss33"), "run `npm run build` (it copies the launcher)");
+});
+
 test("packaging: one version everywhere", () => {
   assert.equal(json("package.json").version, VERSION);
   assert.equal(json("adapters/claude-code/.claude-plugin/plugin.json").version, VERSION);
@@ -39,6 +44,30 @@ test("packaging: one version everywhere", () => {
   assert.match(read("adapters/hermes/plugin.yaml"), new RegExp(`^version: ${VERSION.replace(/\./g, "\\.")}$`, "m"));
   assert.equal(json("adapters/cursor/.cursor-plugin/plugin.json").version, VERSION);
   assert.equal(json("adapters/copilot/plugin.json").version, VERSION);
+  assert.equal(json("adapters/dsh/package.json").version, VERSION);
+});
+
+test("packaging: the DSH plugin is a bundle package whose skills use DSH's conventions", () => {
+  const pkg = json("adapters/dsh/package.json");
+  assert.equal(pkg.dsh.bundle.patch, "./cordis.patch.yml");
+  // The patch row's `name` is the package DSH imports.
+  assert.match(read("adapters/dsh/cordis.patch.yml"), new RegExp(`^      name: ${pkg.name}$`, "m"));
+  for (const f of files("adapters/dsh").filter((f) => f !== "package.json")) assert.ok(pkg.files.some((p: string) => f === p || f.startsWith(`${p}/`)), `${f} is published`);
+  assert.ok(!pkg.dependencies && !pkg.peerDependencies, "nothing to install: a profile can't resolve DSH's own packages");
+  assert.doesNotMatch(read("adapters/dsh/index.js"), /from ['"](?!node:)/, "only node: imports");
+  // DSH doesn't namespace plugin skills, so they carry the ss33- prefix, like Cursor's.
+  const skills = readdirSync(join(root, "adapters/dsh/skills"));
+  assert.deepEqual(skills.sort(), readdirSync(join(root, "adapters/claude-code/skills")).map((s) => `ss33-${s}`).sort(), "same skills in every plugin");
+  for (const s of skills) {
+    const md = read(`adapters/dsh/skills/${s}/SKILL.md`);
+    assert.match(md, new RegExp(`^---\\nname: ${s}\\n`), `${s}: frontmatter name`);
+    assert.doesNotMatch(md, /CLAUDE_PLUGIN_ROOT|\$ARGUMENTS|allowed-tools|\/ss33:|\$ss33:|\.claude\/skills|Cursor|Codex/, s);
+    assert.match(md, /\$DSH_SS33_PLUGIN_ROOT\/scripts\/ss33/, `${s}: locates the launcher`);
+    assert.match(md, new RegExp(`<plugin root>/skills/${s}/`), `${s}: fallback when the variable is missing`);
+    if (s === "ss33-add") assert.match(md, /--target agents/);
+    if (s === "ss33-search") assert.doesNotMatch(md, /disable-model-invocation/);
+    else assert.match(md, /^disable-model-invocation: true$/m, `${s}: user-only`);
+  }
 });
 
 test("packaging: marketplaces point each harness at its own plugin root", () => {
@@ -137,7 +166,7 @@ function files(dir: string, prefix = ""): string[] {
 }
 
 test("packaging: Python stays in the Hermes plugin, which needs no dependencies", () => {
-  for (const r of ["adapters/claude-code", "adapters/codex", "adapters/cursor", "adapters/copilot"]) {
+  for (const r of ["adapters/claude-code", "adapters/codex", "adapters/cursor", "adapters/copilot", "adapters/dsh"]) {
     assert.deepEqual(files(r).filter((f) => f.endsWith(".py") || f.endsWith(".yaml") && !f.endsWith("openai.yaml")), [], `${r}: nothing Hermes-specific`);
   }
   assert.deepEqual(files("adapters/hermes").filter((f) => f.endsWith(".py")), ["__init__.py"]);
