@@ -41,7 +41,7 @@ export async function userPromptSubmitted(stdin: string, deps: EventDeps = {}): 
   try {
     input = JSON.parse(stdin) as UserPromptSubmittedInput;
   } catch {
-    return undefined;
+    throw new Error("stdin is not JSON"); // fixed text: the parser's message would quote the prompt into hook.log
   }
   if (typeof input.prompt !== "string") return undefined;
   const sessionId = input.sessionId ?? input.session_id;

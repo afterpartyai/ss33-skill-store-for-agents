@@ -96,7 +96,8 @@ function client(): StoreClient {
 
 function readStdin(): string {
   try {
-    return readFileSync(0, "utf8");
+    // Windows PowerShell 5.1 prepends a UTF-8 BOM when it pipes text to a native program (Copilot's powershell hooks).
+    return readFileSync(0, "utf8").replace(/^﻿/, "");
   } catch {
     return "";
   }
