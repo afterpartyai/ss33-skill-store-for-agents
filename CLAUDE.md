@@ -150,6 +150,6 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
 
 ## Releasing
 
-1. Bump the version in `package.json`, `src/core/version.ts` and every plugin manifest (including `adapters/hermes/plugin.yaml`, `adapters/cursor/.cursor-plugin/plugin.json` and `adapters/copilot/plugin.json`) (`test/packaging.test.ts` fails if they disagree).
-2. `npm run build`, then `npm test`, and commit the bundle in every `adapters/*` plugin. For Hermes, also run `hermes plugins validate adapters/hermes`.
+1. `npm run release -- <x.y.z | patch | minor | major>` bumps the version in `package.json`, `package-lock.json`, `src/core/version.ts` and every plugin manifest (`tools/release.mjs` lists them; add a new adapter's manifest there and to `test/packaging.test.ts`), then runs `npm run build` and `npm test`. It checks every file before changing any, so a mismatch leaves nothing half-bumped. For Hermes, also run `hermes plugins validate adapters/hermes`.
+2. Commit everything, including the rebuilt bundle in every `adapters/*` plugin. Put the bump in the fix PR when the change is already tested and should ship; use a separate release PR to batch several merged PRs, or to test from `main` first (merging a bump to `main` is what ships it). After merging, tag the merge commit and publish: `git tag -a vX -m vX <sha> && git push origin vX`, then `gh release create vX --title … --notes-file …`.
 3. Users of the GitHub marketplace get the update when the version changes. Codex asks users to re-trust the hooks after every update, so release Codex changes less often.
