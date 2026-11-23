@@ -61,7 +61,13 @@ test("packaging: Copilot hooks and skills use Copilot's conventions", () => {
   assert.equal(hooks.version, 1);
   assert.deepEqual(Object.keys(hooks.hooks).sort(), ["sessionStart", "userPromptSubmitted"]);
   assert.match(hooks.hooks.userPromptSubmitted[0].bash, /^sh "\$PLUGIN_ROOT\/scripts\/ss33" hook copilot user-prompt-submitted$/);
-  assert.match(hooks.hooks.userPromptSubmitted[0].powershell, /^\$input \| sh "\$env:PLUGIN_ROOT\/scripts\/ss33" hook copilot user-prompt-submitted$/);
+  // Windows: Git for Windows often leaves sh off PATH, so the PowerShell commands look for its bin\sh.exe, and do nothing without it.
+  for (const [event, args] of [["userPromptSubmitted", "hook copilot user-prompt-submitted"], ["sessionStart", "__prefetch-runtime"]] as const) {
+    const ps: string = hooks.hooks[event][0].powershell;
+    assert.match(ps, /^\$s = \(Get-Command sh /, event);
+    assert.ok(ps.includes("Join-Path $_ 'bin\\sh.exe'"), event);
+    assert.ok(ps.endsWith(`if ($s) { ${event === "userPromptSubmitted" ? "$input | " : ""}& $s "$env:PLUGIN_ROOT/scripts/ss33" ${args} }`), event);
+  }
   assert.match(hooks.hooks.sessionStart[0].bash, /__prefetch-runtime$/);
   const skills = readdirSync(join(root, "adapters/copilot/skills"));
   assert.deepEqual(skills.sort(), readdirSync(join(root, "adapters/claude-code/skills")).sort(), "same skills in every plugin (Copilot namespaces them: /ss33:search)");
@@ -71,6 +77,7 @@ test("packaging: Copilot hooks and skills use Copilot's conventions", () => {
     // Copilot substitutes $ARGUMENTS but not \${CLAUDE_PLUGIN_ROOT}, so the skills locate the launcher from their own path.
     assert.doesNotMatch(md, /CLAUDE_PLUGIN_ROOT|allowed-tools|\$ss33:|\.claude\/skills|Codex|Cursor|escalat/, s);
     assert.match(md, new RegExp(`<plugin root>/skills/${s}/SKILL\\.md`), `${s}: locates the plugin root`);
+    assert.match(md, /C:\\Program Files\\Git\\bin\\sh\.exe/, `${s}: finds sh on Windows`);
     if (s === "add") assert.match(md, /--target agents/);
     if (s === "search") assert.doesNotMatch(md, /disable-model-invocation/);
     else assert.match(md, /^disable-model-invocation: true$/m, `${s}: user-only`);
@@ -98,6 +105,7 @@ test("packaging: Cursor manifest, hooks and skills use Cursor's conventions", ()
     assert.match(md, new RegExp(`^---\\nname: ${s}\\n`), `${s}: frontmatter name`);
     assert.doesNotMatch(md, /CLAUDE_PLUGIN_ROOT|\$ARGUMENTS|allowed-tools|\/ss33:|\$ss33:|\.claude\/skills|Codex|escalat/, s);
     assert.match(md, new RegExp(`<plugin root>/skills/${s}/SKILL\\.md`), `${s}: locates the plugin root`);
+    assert.match(md, /C:\\Program Files\\Git\\bin\\sh\.exe/, `${s}: finds sh on Windows`);
     if (s === "ss33-add") assert.match(md, /--target agents/);
     if (s === "ss33-search") assert.doesNotMatch(md, /disable-model-invocation/);
     else assert.match(md, /^disable-model-invocation: true$/m, `${s}: user-only`);

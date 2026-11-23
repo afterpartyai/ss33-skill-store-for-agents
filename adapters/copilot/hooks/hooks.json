@@ -5,7 +5,7 @@
       {
         "type": "command",
         "bash": "sh \"$PLUGIN_ROOT/scripts/ss33\" __prefetch-runtime",
-        "powershell": "sh \"$env:PLUGIN_ROOT/scripts/ss33\" __prefetch-runtime",
+        "powershell": "$s = (Get-Command sh -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1).Source; if (-not $s) { $r = @(); $g = (Get-Command git -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1).Source; if ($g) { $r += Split-Path (Split-Path $g) }; $r += \"$env:ProgramFiles\\Git\", \"$env:LOCALAPPDATA\\Programs\\Git\"; $s = $r | ForEach-Object { Join-Path $_ 'bin\\sh.exe' } | Where-Object { Test-Path $_ } | Select-Object -First 1 }; if ($s) { & $s \"$env:PLUGIN_ROOT/scripts/ss33\" __prefetch-runtime }",
         "timeoutSec": 5
       }
     ],
@@ -13,7 +13,7 @@
       {
         "type": "command",
         "bash": "sh \"$PLUGIN_ROOT/scripts/ss33\" hook copilot user-prompt-submitted",
-        "powershell": "$input | sh \"$env:PLUGIN_ROOT/scripts/ss33\" hook copilot user-prompt-submitted",
+        "powershell": "$s = (Get-Command sh -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1).Source; if (-not $s) { $r = @(); $g = (Get-Command git -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1).Source; if ($g) { $r += Split-Path (Split-Path $g) }; $r += \"$env:ProgramFiles\\Git\", \"$env:LOCALAPPDATA\\Programs\\Git\"; $s = $r | ForEach-Object { Join-Path $_ 'bin\\sh.exe' } | Where-Object { Test-Path $_ } | Select-Object -First 1 }; if ($s) { $input | & $s \"$env:PLUGIN_ROOT/scripts/ss33\" hook copilot user-prompt-submitted }",
         "timeoutSec": 10
       }
     ]

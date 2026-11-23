@@ -1,0 +1,3 @@
+# The sh launcher and plugin files must keep LF line endings, even in a Windows checkout with core.autocrlf.
+* text=auto eol=lf
+*.png binary

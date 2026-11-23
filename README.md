@@ -76,7 +76,7 @@ Then, in `agent`, install `ss33` from `/plugins` → Marketplace. In the app, pa
 - **Commands** are `/ss33-search`, `/ss33-add`, and so on, because Cursor doesn't give plugin skills a `ss33:` prefix.
 - **No prompt matching:** Cursor's prompt hook can't add a note for the agent. The agent can still search the store on its own when a task needs a specialised procedure.
 - **Approvals:** Cursor asks before each ss33 command, and a plugin can't pre-approve its own commands (allowlisting `sh` doesn't cover them either). Approve them as they come, or use auto-review mode (`agent --auto-review`), which runs commands Cursor judges safe without asking.
-- **Windows:** the commands need Git for Windows (`sh`) on your PATH.
+- **Windows:** needs [Git for Windows](https://git-scm.com/download/win). ss33 finds its `sh.exe` even when it isn't on your PATH.
 
 ### GitHub Copilot
 
@@ -92,7 +92,7 @@ Start a new session and run `/ss33:setup`.
 - **Prompt matching:** Copilot can't show you a note from a plugin, so when a published skill clearly fits, the agent mentions it in one line at the end of its reply.
 - **Approvals:** Copilot asks for access to the plugin's folder (choose to remember it for the session), then before each ss33 command.
 - **VS Code:** Copilot's agent plugins in VS Code read the same plugin, but haven't been tested yet.
-- **Windows:** the commands need Git for Windows (`sh`) on your PATH.
+- **Windows:** needs [Git for Windows](https://git-scm.com/download/win). ss33 finds its `sh.exe` even when it isn't on your PATH.
 
 ## Settings
 
