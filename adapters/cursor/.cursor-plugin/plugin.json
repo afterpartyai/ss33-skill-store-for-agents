@@ -1,7 +1,7 @@
 {
   "name": "ss33",
   "displayName": "ss33 Skill Store",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "ss33 Skill Store for Cursor: project-aware skill search and native skill install with a lockfile.",
   "author": { "name": "ReadyAI", "email": "support@readyai.ai" },
   "homepage": "https://ss33.ai",
