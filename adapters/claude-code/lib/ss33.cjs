@@ -1420,7 +1420,7 @@ function client() {
 }
 function readStdin() {
   try {
-    return (0, import_node_fs6.readFileSync)(0, "utf8").replace(/^﻿/, "");
+    return (0, import_node_fs6.readFileSync)(0, "utf8").replace(/^\uFEFF/, "");
   } catch {
     return "";
   }
