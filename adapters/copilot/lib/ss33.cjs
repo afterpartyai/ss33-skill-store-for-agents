@@ -159,6 +159,8 @@ var StoreError = class extends Error {
     this.sourceUrl = sourceUrl;
     this.name = "StoreError";
   }
+  kind;
+  sourceUrl;
 };
 var PROTOCOL_VERSION = "2025-06-18";
 var StoreClient = class {
@@ -166,6 +168,7 @@ var StoreClient = class {
     this.opts = opts;
     this.fetchImpl = opts.fetchImpl ?? fetch;
   }
+  opts;
   sessionId;
   nextId = 1;
   fetchImpl;
