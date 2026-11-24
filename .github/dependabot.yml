@@ -19,6 +19,7 @@ updates:
       interval: monthly
     groups:
       dev-dependencies:
+        patterns: ["*"]
         update-types: ["minor", "patch"]
     ignore:
       # Stay at or below the Node floor in package.json engines; bump them together.
