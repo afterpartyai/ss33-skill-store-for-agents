@@ -145,3 +145,51 @@ test("dsh plugin: matchingOn follows the CLI's precedence", async () => {
   writeFileSync(join(dir, "config.json"), "{broken");
   assert.equal(matchingOn({ SS33_CONFIG_DIR: dir }), true, "unreadable config: the CLI decides");
 });
+
+test("dsh plugin: runHook resolves to undefined, never throws, when the CLI can't start or answers nothing useful", async () => {
+  const { runHook: pluginHook } = await import(pathToFileURL(join(process.cwd(), "adapters/dsh/index.js")).href);
+  const input = { session_id: "s", cwd: project(), prompt };
+  assert.equal(await pluginHook(input, { node: join(tempDir(), "no-such-node") }), undefined, "spawn error");
+  assert.equal(await pluginHook(input, { signal: "not a signal" }), undefined, "spawn throws");
+  // Matching off: the CLI prints nothing, which isn't JSON.
+  assert.equal(await pluginHook(input, { env: { ...process.env, SS33_MATCH: "0", SS33_CONFIG_DIR: tempDir(), SS33_STATE_DIR: tempDir() } }), undefined);
+});
+
+test("dsh plugin: a skill DSH refuses is logged; rejected, aborted, subagent and later steps are passed through untouched", async () => {
+  const plugin = await import(pathToFileURL(join(process.cwd(), "adapters/dsh/index.js")).href);
+  const warned: string[] = [];
+  const preStep: Listener[] = [];
+  const ctx: Record<string, unknown> = {
+    skills: { register: () => { throw new Error("duplicate skill"); } },
+    shellEnv: { register() {} },
+    workingDirectory: { ensure: async () => { throw new Error("no folder"); } },
+    logger: () => ({ warn: (s: string) => void warned.push(s), debug() {} }),
+    on: (_event: string, fn: Listener) => void preStep.push(fn),
+    effect: (fn: () => (() => void) | void) => void fn()?.(),
+  };
+  ctx.inject = (_deps: string[], fn: (scoped: unknown) => void) => fn(ctx);
+  plugin.apply(ctx);
+  assert.equal(warned.length, 5);
+  assert.match(warned[0]!, /^could not register skill ss33-add: duplicate skill$/);
+
+  const saved = process.env.SS33_MATCH;
+  process.env.SS33_MATCH = "1";
+  try {
+    const messages = [userMessage(prompt)];
+    const aborted = new AbortController();
+    aborted.abort();
+    const cases: [Record<string, unknown>, Record<string, unknown>][] = [
+      [{ step: 1 }, { kind: "reject", messages }],
+      [{ step: 1, signal: aborted.signal }, { kind: "accept", messages }],
+      [{ step: 1, agent: { session: { header: { origin: "subagent", cwd: project() } } } }, { kind: "accept", messages }],
+      [{ step: 1, agent: { session: { header: {} } } }, { kind: "accept", messages: [userMessage("   ")] }],
+    ];
+    for (const [payload, decision] of cases) assert.equal(await preStep[0]!(payload, async () => decision), decision);
+    // A payload that makes the listener itself fail: logged at debug level, the decision still goes through.
+    const odd = { kind: "accept", messages: null };
+    assert.equal(await preStep[0]!({ step: 1 }, async () => odd as unknown as Record<string, unknown>), odd);
+  } finally {
+    if (saved === undefined) delete process.env.SS33_MATCH;
+    else process.env.SS33_MATCH = saved;
+  }
+});

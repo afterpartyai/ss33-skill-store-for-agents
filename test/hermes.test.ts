@@ -5,7 +5,7 @@
  */
 import assert from "node:assert/strict";
 import { execFile, execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, realpathSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
 import { promptForMatching, runHook } from "../src/adapters/hermes.js";
@@ -103,7 +103,8 @@ const python = (() => {
     return undefined;
   }
 })();
-const skip = python ? false : "python3 (3.9+) not found";
+// The shim runs the POSIX launcher; on Windows, CI's launcher job covers it (MSYS paths, Git Bash).
+const skip = process.platform === "win32" ? "POSIX launcher; Windows is covered by the CI launcher job" : python ? false : "python3 (3.9+) not found";
 
 // Stands in for Hermes's PluginContext: only the methods the shim uses, recording what it registers.
 const DRIVER = `
@@ -259,7 +260,8 @@ test("hermes shim: the API key comes only from Hermes's profile-scoped secret, n
 });
 
 test("hermes shim: on Windows, finds Git Bash when sh isn't on the gateway's PATH", { skip }, () => {
-  const root = tempDir("ss33-git-");
+  // Resolved: on macOS the temp dir is under /var, a symlink to /private/var, and the shim reports real paths.
+  const root = realpathSync(tempDir("ss33-git-"));
   for (const f of ["PATHGIT/cmd/git.exe", "PATHGIT/bin/bash.exe", "PF/Git/usr/bin/bash.exe"]) {
     mkdirSync(join(root, f, ".."), { recursive: true });
     writeFileSync(join(root, f), "");

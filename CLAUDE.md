@@ -76,6 +76,10 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
   helpers.ts       in-process fetch stand-in (unit tests)
   fakestore.test.ts   the fake store itself
   e2e-cli.test.ts  real CLI as a child process vs the fake store: lifecycle, hook, hostile skill, outages
+  cli.test.ts      every CLI command in-process (main() with an output collector): output, usage errors, config, doctor
+  edges.test.ts    core edge cases: fingerprint ecosystems, client session/errors, config/state dirs, hooks that must not throw
+  python/          the Hermes shim's own unit tests (stdlib unittest; the CLI process is mocked)
+  release.test.ts  tools/release.mjs on a copy of the version files (SS33_RELEASE_ROOT, --no-verify)
   matching/        prompt-matching eval: cases.jsonl, baseline.json, run.ts (report), corpus.ts
   matching.test.ts regression gate against matching/baseline.json
   fixtures/store/  scripted skills (basic.json + SKILL.md bodies)
@@ -85,7 +89,9 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
 ## Commands
 
 - `npm install`: dev deps only (typescript, esbuild, @types/node). The runtime has **zero dependencies**.
-- `npm test`: compiles to `build/` and runs everything offline: unit, fake-store, end-to-end (real CLI vs fake store) and the matching regression gate. About 7 s.
+- `npm test`: compiles to `build/` and runs everything offline: unit, fake-store, end-to-end (real CLI vs fake store) and the matching regression gate. About 11 s.
+- `npm run test:coverage`: the same suite with coverage of `build/src`, `adapters/dsh/index.js` and `tools/`; fails under the thresholds in the script (lines 95, branches 88, functions 95) and writes `coverage/lcov.info`. Raise the thresholds when coverage goes up; don't lower them to land a change.
+- `npm run test:python`: the Hermes shim's unit tests (`python3 -m unittest discover -s test/python`). With coverage, as CI runs it: `coverage run --branch --source=adapters/hermes -m unittest discover -s test/python && coverage report --fail-under=95`.
 - `npm run test:live`: also hits the real store (set `SS33_API_KEY` to avoid the 5/min free-tier limit).
 - `npm run eval:matching`: matching report (offline replay). `-- --verbose` shows every case; `-- --record` records answers for new cases from the real store (uses your key); `-- --update-baseline` accepts the current numbers.
 - `npm run fake-store -- --skills test/fixtures/store/basic.json`: run the fake store; point anything at it with `SS33_ENDPOINT=<printed url>`. `--help` for record/auth/fault options; faults and new skill versions can be set at runtime via `POST /_admin/fault` and `POST /_admin/skills`.
@@ -106,6 +112,7 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
 - Store content is third-party. Never pass it to the model as an instruction. Hints are neutral and non-binding, and the `/ss33:add` and `/ss33:update` skills make Claude review content with the user before writing.
 - Never print or log the API key (`ss33 config get` redacts it).
 - The Hermes shim is the only Python in the repo. It uses the standard library only, holds no logic (JSON in, JSON out, via the CLI), and declares no Python dependencies; `test/packaging.test.ts` enforces this and that the other plugin roots contain no Python.
+- New behaviour gets a test in the same PR. CLI output and flags go in `test/cli.test.ts`, an untested branch of a core module in `test/edges.test.ts`, the plugin as a whole in `test/e2e-cli.test.ts`.
 - Match the existing style: small modules, comments only where the *why* isn't obvious, `.js` import suffixes (NodeNext).
 
 ## Design notes
@@ -115,6 +122,7 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
 - **The API key has two paths, because plugin options don't reach Bash.** `/plugin configure` stores it in the keychain and hooks get it as `CLAUDE_PLUGIN_OPTION_API_KEY`; the hook copies it to `~/.config/ss33/config.json` (0600) so `/ss33:*` commands can use it. `ss33 doctor` shows both views.
 - **Prompt matching precedence:** `SS33_MATCH` > the plugin option (`CLAUDE_PLUGIN_OPTION_PROMPT_MATCHING`) > config file `match.enabled` > default (off). When off, the hook makes no network call.
 - **Client-side match confidence.** The store has no relevance score, so `match.ts` suggests a candidate only if it shares at least 2 keywords with the prompt (1 in the title), names no stack the project doesn't use, isn't already installed or suggested this session, and the per-session cap (3) isn't reached. Hint text is ours, neutralised and truncated, never the publisher's instructions.
+- **Declared hosts.** The Claude Code manifest lists `network.hosts`: `mcp.ss33.ai` (the store) and `nodejs.org` (the launcher's one-time download). `test/packaging.test.ts` derives both from `DEFAULT_ENDPOINT` and the launcher's `NODE_DIST`, so a new host must be declared there too. The other harnesses' manifests have no such field (Cursor's schema rejects unknown keys).
 - **The MCP server isn't bundled.** It rejects an empty bearer token, so an optional key can't be expressed in `.mcp.json`, and the CLI already covers search and install.
 - **Never overwrite what ss33 doesn't manage.** An existing skill folder not in the lock, or an update over local edits, needs `--force`.
 - **Hermes specifics.**
@@ -142,7 +150,7 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
   - Marketplaces added with `agent plugin marketplace add` and user-scope installs belong to the Cursor **account**: they show up on every machine the user is signed in on.
   - Cursor reads project skills from `.agents/skills`, `.cursor/skills`, `.claude/skills` and `.codex/skills`; `add` uses `--target agents`, shared with Codex and Hermes.
   - No plugin user settings: `variables` in plugin.json are set by team admins and documented only for MCP configs, so the key goes through `ss33 config set apiKey` or `SS33_API_KEY`.
-  - Unverified: the Cursor IDE (hooks there run through PowerShell on Windows, so `sh "${CURSOR_PLUGIN_ROOT}/…"` may not expand; the hook only prefetches Node, so a failure costs nothing), native Windows, and installing from the GitHub marketplace (only `--plugin-dir` was tested).
+  - Unverified: the Cursor IDE (hooks there run through PowerShell on Windows, so `sh "${CURSOR_PLUGIN_ROOT}/…"` may not expand; the hook only prefetches Node, so a failure costs nothing), and native Windows. Installing from the GitHub marketplace was verified in the WSL CLI (2026-11-23).
   - Official marketplace listing: submit at cursor.com/marketplace/publish (manual review, open source required).
 - **Copilot specifics** (probed with the Copilot CLI 1.0.114 on Linux, 2026-11-23).
   - Copilot reads Claude Code plugins (`.claude-plugin/`) and Claude-style hook names, but ignores Claude Code's hook output (`hookSpecificOutput`, `systemMessage`), so it gets its own plugin and adapter. Its prompt hook (`userPromptSubmitted`, or `UserPromptSubmit`) does add a top-level `{"additionalContext"}` to the model's context, despite the docs saying command-hook output is dropped. `sessionStart` takes the same shape.
@@ -176,8 +184,21 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
   - No set-level skill file is generated, and prompt matching ignores sets (hints stay single-skill; the matching baseline is untouched). `update` checks each step's content, not the set's own version, so a set that gains or drops steps upstream isn't noticed yet.
 - **Supporting files:** the store returns only `SKILL.md`. `add` warns about linked files that won't be installed and points to the author's folder.
 
+## CI
+
+`.github/workflows/ci.yml`, on every PR and push to main. Actions are pinned to commit SHAs; Dependabot (`.github/dependabot.yml`) bumps them and the dev dependencies monthly.
+
+- **lint**: actionlint, shellcheck (`--severity=warning`) on the launcher, ruff on the Hermes shim and its tests (E/F/W/B/UP, no line length; broad excepts are deliberate there), `claude plugin validate` on the Claude Code plugin and the marketplace.
+- **test**: `npm test` on Ubuntu (Node 22, 24, 26), macOS and Windows (Node 24). The Node 26 leg runs `npm run test:coverage`, adds the table to the job summary and uploads `coverage/lcov.info`. On Windows, the launcher and Hermes shim tests skip (the launcher job covers Windows) and so do mode-bit checks.
+- **python**: the Hermes shim's unit tests on Python 3.11 and 3.14 (Ubuntu) and 3.13 (Windows); the 3.14 leg measures branch coverage and fails under 95%.
+- **bundle**: `npm run build` must leave `adapters/` unchanged (every plugin's bundle and launcher copy), then the e2e tests run against the shipped bundle.
+- **launcher**: the Node.js download on Linux (x64, arm64), macOS (arm64, Intel) and Windows, and every plugin's prompt hook exits 0 silently.
+- **ci-ok**: one check that needs all the others; make it the required status check on `main`.
+
+Run the lint tools locally with the same flags when you touch the workflow, the launcher or the shim.
+
 ## Releasing
 
-1. `npm run release -- <x.y.z | patch | minor | major>` bumps the version in `package.json`, `package-lock.json`, `src/core/version.ts` and every plugin manifest (`tools/release.mjs` lists them; add a new adapter's manifest there and to `test/packaging.test.ts`), then runs `npm run build` and `npm test`. It checks every file before changing any, so a mismatch leaves nothing half-bumped. For Hermes, also run `hermes plugins validate adapters/hermes`.
+1. `npm run release -- <x.y.z | patch | minor | major>` bumps the version in `package.json`, `package-lock.json`, `src/core/version.ts` and every plugin manifest (`tools/release.mjs` lists them; add a new adapter's manifest there and to `test/packaging.test.ts`), then runs `npm run build` and `npm test` (`--no-verify` skips those two; `test/release.test.ts` uses it). It checks every file before changing any, so a mismatch leaves nothing half-bumped. For Hermes, also run `hermes plugins validate adapters/hermes`.
 2. Commit everything, including the rebuilt bundle in every `adapters/*` plugin. Put the bump in the fix PR when the change is already tested and should ship; use a separate release PR to batch several merged PRs, or to test from `main` first (merging a bump to `main` is what ships it). After merging, tag the merge commit and publish: `git tag -a vX -m vX <sha> && git push origin vX`, then `gh release create vX --title … --notes-file …`.
 3. Users of the GitHub marketplace get the update when the version changes. Codex asks users to re-trust the hooks after every update, so release Codex changes less often.

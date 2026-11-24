@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
+import { DEFAULT_ENDPOINT } from "../src/core/config.js";
 import { VERSION } from "../src/core/version.js";
 
 const root = process.cwd();
@@ -197,4 +198,12 @@ test("packaging: Hermes skills use Hermes's conventions", () => {
     if (s === "search") assert.match(md, /fallback_for_tools: \[ss33_search\]/);
     else assert.match(md, /fallback_for_toolsets: \[ss33\]/, s);
   }
+});
+
+test("packaging: the Claude Code plugin declares exactly the hosts ss33 connects to", () => {
+  // The store, and the launcher's one-time Node.js download.
+  const dist = read("adapters/claude-code/scripts/ss33").match(/^NODE_DIST=\$\{SS33_NODE_DIST:-([^}]+)\}$/m)?.[1];
+  assert.ok(dist, "the launcher's NODE_DIST default");
+  const expected = [new URL(DEFAULT_ENDPOINT).host, new URL(dist).host].sort();
+  assert.deepEqual([...json("adapters/claude-code/.claude-plugin/plugin.json").network.hosts].sort(), expected);
 });

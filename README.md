@@ -1,15 +1,35 @@
+<!-- Header: the ss33.ai icon (a stack of skill tiles) and the SS33 wordmark. -->
+```
+          ▄▄█▄▄
+      ▄▄█████████▄▄
+  ▄▄█████████████████▄▄      ███████╗███████╗██████╗ ██████╗
+▀▀█████████████████████▀▀    ██╔════╝██╔════╝╚════██╗╚════██╗
+    ▀▀█████████████▀▀        ███████╗███████╗ █████╔╝ █████╔╝
+██▄     ▀▀█████▀▀     ▄██    ╚════██║╚════██║ ╚═══██╗ ╚═══██╗
+  ▀███▄     ▀     ▄███▀      ███████║███████║██████╔╝██████╔╝
+██▄   ▀███▄   ▄███▀   ▄██    ╚══════╝╚══════╝╚═════╝ ╚═════╝
+  ▀███▄   ▀███▀   ▄███▀
+      ▀███▄   ▄███▀          Skill Store 33 · agent skills for every task
+          ▀███▀
+```
+
 # ss33 Skill Store for agents
 
-> **Public beta.** Things may change between versions, and prompt-matching suggestions are still being tuned. Feedback and bug reports: [support@readyai.ai](mailto:support@readyai.ai) or [GitHub Issues](https://github.com/afterpartyai/ss33-skill-store-for-agents/issues).
+[![CI](https://github.com/afterpartyai/ss33-skill-store-for-agents/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/afterpartyai/ss33-skill-store-for-agents/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/afterpartyai/ss33-skill-store-for-agents?color=2563eb&label=release)](https://github.com/afterpartyai/ss33-skill-store-for-agents/releases/latest)
+[![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Hermes%20%C2%B7%20Cursor%20%C2%B7%20Copilot%20%C2%B7%20DSH-2563eb)](#supported-agents)
+[![Runtime dependencies](https://img.shields.io/badge/runtime%20dependencies-0-2563eb)](package.json)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2563eb)](LICENSE)
+
+> **Public beta.** Things may change between versions, and prompt-matching suggestions are still being tuned. Feedback is welcome (see [Support](#support)).
 
 Use the [ss33 Skill Store](https://ss33.ai) from your coding agent without spending model tokens on searching:
 
 - **search** finds skills that fit *this* project. A short summary of the stack goes with the search: package manager, versions, services. It's built from manifest files only, never your source code.
 - **add** reviews a skill with you, then installs it as a native skill (`<skills folder>/<name>/SKILL.md`), pinned in `ss33.lock` so your team gets the same version.
-- **Skill sets:** some searches also return a skill set, several skills meant to be used together for one job (for example plan, draw, then check). Adding a set installs each of its skills, and each one notes its step in the set so your agent knows the order.
+- **Skill sets:** some searches also return a set of skills used together for one job (for example plan, draw, then check). Adding a set installs each of its skills, and each one notes its step so your agent knows the order.
 - **update** shows what changed upstream and applies updates only when you say so. It never overwrites your local edits without asking.
-- **list** shows the installed skills and whether their files still match the lock. **setup** checks your settings and connection.
-- **Prompt matching** (off by default, opt in): if a published skill clearly fits what you just asked, you see a one-line note suggesting it. At most a few per session. It sends your prompt to the store, so it stays off until you turn it on (see [Privacy](#privacy)).
+- **Prompt matching** (off by default, opt in): if a published skill clearly fits what you just asked, you see a one-line note suggesting it. At most a few per session. It sends your prompt to the store (see [Privacy](#privacy)).
 
 ## Supported agents
 
@@ -19,12 +39,12 @@ Use the [ss33 Skill Store](https://ss33.ai) from your coding agent without spend
 | Codex | `$ss33:search` | `.agents/skills/` | ✓ | [below](#codex) |
 | Hermes Agent | `/ss33:search` | `.agents/skills/` | ✓ | [below](#hermes-agent) |
 | Cursor (app and CLI) | `/ss33-search` | `.agents/skills/` | not available in Cursor | [below](#cursor) |
-| GitHub Copilot CLI | `/ss33:search` | `.agents/skills/` | ✓ (the agent passes it on) | [below](#github-copilot) |
+| GitHub Copilot (CLI and VS Code) | `/ss33:search` | `.agents/skills/` | ✓ (the agent passes it on) | [below](#github-copilot) |
 | DeepSeek Harness (DSH) | `/ss33-search` | `.agents/skills/` | ✓ | [below](#deepseek-harness-dsh) |
 
 The rest of this page writes commands the Claude Code way (`/ss33:add`). Use your agent's form.
 
-ss33 runs on Node.js but needs no install. It uses your Node.js if it's version 22 or newer. Otherwise it downloads the official build once (about 30 MB, checked against a pinned checksum) into `~/.cache/ss33/runtime`, in the background when your first session starts.
+ss33 runs on Node.js but needs no install. It uses your Node.js if it's version 22 or newer. Otherwise it downloads the official build once (about 30 MB, checked against a pinned checksum) into `~/.cache/ss33/runtime`, in the background when your first session starts. On Windows, Cursor and Copilot need [Git for Windows](https://git-scm.com/download/win); ss33 finds its `sh.exe` even when it isn't on your PATH.
 
 ## Install
 
@@ -75,14 +95,12 @@ agent plugin marketplace add https://github.com/afterpartyai/ss33-skill-store-fo
 
 Then, in `agent`, install `ss33` from `/plugins` → Marketplace. In the app, paste the repo URL into the plugin search instead. Start a new chat and run `/ss33-setup`.
 
-- **Commands** are `/ss33-search`, `/ss33-add`, and so on, because Cursor doesn't give plugin skills a `ss33:` prefix.
 - **No prompt matching:** Cursor's prompt hook can't add a note for the agent. The agent can still search the store on its own when a task needs a specialised procedure.
 - **Approvals:** Cursor asks before each ss33 command, and a plugin can't pre-approve its own commands (allowlisting `sh` doesn't cover them either). Approve them as they come, or use auto-review mode (`agent --auto-review`), which runs commands Cursor judges safe without asking.
-- **Windows:** needs [Git for Windows](https://git-scm.com/download/win). ss33 finds its `sh.exe` even when it isn't on your PATH.
 
 ### GitHub Copilot
 
-Works in the Copilot CLI (tested with 1.0.114):
+Works in the Copilot CLI (tested with 1.0.114) and Copilot chat in VS Code:
 
 ```
 copilot plugin marketplace add afterpartyai/ss33-skill-store-for-agents
@@ -93,8 +111,7 @@ Start a new session and run `/ss33:setup`.
 
 - **Prompt matching:** Copilot can't show you a note from a plugin, so when a published skill clearly fits, the agent mentions it in one line at the end of its reply.
 - **Approvals:** Copilot asks for access to the plugin's folder (choose to remember it for the session), then before each ss33 command.
-- **VS Code:** Copilot's agent plugins in VS Code read the same plugin, but haven't been tested yet.
-- **Windows:** needs [Git for Windows](https://git-scm.com/download/win). ss33 finds its `sh.exe` even when it isn't on your PATH.
+- **VS Code:** Copilot chat in VS Code installs the same plugin with `/plugin marketplace add` (tested on Windows 11).
 
 ### DeepSeek Harness (DSH)
 
@@ -106,7 +123,6 @@ dsh plugin --profile web add "github:afterpartyai/ss33-skill-store-for-agents#pa
 
 This needs `pnpm` on your PATH. Restart DSH, start a new session and run `/ss33-setup`.
 
-- **Commands** are `/ss33-search`, `/ss33-add`, and so on, because DSH doesn't give plugin skills a `ss33:` prefix.
 - **Sandbox:** ss33 commands run in DSH's shell sandbox. Searching needs network access to `mcp.ss33.ai`. Settings commands write `~/.config/ss33`, outside your workspace, so DSH may ask you to approve them.
 - **Prompt matching:** the note appears in the conversation, collapsed to one line.
 
@@ -122,7 +138,7 @@ This needs `pnpm` on your PATH. Restart DSH, start a new session and run `/ss33-
 
 Every route ends up in `~/.config/ss33/config.json` (0600), which all the ss33 commands read. An `SS33_API_KEY` environment variable also works where your agent passes it through. Codex may not: its background server may have started before you set it. `/ss33:setup` checks that the store accepts the key.
 
-**Prompt matching** is off by default. Turn it on or off with `/ss33:setup`, or in Claude Code with `/plugin configure`.
+**Prompt matching:** turn it on or off with `/ss33:setup`, or in Claude Code with `/plugin configure`.
 
 ## Commands
 
@@ -155,7 +171,7 @@ This links to the clone, so `git pull` there updates the CLI. Installing straigh
 - **Prompt matching** (only if you turn it on) sends each prompt (truncated to 600 characters) plus the summary.
 - **Never sent:** source code, file contents or dependency trees.
 
-The store's [privacy policy](https://ss33.ai/skills/privacy) covers everything the plugin sends: searches, matched prompts and the project summary all go to the Skill Store's MCP server at `mcp.ss33.ai`. The plugin sends nothing anywhere else, apart from a one-time Node.js download from nodejs.org if you don't have Node ≥ 22.
+All of it goes to the Skill Store's server at `mcp.ss33.ai` and is covered by the store's [privacy policy](https://ss33.ai/skills/privacy). The only other connection is the one-time Node.js download from nodejs.org, if you don't have Node ≥ 22.
 
 ## Support
 
@@ -163,11 +179,12 @@ Email [support@readyai.ai](mailto:support@readyai.ai), or open an issue on [GitH
 
 ## Development
 
-See [CLAUDE.md](CLAUDE.md) for the layout, the commands and the conventions.
+See [CLAUDE.md](CLAUDE.md) for the layout, the conventions and what CI checks.
 
 ```
 npm install
 npm test               # unit, fake-store, end-to-end and matching-regression tests (offline)
+npm run test:coverage  # the same, failing under the coverage thresholds
 npm run eval:matching  # prompt-matching precision/recall report
 npm run build          # typecheck + rebuild the bundle in every adapters/* plugin (commit them all)
 

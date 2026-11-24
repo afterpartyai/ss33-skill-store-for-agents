@@ -2,6 +2,7 @@
 // Bump the version everywhere it lives, rebuild every plugin's bundle and run the tests.
 //
 //   npm run release -- 0.4.7          (or patch | minor | major)
+//   --no-verify skips the build and tests (test/release.test.ts uses it, with SS33_RELEASE_ROOT set to a copy).
 //
 // Then commit the result (in the fix PR, or a release PR) and, once merged, tag and publish:
 //   git tag -a v0.4.7 -m v0.4.7 <merge commit> && git push origin v0.4.7 && gh release create v0.4.7 --notes-file <notes>
@@ -10,7 +11,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const root = process.env.SS33_RELEASE_ROOT || join(dirname(fileURLToPath(import.meta.url)), "..");
 
 // Every file that carries the version, with the pattern that matches it. test/packaging.test.ts checks they agree.
 const v = (s) => s.replace(/\./g, "\\.");
@@ -32,7 +33,9 @@ function fail(msg) {
 }
 
 const current = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version;
-const arg = process.argv[2];
+const args = process.argv.slice(2);
+const verify = !args.includes("--no-verify");
+const arg = args.find((a) => !a.startsWith("--"));
 if (!arg) fail(`usage: npm run release -- <x.y.z | patch | minor | major>  (now ${current})`);
 
 const [maj, min, pat] = current.split(".").map(Number);
@@ -51,7 +54,7 @@ const edits = FILES.map(([file, pattern, count]) => {
 for (const [file, text] of edits) writeFileSync(join(root, file), text);
 console.log(`release: ${current} → ${next} in ${edits.length} files`);
 
-for (const script of ["build", "test"]) {
+for (const script of verify ? ["build", "test"] : []) {
   const r = spawnSync("npm", ["run", script, "--silent"], { cwd: root, stdio: "inherit" });
   if (r.status !== 0) fail(`npm run ${script} failed; the version files are already bumped`);
 }
