@@ -5,7 +5,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync, readdirSync, rmdirSync } from "node:fs";
 import { dirname, join, resolve, sep } from "node:path";
-import type { StoreClient } from "./client.js";
+import { StoreError, type SkillSet, type StoreClient } from "./client.js";
 import { lineDiff } from "./diff.js";
 import { parseFrontmatter, referencedFiles, sha256, skillName, stamp, unstamp } from "./skillfile.js";
 import type { FetchedSkill } from "./client.js";
@@ -19,6 +19,17 @@ export interface LockEntry {
   /** Project-relative paths of every installed copy. */
   paths: string[];
   installedAt: string;
+  /** Set when the skill was installed as a step of a skill set (the most recent one, if several). */
+  set?: SetMembership;
+}
+
+export interface SetMembership {
+  ref: string;
+  title: string;
+  /** 1-based step number within the set. */
+  position: number;
+  /** Every step's installed skill name (or title, if it wasn't installed), in order. */
+  steps?: string[];
 }
 
 export interface Lock {
@@ -152,9 +163,10 @@ export interface InstallPlan {
   /** Supporting files the store sent. Not installed yet: the store doesn't send them. */
   storeFiles: string[];
   replacing?: LockEntry;
+  set?: SetMembership;
 }
 
-export function planInstall(root: string, ref: string, skill: FetchedSkill, targets: Target[]): InstallPlan {
+export function planInstall(root: string, ref: string, skill: FetchedSkill, targets: Target[], set?: SetMembership): InstallPlan {
   const fetched = skill.markdown;
   const parsed = parseFrontmatter(fetched);
   if (!parsed?.frontmatter.description) throw new InstallError(`${ref} has no SKILL.md frontmatter description; refusing to install it`);
@@ -168,6 +180,8 @@ export function planInstall(root: string, ref: string, skill: FetchedSkill, targ
   const paths = targets.map((t) => `${TARGET_DIRS[t]}/${name}/SKILL.md`);
   const managed = new Set(existing ? lockPaths(root, name, existing).paths : []);
   const conflicts = paths.filter((p) => existsSync(join(root, p)) && !managed.has(p));
+  // Reinstalling one step on its own keeps the set's note and membership.
+  const setNote = set ?? validSet(existing?.set);
   const missingFiles = referencedFiles(parsed.body);
   const sourceUrl = skill.filesNotStored || missingFiles.length || skill.files.length ? skill.sourceUrl : undefined;
   return {
@@ -176,13 +190,14 @@ export function planInstall(root: string, ref: string, skill: FetchedSkill, targ
     sha256: hash,
     description: parsed.frontmatter.description,
     paths,
-    content: stamp(fetched, ref, hash, { missing: missingFiles, ...(sourceUrl ? { sourceUrl } : {}) }),
+    content: stamp(fetched, ref, hash, { missing: missingFiles, ...(sourceUrl ? { sourceUrl } : {}) }, setNote),
     conflicts,
     missingFiles,
     filesNotStored: skill.filesNotStored,
     ...(sourceUrl ? { sourceUrl } : {}),
     storeFiles: skill.files.map((f) => f.path),
     ...(existing ? { replacing: existing } : {}),
+    ...(setNote ? { set: setNote } : {}),
   };
 }
 
@@ -203,7 +218,9 @@ export function applyInstall(root: string, plan: InstallPlan, opts: { force?: bo
   const lock = readLock(root);
   const stale = (plan.replacing ? lockPaths(root, plan.name, plan.replacing).paths : []).filter((p) => !plan.paths.includes(p));
   for (const p of stale) removeSkillFile(root, p);
-  lock.skills[plan.name] = { ref: plan.ref, sha256: plan.sha256, paths: plan.paths, installedAt: new Date().toISOString() };
+  // Reinstalling or updating a step on its own keeps its set membership.
+  const set = plan.set ?? validSet(plan.replacing?.set);
+  lock.skills[plan.name] = { ref: plan.ref, sha256: plan.sha256, paths: plan.paths, installedAt: new Date().toISOString(), ...(set ? { set } : {}) };
   writeLock(root, lock);
 }
 
@@ -216,6 +233,75 @@ export async function install(
   const plan = planInstall(root, ref, await client.fetchSkill(ref), opts.targets);
   if (!opts.dryRun) applyInstall(root, plan, opts);
   return plan;
+}
+
+export interface SetInstallPlan {
+  set: SkillSet;
+  /** One plan per step the store can serve, in step order. */
+  plans: InstallPlan[];
+  /** Steps the store can't serve (licence, or gone). They're left out of the install. */
+  skipped: { position: number; ref: string; title: string; reason: string; sourceUrl?: string }[];
+}
+
+/**
+ * Installs every step of a skill set as its own native skill, each tagged in ss33.lock with the set and its
+ * step number. Everything is planned before anything is written, so a conflict in step 3 leaves steps 1 and 2
+ * untouched too.
+ */
+export async function installSet(
+  client: StoreClient,
+  root: string,
+  setRef: string,
+  opts: { targets: Target[]; force?: boolean; dryRun?: boolean },
+): Promise<SetInstallPlan> {
+  const set = await client.getSkillSet(setRef);
+  const plans: InstallPlan[] = [];
+  const skipped: SetInstallPlan["skipped"] = [];
+  const fetched: { step: SkillSet["steps"][number]; skill: FetchedSkill }[] = [];
+  for (const step of set.steps) {
+    try {
+      fetched.push({ step, skill: await client.fetchSkill(step.ref) });
+    } catch (err) {
+      if (!(err instanceof StoreError && (err.kind === "unavailable" || err.kind === "not_found"))) throw err;
+      skipped.push({ position: step.position, ref: step.ref, title: step.title, reason: err.message, ...(err.sourceUrl ? { sourceUrl: err.sourceUrl } : {}) });
+    }
+  }
+  // Each installed skill's note lists the whole order, so the agent can follow the set from any step.
+  const nameOf = new Map(fetched.map(({ step, skill }) => [step.ref, skillName(step.ref, parseFrontmatter(skill.markdown)?.frontmatter)]));
+  const steps = set.steps.map((s) => nameOf.get(s.ref) ?? `${s.title} (not installed)`);
+  for (const { step, skill } of fetched) {
+    plans.push(planInstall(root, step.ref, skill, opts.targets, { ref: set.ref, title: set.title, position: step.position, steps }));
+  }
+  const names = new Map<string, string>();
+  for (const p of plans) {
+    const other = names.get(p.name);
+    if (other) throw new InstallError(`Two steps of ${set.ref} would both install as "${p.name}" (${other} and ${p.ref}). Nothing was changed.`);
+    names.set(p.name, p.ref);
+  }
+  if (!opts.dryRun) {
+    const conflicts = plans.flatMap((p) => p.conflicts);
+    if (conflicts.length && !opts.force) throw new InstallError(`Not overwriting files ss33 doesn't manage: ${conflicts.join(", ")} (use --force to replace them). Nothing was changed.`);
+    const outside = plans.flatMap((p) => p.paths.filter((x) => lockPathProblem(root, p.name, x)));
+    if (outside.length) throw new InstallError(`Not installing: ${outside.join(", ")} would land outside the project (a symlinked folder). Nothing was changed.`);
+    for (const p of plans) applyInstall(root, p, opts);
+  }
+  return { set, plans, skipped };
+}
+
+/** A lock's set entry, only if it has the expected shape (the lock may come from a cloned repo). */
+export function validSet(x: unknown): SetMembership | undefined {
+  const s = x as SetMembership | undefined;
+  if (!s || typeof s.ref !== "string" || typeof s.title !== "string" || typeof s.position !== "number") return undefined;
+  const steps = Array.isArray(s.steps) ? s.steps.filter((n): n is string => typeof n === "string") : undefined;
+  return { ref: s.ref, title: s.title, position: s.position, ...(steps ? { steps } : {}) };
+}
+
+/** Lock names of the skills installed from this set, in step order. */
+export function setMembers(root: string, setRef: string): string[] {
+  return Object.entries(readLock(root).skills)
+    .filter(([, e]) => validSet(e.set)?.ref === setRef)
+    .sort(([, a], [, b]) => (a.set?.position ?? 0) - (b.set?.position ?? 0))
+    .map(([name]) => name);
 }
 
 const NOT_WRITABLE = new Set(["EACCES", "EPERM", "EROFS", "ENOENT"]);
@@ -332,7 +418,7 @@ export async function update(
         continue;
       }
       const targets = (Object.keys(TARGET_DIRS) as Target[]).filter((t) => paths.some((p) => p.startsWith(TARGET_DIRS[t] + "/")));
-      const plan = planInstall(root, entry.ref, skill, targets.length ? targets : ["claude"]);
+      const plan = planInstall(root, entry.ref, skill, targets.length ? targets : ["claude"], validSet(entry.set));
       applyInstall(root, { ...plan, conflicts: [] });
       results.push({ name, ref: entry.ref, state: "updated", diff });
     } catch (err) {

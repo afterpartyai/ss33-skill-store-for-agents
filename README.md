@@ -6,6 +6,7 @@ Use the [ss33 Skill Store](https://ss33.ai) from your coding agent without spend
 
 - **search** finds skills that fit *this* project. A short summary of the stack goes with the search: package manager, versions, services. It's built from manifest files only, never your source code.
 - **add** reviews a skill with you, then installs it as a native skill (`<skills folder>/<name>/SKILL.md`), pinned in `ss33.lock` so your team gets the same version.
+- **Skill sets:** some searches also return a skill set, several skills meant to be used together for one job (for example plan, draw, then check). Adding a set installs each of its skills, and each one notes its step in the set so your agent knows the order.
 - **update** shows what changed upstream and applies updates only when you say so. It never overwrites your local edits without asking.
 - **list** shows the installed skills and whether their files still match the lock. **setup** checks your settings and connection.
 - **Prompt matching** (off by default, opt in): if a published skill clearly fits what you just asked, you see a one-line note suggesting it. At most a few per session. It sends your prompt to the store, so it stays off until you turn it on (see [Privacy](#privacy)).
@@ -128,12 +129,14 @@ Every route ends up in `~/.config/ss33/config.json` (0600), which all the ss33 c
 | Command | What it does |
 |---|---|
 | `/ss33:search <task>` | Search the store (the agent may also use this on its own for specialised tasks) |
-| `/ss33:add <ref>` | Preview, review and install a skill |
+| `/ss33:add <ref>` | Preview, review and install a skill, or every skill in a set (`skill-set/…` ref) |
 | `/ss33:update [name…]` | Check for and apply updates |
 | `/ss33:list` | Installed skills, and whether their files still match the lock |
 | `/ss33:setup` | Show settings, check that the store accepts your key, and explain any problems |
 
 Installed skills load as ordinary skills (`/<name>`, or `$<name>` in Codex). Start a new session if one doesn't appear. Commit the skill folder and `ss33.lock` so your team gets the same pinned version.
+
+A set's skills are installed and updated like any other skill. `/ss33:list` shows which set and step each came from, and `ss33 remove skill-set/…` removes them all.
 
 ### Command-line tool
 

@@ -149,6 +149,9 @@ function readHookStatus(env = process.env) {
 }
 
 // src/core/client.ts
+function isSkillSetRef(ref) {
+  return ref.startsWith("skill-set/");
+}
 var StoreError = class extends Error {
   constructor(message, kind, sourceUrl) {
     super(message);
@@ -173,9 +176,11 @@ var StoreClient = class {
     const { data } = await this.callTool("search_skills", args);
     const d = data ?? {};
     const candidates = Array.isArray(d.candidates) ? d.candidates.filter((c) => c && typeof c.ref === "string") : [];
+    const skillSets = Array.isArray(d.skill_sets) ? d.skill_sets.map(setSummary).filter((x) => x !== void 0) : [];
     return {
       found: Boolean(d.found) && candidates.length > 0,
       candidates,
+      skillSets,
       limited: Boolean(d.limited),
       ...typeof d.message === "string" ? { message: d.message } : {},
       ...typeof d.store_note === "string" ? { storeNote: d.store_note } : {}
@@ -187,6 +192,7 @@ var StoreClient = class {
    * reported as a normal text result, so we check the shape.
    */
   async fetchSkill(ref) {
+    if (isSkillSetRef(ref)) throw new StoreError(`${ref} is a skill set, not a skill: fetch it with getSkillSet`, "protocol");
     const { text, data } = await this.callTool("get_skill", { skill_ref: ref });
     const d = data && typeof data === "object" ? data : {};
     const markdown = typeof d.skill_md === "string" ? d.skill_md : text;
@@ -201,6 +207,35 @@ var StoreClient = class {
       filesNotStored: d.files_not_stored === true,
       ...typeof d.source_url === "string" ? { sourceUrl: d.source_url } : {}
     };
+  }
+  /** A skill set's steps, in order. */
+  async getSkillSet(ref) {
+    let res;
+    try {
+      res = await this.callTool("get_skill_set", { ref });
+    } catch (err) {
+      if (err instanceof StoreError && err.kind === "protocol" && /no such set/i.test(err.message)) throw new StoreError(`No such skill set: ${ref}`, "not_found");
+      throw err;
+    }
+    const d = res.data && typeof res.data === "object" ? res.data : {};
+    const summary = setSummary(d);
+    if (!summary) {
+      if (/no such set/i.test(res.text)) throw new StoreError(`No such skill set: ${ref}`, "not_found");
+      throw new StoreError(`Unexpected get_skill_set response for ${ref}: ${res.text.slice(0, 200)}`, "protocol");
+    }
+    const rawSteps = Array.isArray(d.steps) ? d.steps : [];
+    let steps = rawSteps.filter((x) => x && typeof x.ref === "string").map((x, i) => ({
+      position: typeof x.position === "number" ? x.position : i + 1,
+      ref: x.ref,
+      title: typeof x.title === "string" ? x.title : x.ref,
+      ...typeof x.label === "string" ? { label: x.label } : {},
+      ...typeof x.model_size === "string" ? { model_size: x.model_size } : {},
+      ...typeof x.version === "number" ? { version: x.version } : {},
+      ...typeof x.available === "boolean" ? { available: x.available } : {},
+      ...typeof x.is_verified === "boolean" ? { is_verified: x.is_verified } : {}
+    })).sort((a, b) => a.position - b.position);
+    if (!steps.length) steps = summary.skill_refs.map((r, i) => ({ position: i + 1, ref: r, title: r }));
+    return { ...summary, steps };
   }
   /** The SKILL.md markdown only. */
   async getSkill(ref) {
@@ -316,6 +351,20 @@ function describeNetworkError(err, endpoint) {
     "- Elsewhere: check the internet connection, firewall and proxy settings, then try again.",
     ...proxy ? ["- A proxy is configured (HTTPS_PROXY). The ss33 CLI connects directly and doesn't use it yet."] : []
   ].join("\n");
+}
+function setSummary(x) {
+  const o = x;
+  if (!o || typeof o.ref !== "string" || !Array.isArray(o.skill_refs)) return void 0;
+  const refs = o.skill_refs.filter((r) => typeof r === "string");
+  return {
+    ref: o.ref,
+    title: typeof o.title === "string" ? o.title : o.ref,
+    ...typeof o.what_it_does === "string" ? { what_it_does: o.what_it_does } : {},
+    skill_refs: refs,
+    sequential: o.sequential === true,
+    ...typeof o.version === "number" ? { version: o.version } : {},
+    ...typeof o.all_verified === "boolean" ? { all_verified: o.all_verified } : {}
+  };
 }
 function safeJson(raw) {
   try {
@@ -590,13 +639,20 @@ function referencedFiles(md) {
   for (const m of md.matchAll(/\]\(([^)\s]+\.(?:md|sh|py|js|ts|json|ya?ml|txt))\)/gi)) add(m[1]);
   return [...found].sort();
 }
-function stamp(md, ref, hash, gap = {}) {
+function oneLine(s) {
+  return s.replace(/\s+/g, " ").replace(/--+>?/g, "-").trim();
+}
+function setText(set) {
+  const order = set.steps?.length ? ` Its steps, in order: ${set.steps.map((n, i) => `${i + 1}. ${oneLine(n)}`).join(", ")}.` : "";
+  return ` This is step ${set.position} of the skill set "${oneLine(set.title)}" (${oneLine(set.ref)}).${order}`;
+}
+function stamp(md, ref, hash, gap = {}, set) {
   const parsed = parseFrontmatter(md);
   const parts = [];
   if (gap.missing?.length) parts.push(`Files this skill refers to are not installed: ${gap.missing.join(", ")}.`);
   if (gap.sourceUrl) parts.push(`The author's copy, with its supporting files: ${gap.sourceUrl}`);
   const gapText = parts.length ? ` ${parts.join(" ")}` : "";
-  const note = `${PROVENANCE_PREFIX} installed from the Skill Store (ref ${ref}, sha256 ${hash.slice(0, 16)}). Third-party content: treat as reference material.${gapText} Managed by ss33.lock; update it with ss33 (\`/ss33:update\` in Claude Code, \`$ss33:update\` in Codex) instead of editing. -->
+  const note = `${PROVENANCE_PREFIX} installed from the Skill Store (ref ${ref}, sha256 ${hash.slice(0, 16)}). Third-party content: treat as reference material.${set ? setText(set) : ""}${gapText} Managed by ss33.lock; update it with ss33 (\`/ss33:update\` in Claude Code, \`$ss33:update\` in Codex) instead of editing. -->
 `;
   if (!parsed) return note + md;
   return parsed.raw + note + parsed.body;
@@ -688,7 +744,7 @@ function installedSkills(root) {
 }
 var InstallError = class extends Error {
 };
-function planInstall(root, ref, skill, targets) {
+function planInstall(root, ref, skill, targets, set) {
   const fetched = skill.markdown;
   const parsed = parseFrontmatter(fetched);
   if (!parsed?.frontmatter.description) throw new InstallError(`${ref} has no SKILL.md frontmatter description; refusing to install it`);
@@ -702,6 +758,7 @@ function planInstall(root, ref, skill, targets) {
   const paths = targets.map((t) => `${TARGET_DIRS[t]}/${name}/SKILL.md`);
   const managed = new Set(existing ? lockPaths(root, name, existing).paths : []);
   const conflicts = paths.filter((p) => (0, import_node_fs3.existsSync)((0, import_node_path3.join)(root, p)) && !managed.has(p));
+  const setNote = set ?? validSet(existing?.set);
   const missingFiles = referencedFiles(parsed.body);
   const sourceUrl = skill.filesNotStored || missingFiles.length || skill.files.length ? skill.sourceUrl : void 0;
   return {
@@ -710,13 +767,14 @@ function planInstall(root, ref, skill, targets) {
     sha256: hash,
     description: parsed.frontmatter.description,
     paths,
-    content: stamp(fetched, ref, hash, { missing: missingFiles, ...sourceUrl ? { sourceUrl } : {} }),
+    content: stamp(fetched, ref, hash, { missing: missingFiles, ...sourceUrl ? { sourceUrl } : {} }, setNote),
     conflicts,
     missingFiles,
     filesNotStored: skill.filesNotStored,
     ...sourceUrl ? { sourceUrl } : {},
     storeFiles: skill.files.map((f) => f.path),
-    ...existing ? { replacing: existing } : {}
+    ...existing ? { replacing: existing } : {},
+    ...setNote ? { set: setNote } : {}
   };
 }
 function applyInstall(root, plan, opts = {}) {
@@ -734,13 +792,56 @@ function applyInstall(root, plan, opts = {}) {
   const lock = readLock(root);
   const stale = (plan.replacing ? lockPaths(root, plan.name, plan.replacing).paths : []).filter((p) => !plan.paths.includes(p));
   for (const p of stale) removeSkillFile(root, p);
-  lock.skills[plan.name] = { ref: plan.ref, sha256: plan.sha256, paths: plan.paths, installedAt: (/* @__PURE__ */ new Date()).toISOString() };
+  const set = plan.set ?? validSet(plan.replacing?.set);
+  lock.skills[plan.name] = { ref: plan.ref, sha256: plan.sha256, paths: plan.paths, installedAt: (/* @__PURE__ */ new Date()).toISOString(), ...set ? { set } : {} };
   writeLock(root, lock);
 }
 async function install(client2, root, ref, opts) {
   const plan = planInstall(root, ref, await client2.fetchSkill(ref), opts.targets);
   if (!opts.dryRun) applyInstall(root, plan, opts);
   return plan;
+}
+async function installSet(client2, root, setRef, opts) {
+  const set = await client2.getSkillSet(setRef);
+  const plans = [];
+  const skipped = [];
+  const fetched = [];
+  for (const step of set.steps) {
+    try {
+      fetched.push({ step, skill: await client2.fetchSkill(step.ref) });
+    } catch (err) {
+      if (!(err instanceof StoreError && (err.kind === "unavailable" || err.kind === "not_found"))) throw err;
+      skipped.push({ position: step.position, ref: step.ref, title: step.title, reason: err.message, ...err.sourceUrl ? { sourceUrl: err.sourceUrl } : {} });
+    }
+  }
+  const nameOf = new Map(fetched.map(({ step, skill }) => [step.ref, skillName(step.ref, parseFrontmatter(skill.markdown)?.frontmatter)]));
+  const steps = set.steps.map((s) => nameOf.get(s.ref) ?? `${s.title} (not installed)`);
+  for (const { step, skill } of fetched) {
+    plans.push(planInstall(root, step.ref, skill, opts.targets, { ref: set.ref, title: set.title, position: step.position, steps }));
+  }
+  const names = /* @__PURE__ */ new Map();
+  for (const p of plans) {
+    const other = names.get(p.name);
+    if (other) throw new InstallError(`Two steps of ${set.ref} would both install as "${p.name}" (${other} and ${p.ref}). Nothing was changed.`);
+    names.set(p.name, p.ref);
+  }
+  if (!opts.dryRun) {
+    const conflicts = plans.flatMap((p) => p.conflicts);
+    if (conflicts.length && !opts.force) throw new InstallError(`Not overwriting files ss33 doesn't manage: ${conflicts.join(", ")} (use --force to replace them). Nothing was changed.`);
+    const outside = plans.flatMap((p) => p.paths.filter((x) => lockPathProblem(root, p.name, x)));
+    if (outside.length) throw new InstallError(`Not installing: ${outside.join(", ")} would land outside the project (a symlinked folder). Nothing was changed.`);
+    for (const p of plans) applyInstall(root, p, opts);
+  }
+  return { set, plans, skipped };
+}
+function validSet(x) {
+  const s = x;
+  if (!s || typeof s.ref !== "string" || typeof s.title !== "string" || typeof s.position !== "number") return void 0;
+  const steps = Array.isArray(s.steps) ? s.steps.filter((n) => typeof n === "string") : void 0;
+  return { ref: s.ref, title: s.title, position: s.position, ...steps ? { steps } : {} };
+}
+function setMembers(root, setRef) {
+  return Object.entries(readLock(root).skills).filter(([, e]) => validSet(e.set)?.ref === setRef).sort(([, a], [, b]) => (a.set?.position ?? 0) - (b.set?.position ?? 0)).map(([name]) => name);
 }
 var NOT_WRITABLE = /* @__PURE__ */ new Set(["EACCES", "EPERM", "EROFS", "ENOENT"]);
 function writable(rel, write) {
@@ -827,7 +928,7 @@ async function update(client2, root, opts = {}) {
         continue;
       }
       const targets = Object.keys(TARGET_DIRS).filter((t) => paths.some((p) => p.startsWith(TARGET_DIRS[t] + "/")));
-      const plan = planInstall(root, entry.ref, skill, targets.length ? targets : ["claude"]);
+      const plan = planInstall(root, entry.ref, skill, targets.length ? targets : ["claude"], validSet(entry.set));
       applyInstall(root, { ...plan, conflicts: [] });
       results.push({ name, ref: entry.ref, state: "updated", diff });
     } catch (err) {
@@ -1078,12 +1179,12 @@ function formatHint(c, addCommand = DEFAULT_ADD_COMMAND, noticeShown = true) {
     `${addCommand} ${c.ref}.`
   ].join(" ");
 }
-function oneLine(text, max) {
+function oneLine2(text, max) {
   const t = text.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
   return t.length > max ? t.slice(0, max - 1) + "\u2026" : t;
 }
 function formatNotice(c, addCommand = DEFAULT_ADD_COMMAND) {
-  return `ss33: a published skill may fit this task: "${oneLine(c.title, 80)}". Review and install it with ${addCommand} ${oneLine(c.ref, 120)} (automated match; ignore if it doesn't fit).`;
+  return `ss33: a published skill may fit this task: "${oneLine2(c.title, 80)}". Review and install it with ${addCommand} ${oneLine2(c.ref, 120)} (automated match; ignore if it doesn't fit).`;
 }
 
 // src/core/state.ts
@@ -1129,7 +1230,7 @@ function debugLog(dir, message) {
 }
 
 // src/core/version.ts
-var VERSION = "0.4.6";
+var VERSION = "0.5.0";
 
 // src/core/events.ts
 var LOCAL_SURFACES = /* @__PURE__ */ new Set(["cli", "tui", "desktop", "acp"]);
@@ -1404,10 +1505,11 @@ var HELP = `ss33 ${VERSION} \u2014 Skill Store CLI
 
 Usage:
   ss33 search <query\u2026> [--limit N] [--area AREA] [--no-context] [--json]
-  ss33 get <ref>                     print a skill's SKILL.md without installing it
+  ss33 get <ref>                     print a skill's SKILL.md (or a skill set's steps) without installing it
   ss33 add <ref> [--target claude|agents|both] [--dry-run] [--show] [--force] [--json]
+                                     a skill-set/\u2026 ref installs every step of the set
   ss33 update [name\u2026] [--yes] [--force] [--json]
-  ss33 remove <name>
+  ss33 remove <name | skill-set/\u2026>
   ss33 list [--json]                 installed skills and whether their files still match ss33.lock
   ss33 fingerprint [--json]          the project summary sent with searches
   ss33 config get | set <key> <value> | unset <key> | path
@@ -1494,8 +1596,17 @@ async function main(argv, out = (s) => process.stdout.write(s + "\n")) {
         out(`\u2022 ${c.title}  (${c.ref})${c.available === false ? "  [not available from the store: can't be installed]" : ""}`);
         if (c.what_it_does) out(`    ${truncate(c.what_it_does, 240)}`);
       }
-      if (res.candidates.some((c) => c.available !== false)) out(`
-Install one with: ss33 add <ref>`);
+      const sets = res.skillSets ?? [];
+      if (sets.length) {
+        out(`
+Skill sets (skills used together for the whole job):`);
+        for (const set of sets) {
+          out(`\u2022 ${set.title}  (${set.ref})  ${set.skill_refs.length} skills${set.sequential ? ", run in order" : ""}`);
+          if (set.what_it_does) out(`    ${truncate(set.what_it_does, 240)}`);
+        }
+      }
+      if (res.candidates.some((c) => c.available !== false) || sets.length) out(`
+Install one with: ss33 add <ref>${sets.length ? " (a skill-set/\u2026 ref installs the whole set)" : ""}`);
       if (res.storeNote) out(`
 ${res.storeNote}`);
       return 0;
@@ -1504,6 +1615,11 @@ ${res.storeNote}`);
       const ref = rest[0];
       if (!ref) return usage("get needs a skill ref (from `ss33 search`)", out);
       try {
+        if (isSkillSetRef(ref)) {
+          const set = await client().getSkillSet(ref);
+          out(json ? JSON.stringify(set, null, 2) : describeSet(set));
+          return 0;
+        }
         const skill = await client().fetchSkill(ref);
         out(skill.markdown);
         if (skill.filesNotStored && skill.sourceUrl) out(`
@@ -1520,6 +1636,7 @@ ${res.storeNote}`);
     case "add": {
       const ref = rest[0];
       if (!ref) return usage("add needs a skill ref (from `ss33 search`)", out);
+      if (isSkillSetRef(ref)) return addSet(ref, root(), flags, out);
       let plan;
       try {
         plan = await install(client(), root(), ref, {
@@ -1572,6 +1689,16 @@ ${pickUpNote(plan.paths, plan.name)}`);
     case "remove": {
       const name = rest[0];
       if (!name) return usage("remove needs a skill name (see `ss33 list`)", out);
+      if (isSkillSetRef(name)) {
+        const members = setMembers(root(), name);
+        if (!members.length) throw new InstallError(`No skills from ${name} in ss33.lock`);
+        for (const m of members) {
+          const { entry: entry2, removed: removed2, ignored: ignored2 } = remove(root(), m);
+          out(`Removed "${m}" (${entry2.ref}) from ss33.lock${removed2.length ? `: ${removed2.join(", ")}` : ""}`);
+          for (const i of ignored2) out(`  Left alone: ${i.path} (${i.reason}). Check where this ss33.lock came from.`);
+        }
+        return 0;
+      }
       const { entry, removed, ignored } = remove(root(), name);
       out(`Removed "${name}" (${entry.ref}) from ss33.lock${removed.length ? `: ${removed.join(", ")}` : ""}`);
       for (const i of ignored) out(`  Left alone: ${i.path} (${i.reason}). Check where this ss33.lock came from.`);
@@ -1583,6 +1710,8 @@ ${pickUpNote(plan.paths, plan.name)}`);
       if (!s.length) out("No skills installed from the Skill Store in this project.");
       for (const { name, entry, files } of s) {
         out(`\u2022 ${name}  (${entry.ref}, installed ${entry.installedAt.slice(0, 10)})`);
+        const set = validSet(entry.set);
+        if (set) out(`    step ${set.position} of skill set "${set.title}" (${set.ref})`);
         const mark = { ok: "\u2713", modified: "\u270E modified", missing: "\u2717 missing", ignored: "\u26A0 ignored" };
         for (const f of files) out(`    ${mark[f.status]}  ${f.path}${f.reason ? ` (${f.reason})` : ""}`);
       }
@@ -1626,12 +1755,57 @@ ${HIDDEN_NOTE}`);
   }
 }
 var HOOKS = { "claude-code": runHook, codex: runHook2, copilot: runHook3, dsh: runHook4, hermes: runHook5 };
-function pickUpNote(paths, name) {
+function describeSet(set) {
+  const lines = [`Skill set: ${set.title}  (${set.ref}${set.version ? `, version ${set.version}` : ""})`];
+  if (set.what_it_does) lines.push(`  ${truncate(set.what_it_does, 400)}`);
+  lines.push(`  ${set.steps.length} skills${set.sequential ? ", used in this order" : ""}:`);
+  for (const st of set.steps) {
+    const extra = [st.label, st.model_size ? `${st.model_size} model` : "", st.available === false ? "not available from the store" : ""].filter(Boolean).join("; ");
+    lines.push(`  ${st.position}. ${st.title}  (${st.ref})${extra ? `  [${extra}]` : ""}`);
+  }
+  return lines.join("\n");
+}
+async function addSet(ref, root, flags, out) {
+  const dryRun = flags["dry-run"] === true;
+  const res = await installSet(client(), root, ref, { targets: targetsFrom(str(flags.target)), force: flags.force === true, dryRun });
+  if (flags.json === true) {
+    const plans = flags.show ? res.plans : res.plans.map(({ content: _c, ...p }) => p);
+    return out(JSON.stringify({ set: res.set, plans, skipped: res.skipped }, null, 2)), res.plans.length ? 0 : 1;
+  }
+  out(describeSet(res.set));
+  out("");
+  if (!res.plans.length) {
+    out(`None of this set's skills can be installed from the store. Nothing was installed.`);
+    for (const k of res.skipped) out(`  \u2717 step ${k.position}: ${k.reason}${k.sourceUrl ? ` The author publishes it here: ${k.sourceUrl}` : ""}`);
+    return 1;
+  }
+  out(`${dryRun ? "Would install" : "Installed"} ${res.plans.length} of ${res.set.steps.length} skills:`);
+  for (const plan of res.plans) {
+    out(`${plan.set?.position ?? "\u2022"}. "${plan.name}" from ${plan.ref}${plan.replacing ? " (already installed; reinstalled)" : ""}`);
+    out(`   ${truncate(plan.description, 300)}`);
+    for (const p of plan.paths) out(`   \u2192 ${p}`);
+    if (plan.conflicts.length) out(`   \u26A0 existing files not managed by ss33: ${plan.conflicts.join(", ")} (needs --force)`);
+    if (plan.missingFiles.length) out(`   \u26A0 links to files that won't be installed: ${plan.missingFiles.join(", ")}`);
+    if (plan.filesNotStored) out(`   \u26A0 the store doesn't carry this skill's supporting files${plan.sourceUrl ? `; the author's folder: ${plan.sourceUrl}` : ""}`);
+  }
+  for (const k of res.skipped) out(`\u2717 step ${k.position} (${k.title}) left out: ${k.reason}${k.sourceUrl ? ` The author publishes it here: ${k.sourceUrl}` : ""}`);
+  if (flags.show) for (const plan of res.plans) out(`
+----- ${plan.set?.position ?? ""}. ${plan.name}/SKILL.md -----
+${plan.content}`);
+  if (!dryRun) {
+    const first = res.plans[0];
+    out(`
+Each skill is tracked in ss33.lock as a step of this set (see \`ss33 list\`); remove them all with \`ss33 remove ${res.set.ref}\`.`);
+    out(pickUpNote(first.paths, res.plans.map((p) => p.name).join('", "'), res.plans.length > 1));
+  }
+  return 0;
+}
+function pickUpNote(paths, name, several = false) {
   const notes = [];
-  if (paths.some((p) => p.startsWith(TARGET_DIRS.claude + "/"))) notes.push(`Claude Code picks up new skills automatically; it appears as "${name}".`);
+  if (paths.some((p) => p.startsWith(TARGET_DIRS.claude + "/"))) notes.push(`Claude Code picks up new skills automatically; ${several ? "they appear as" : "it appears as"} "${name}".`);
   if (paths.some((p) => p.startsWith(TARGET_DIRS.agents + "/")))
     notes.push(
-      `Codex, Copilot, Cursor and other agents that read ${TARGET_DIRS.agents}/ load it as "${name}" (in Codex, Copilot or Cursor, start a new session if it doesn't appear; Hermes loads it only once the repo is trusted with \`hermes skills trust\`).`
+      `Codex, Copilot, Cursor and other agents that read ${TARGET_DIRS.agents}/ load ${several ? "them" : "it"} as "${name}" (in Codex, Copilot or Cursor, start a new session if ${several ? "they don't" : "it doesn't"} appear; Hermes loads it only once the repo is trusted with \`hermes skills trust\`).`
     );
   return notes.join("\n");
 }

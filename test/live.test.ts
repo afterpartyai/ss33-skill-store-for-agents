@@ -14,3 +14,13 @@ test("live: search and get_skill against mcp.ss33.ai", { skip: !live && "set SS3
   const md = await client.getSkill(res.candidates[0]!.ref);
   assert.match(md, /^---\n[\s\S]*description:/);
 });
+
+test("live: skill sets from search, and get_skill_set", { skip: !live && "set SS33_LIVE=1" }, async () => {
+  const client = new StoreClient({ endpoint: process.env.SS33_ENDPOINT || DEFAULT_ENDPOINT, ...(process.env.SS33_API_KEY ? { apiKey: process.env.SS33_API_KEY } : {}) });
+  // Few searches return sets yet; this one did on 2026-11-24 ("Patent Drawing Set").
+  const res = await client.search("prepare patent drawings for a utility patent application", { limit: 2 });
+  if (res.limited || !res.skillSets?.length) return;
+  const set = await client.getSkillSet(res.skillSets[0]!.ref);
+  assert.ok(set.steps.length > 0);
+  assert.deepEqual(set.steps.map((s) => s.ref), set.skill_refs);
+});

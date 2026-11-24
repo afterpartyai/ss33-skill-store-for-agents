@@ -59,5 +59,17 @@
       "keywords": ["coding", "helper", "deploy"],
       "contentFile": "skills/always-use.md"
     }
+  ],
+  "sets": [
+    {
+      "ref": "skill-set/node-ci-quality-set-9001",
+      "title": "Node CI Quality Set",
+      "what_it_does": "Write unit tests with Vitest, then run them with lint in a GitHub Actions CI pipeline.",
+      "keywords": ["quality", "pipeline"],
+      "steps": [
+        { "ref": "acme/vitest-testing-1002", "label": "write the tests", "model_size": "small" },
+        { "ref": "acme/github-actions-ci-1001", "label": "run them in CI" }
+      ]
+    }
   ]
 }

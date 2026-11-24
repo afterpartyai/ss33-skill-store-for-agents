@@ -8,13 +8,13 @@
  */
 import { loadConfig, DEFAULT_ENDPOINT } from "../core/config.js";
 import { parseArgs } from "../cli/main.js";
-import { loadSkillFixture } from "./fixtures.js";
+import { loadSetFixture, loadSkillFixture } from "./fixtures.js";
 import { startFakeStore } from "./server.js";
 
 const HELP = `fake-store [--port N] [--skills fixture.json] [--cassettes DIR] [--record[=UPSTREAM]]
            [--on-miss error|empty] [--keys k1,k2] [--free-tier N]
 
-  --skills     scripted skills (JSON fixture)
+  --skills     scripted skills and skill sets (JSON fixture)
   --cassettes  replay recorded responses from DIR
   --record     forward misses to the real store (default ${DEFAULT_ENDPOINT}) and save them to --cassettes.
                Uses your configured API key (SS33_API_KEY or ss33 config); it is never written to cassettes.
@@ -28,7 +28,7 @@ async function run(): Promise<void> {
   const record = flags.record === undefined ? undefined : { upstream: str("record") ?? DEFAULT_ENDPOINT, ...(loadConfig().apiKey ? { apiKey: loadConfig().apiKey! } : {}) };
   const store = await startFakeStore({
     ...(str("port") ? { port: Number(str("port")) } : {}),
-    ...(str("skills") ? { skills: loadSkillFixture(str("skills")!) } : {}),
+    ...(str("skills") ? { skills: loadSkillFixture(str("skills")!), sets: loadSetFixture(str("skills")!) } : {}),
     ...(str("cassettes") ? { cassetteDir: str("cassettes")! } : {}),
     ...(record ? { record } : {}),
     ...(str("on-miss") === "empty" ? { onMiss: "empty" as const } : {}),

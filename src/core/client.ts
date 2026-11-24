@@ -26,9 +26,47 @@ export interface FetchedSkill {
   sourceUrl?: string;
 }
 
+/** A set of skills the store says are used together for one job (search_skills' `skill_sets`). */
+export interface SkillSetSummary {
+  ref: string;
+  title: string;
+  what_it_does?: string;
+  /** The steps' skill refs, in order. */
+  skill_refs: string[];
+  /** True when the steps are meant to run in that order. */
+  sequential: boolean;
+  version?: number;
+  all_verified?: boolean;
+}
+
+export interface SkillSetStep {
+  position: number;
+  ref: string;
+  title: string;
+  /** What this step does within the set, e.g. "plan the drawing set". */
+  label?: string;
+  /** Recommended model tier for this step ("frontier" or "small"). */
+  model_size?: string;
+  version?: number;
+  available?: boolean;
+  is_verified?: boolean;
+}
+
+/** What get_skill_set returns. */
+export interface SkillSet extends SkillSetSummary {
+  steps: SkillSetStep[];
+}
+
+/** Skill set refs look like `skill-set/<slug>-<id>`. */
+export function isSkillSetRef(ref: string): boolean {
+  return ref.startsWith("skill-set/");
+}
+
 export interface SearchResult {
   found: boolean;
   candidates: Candidate[];
+  /** Sets of skills used together for the whole job. Absent from older stores and from most searches. */
+  skillSets?: SkillSetSummary[];
   /** True when the free tier's rate limit stopped the search. */
   limited: boolean;
   message?: string;
@@ -82,9 +120,11 @@ export class StoreClient {
     const { data } = await this.callTool("search_skills", args);
     const d = (data ?? {}) as Record<string, unknown>;
     const candidates = Array.isArray(d.candidates) ? (d.candidates as Candidate[]).filter((c) => c && typeof c.ref === "string") : [];
+    const skillSets = Array.isArray(d.skill_sets) ? (d.skill_sets as unknown[]).map(setSummary).filter((x): x is SkillSetSummary => x !== undefined) : [];
     return {
       found: Boolean(d.found) && candidates.length > 0,
       candidates,
+      skillSets,
       limited: Boolean(d.limited),
       ...(typeof d.message === "string" ? { message: d.message } : {}),
       ...(typeof d.store_note === "string" ? { storeNote: d.store_note } : {}),
@@ -97,6 +137,8 @@ export class StoreClient {
    * reported as a normal text result, so we check the shape.
    */
   async fetchSkill(ref: string): Promise<FetchedSkill> {
+    // get_skill answers a set ref with the set's step list, not a SKILL.md.
+    if (isSkillSetRef(ref)) throw new StoreError(`${ref} is a skill set, not a skill: fetch it with getSkillSet`, "protocol");
     const { text, data } = await this.callTool("get_skill", { skill_ref: ref });
     const d = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
     const markdown = typeof d.skill_md === "string" ? d.skill_md : text;
@@ -113,6 +155,40 @@ export class StoreClient {
       filesNotStored: d.files_not_stored === true,
       ...(typeof d.source_url === "string" ? { sourceUrl: d.source_url } : {}),
     };
+  }
+
+  /** A skill set's steps, in order. */
+  async getSkillSet(ref: string): Promise<SkillSet> {
+    let res;
+    try {
+      res = await this.callTool("get_skill_set", { ref });
+    } catch (err) {
+      if (err instanceof StoreError && err.kind === "protocol" && /no such set/i.test(err.message)) throw new StoreError(`No such skill set: ${ref}`, "not_found");
+      throw err;
+    }
+    const d = (res.data && typeof res.data === "object" ? res.data : {}) as Record<string, unknown>;
+    const summary = setSummary(d);
+    if (!summary) {
+      if (/no such set/i.test(res.text)) throw new StoreError(`No such skill set: ${ref}`, "not_found");
+      throw new StoreError(`Unexpected get_skill_set response for ${ref}: ${res.text.slice(0, 200)}`, "protocol");
+    }
+    const rawSteps = Array.isArray(d.steps) ? (d.steps as Record<string, unknown>[]) : [];
+    let steps: SkillSetStep[] = rawSteps
+      .filter((x) => x && typeof x.ref === "string")
+      .map((x, i) => ({
+        position: typeof x.position === "number" ? x.position : i + 1,
+        ref: x.ref as string,
+        title: typeof x.title === "string" ? x.title : (x.ref as string),
+        ...(typeof x.label === "string" ? { label: x.label } : {}),
+        ...(typeof x.model_size === "string" ? { model_size: x.model_size } : {}),
+        ...(typeof x.version === "number" ? { version: x.version } : {}),
+        ...(typeof x.available === "boolean" ? { available: x.available } : {}),
+        ...(typeof x.is_verified === "boolean" ? { is_verified: x.is_verified } : {}),
+      }))
+      .sort((a, b) => a.position - b.position);
+    // Without step details, fall back to the bare refs (still in order).
+    if (!steps.length) steps = summary.skill_refs.map((r, i) => ({ position: i + 1, ref: r, title: r }));
+    return { ...summary, steps };
   }
 
   /** The SKILL.md markdown only. */
@@ -240,6 +316,21 @@ export function describeNetworkError(err: unknown, endpoint: string): string {
     "- Elsewhere: check the internet connection, firewall and proxy settings, then try again.",
     ...(proxy ? ["- A proxy is configured (HTTPS_PROXY). The ss33 CLI connects directly and doesn't use it yet."] : []),
   ].join("\n");
+}
+
+function setSummary(x: unknown): SkillSetSummary | undefined {
+  const o = x as Record<string, unknown> | undefined;
+  if (!o || typeof o.ref !== "string" || !Array.isArray(o.skill_refs)) return undefined;
+  const refs = (o.skill_refs as unknown[]).filter((r): r is string => typeof r === "string");
+  return {
+    ref: o.ref,
+    title: typeof o.title === "string" ? o.title : o.ref,
+    ...(typeof o.what_it_does === "string" ? { what_it_does: o.what_it_does } : {}),
+    skill_refs: refs,
+    sequential: o.sequential === true,
+    ...(typeof o.version === "number" ? { version: o.version } : {}),
+    ...(typeof o.all_verified === "boolean" ? { all_verified: o.all_verified } : {}),
+  };
 }
 
 function safeJson(raw: string): RpcResponse | undefined {

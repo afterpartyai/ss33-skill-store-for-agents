@@ -8,7 +8,7 @@ import { runHook as codexHook } from "../adapters/codex.js";
 import { runHook as copilotHook } from "../adapters/copilot.js";
 import { runHook as dshHook } from "../adapters/dsh.js";
 import { runHook as hermesHook } from "../adapters/hermes.js";
-import { StoreClient, StoreError } from "../core/client.js";
+import { isSkillSetRef, StoreClient, StoreError, type SkillSet } from "../core/client.js";
 import {
   configPath,
   configSources,
@@ -21,7 +21,7 @@ import {
   settableKeys,
 } from "../core/config.js";
 import { fingerprint } from "../core/fingerprint.js";
-import { InstallError, install, projectRoot, remove, status, update, type Target, TARGET_DIRS } from "../core/install.js";
+import { InstallError, install, installSet, projectRoot, remove, setMembers, status, update, validSet, type Target, TARGET_DIRS } from "../core/install.js";
 import { buildQuery } from "../core/match.js";
 import { VERSION } from "../core/version.js";
 
@@ -29,10 +29,11 @@ const HELP = `ss33 ${VERSION} — Skill Store CLI
 
 Usage:
   ss33 search <query…> [--limit N] [--area AREA] [--no-context] [--json]
-  ss33 get <ref>                     print a skill's SKILL.md without installing it
+  ss33 get <ref>                     print a skill's SKILL.md (or a skill set's steps) without installing it
   ss33 add <ref> [--target claude|agents|both] [--dry-run] [--show] [--force] [--json]
+                                     a skill-set/… ref installs every step of the set
   ss33 update [name…] [--yes] [--force] [--json]
-  ss33 remove <name>
+  ss33 remove <name | skill-set/…>
   ss33 list [--json]                 installed skills and whether their files still match ss33.lock
   ss33 fingerprint [--json]          the project summary sent with searches
   ss33 config get | set <key> <value> | unset <key> | path
@@ -135,7 +136,15 @@ export async function main(argv: string[], out = (s: string) => process.stdout.w
         out(`• ${c.title}  (${c.ref})${c.available === false ? "  [not available from the store: can't be installed]" : ""}`);
         if (c.what_it_does) out(`    ${truncate(c.what_it_does, 240)}`);
       }
-      if (res.candidates.some((c) => c.available !== false)) out(`\nInstall one with: ss33 add <ref>`);
+      const sets = res.skillSets ?? [];
+      if (sets.length) {
+        out(`\nSkill sets (skills used together for the whole job):`);
+        for (const set of sets) {
+          out(`• ${set.title}  (${set.ref})  ${set.skill_refs.length} skills${set.sequential ? ", run in order" : ""}`);
+          if (set.what_it_does) out(`    ${truncate(set.what_it_does, 240)}`);
+        }
+      }
+      if (res.candidates.some((c) => c.available !== false) || sets.length) out(`\nInstall one with: ss33 add <ref>${sets.length ? " (a skill-set/… ref installs the whole set)" : ""}`);
       if (res.storeNote) out(`\n${res.storeNote}`);
       return 0;
     }
@@ -144,6 +153,11 @@ export async function main(argv: string[], out = (s: string) => process.stdout.w
       const ref = rest[0];
       if (!ref) return usage("get needs a skill ref (from `ss33 search`)", out);
       try {
+        if (isSkillSetRef(ref)) {
+          const set = await client().getSkillSet(ref);
+          out(json ? JSON.stringify(set, null, 2) : describeSet(set));
+          return 0;
+        }
         const skill = await client().fetchSkill(ref);
         out(skill.markdown);
         if (skill.filesNotStored && skill.sourceUrl) out(`\n(Supporting files aren't in the store: ${skill.sourceUrl})`);
@@ -160,6 +174,7 @@ export async function main(argv: string[], out = (s: string) => process.stdout.w
     case "add": {
       const ref = rest[0];
       if (!ref) return usage("add needs a skill ref (from `ss33 search`)", out);
+      if (isSkillSetRef(ref)) return addSet(ref, root(), flags, out);
       let plan;
       try {
         plan = await install(client(), root(), ref, {
@@ -210,6 +225,16 @@ export async function main(argv: string[], out = (s: string) => process.stdout.w
     case "remove": {
       const name = rest[0];
       if (!name) return usage("remove needs a skill name (see `ss33 list`)", out);
+      if (isSkillSetRef(name)) {
+        const members = setMembers(root(), name);
+        if (!members.length) throw new InstallError(`No skills from ${name} in ss33.lock`);
+        for (const m of members) {
+          const { entry, removed, ignored } = remove(root(), m);
+          out(`Removed "${m}" (${entry.ref}) from ss33.lock${removed.length ? `: ${removed.join(", ")}` : ""}`);
+          for (const i of ignored) out(`  Left alone: ${i.path} (${i.reason}). Check where this ss33.lock came from.`);
+        }
+        return 0;
+      }
       const { entry, removed, ignored } = remove(root(), name);
       out(`Removed "${name}" (${entry.ref}) from ss33.lock${removed.length ? `: ${removed.join(", ")}` : ""}`);
       // A lock path ss33 wouldn't create (../.., absolute, through a symlink) is never deleted.
@@ -223,6 +248,8 @@ export async function main(argv: string[], out = (s: string) => process.stdout.w
       if (!s.length) out("No skills installed from the Skill Store in this project.");
       for (const { name, entry, files } of s) {
         out(`• ${name}  (${entry.ref}, installed ${entry.installedAt.slice(0, 10)})`);
+        const set = validSet(entry.set);
+        if (set) out(`    step ${set.position} of skill set "${set.title}" (${set.ref})`);
         const mark = { ok: "✓", modified: "✎ modified", missing: "✗ missing", ignored: "⚠ ignored" } as const;
         for (const f of files) out(`    ${mark[f.status]}  ${f.path}${f.reason ? ` (${f.reason})` : ""}`);
       }
@@ -272,13 +299,57 @@ export async function main(argv: string[], out = (s: string) => process.stdout.w
 
 const HOOKS: Record<string, (event: string, stdin: string) => Promise<string>> = { "claude-code": claudeCodeHook, codex: codexHook, copilot: copilotHook, dsh: dshHook, hermes: hermesHook };
 
+function describeSet(set: SkillSet): string {
+  const lines = [`Skill set: ${set.title}  (${set.ref}${set.version ? `, version ${set.version}` : ""})`];
+  if (set.what_it_does) lines.push(`  ${truncate(set.what_it_does, 400)}`);
+  lines.push(`  ${set.steps.length} skills${set.sequential ? ", used in this order" : ""}:`);
+  for (const st of set.steps) {
+    const extra = [st.label, st.model_size ? `${st.model_size} model` : "", st.available === false ? "not available from the store" : ""].filter(Boolean).join("; ");
+    lines.push(`  ${st.position}. ${st.title}  (${st.ref})${extra ? `  [${extra}]` : ""}`);
+  }
+  return lines.join("\n");
+}
+
+async function addSet(ref: string, root: string, flags: Record<string, string | true>, out: (s: string) => void): Promise<number> {
+  const dryRun = flags["dry-run"] === true;
+  const res = await installSet(client(), root, ref, { targets: targetsFrom(str(flags.target)), force: flags.force === true, dryRun });
+  if (flags.json === true) {
+    const plans = flags.show ? res.plans : res.plans.map(({ content: _c, ...p }) => p);
+    return out(JSON.stringify({ set: res.set, plans, skipped: res.skipped }, null, 2)), res.plans.length ? 0 : 1;
+  }
+  out(describeSet(res.set));
+  out("");
+  if (!res.plans.length) {
+    out(`None of this set's skills can be installed from the store. Nothing was installed.`);
+    for (const k of res.skipped) out(`  ✗ step ${k.position}: ${k.reason}${k.sourceUrl ? ` The author publishes it here: ${k.sourceUrl}` : ""}`);
+    return 1;
+  }
+  out(`${dryRun ? "Would install" : "Installed"} ${res.plans.length} of ${res.set.steps.length} skills:`);
+  for (const plan of res.plans) {
+    out(`${plan.set?.position ?? "•"}. "${plan.name}" from ${plan.ref}${plan.replacing ? " (already installed; reinstalled)" : ""}`);
+    out(`   ${truncate(plan.description, 300)}`);
+    for (const p of plan.paths) out(`   → ${p}`);
+    if (plan.conflicts.length) out(`   ⚠ existing files not managed by ss33: ${plan.conflicts.join(", ")} (needs --force)`);
+    if (plan.missingFiles.length) out(`   ⚠ links to files that won't be installed: ${plan.missingFiles.join(", ")}`);
+    if (plan.filesNotStored) out(`   ⚠ the store doesn't carry this skill's supporting files${plan.sourceUrl ? `; the author's folder: ${plan.sourceUrl}` : ""}`);
+  }
+  for (const k of res.skipped) out(`✗ step ${k.position} (${k.title}) left out: ${k.reason}${k.sourceUrl ? ` The author publishes it here: ${k.sourceUrl}` : ""}`);
+  if (flags.show) for (const plan of res.plans) out(`\n----- ${plan.set?.position ?? ""}. ${plan.name}/SKILL.md -----\n${plan.content}`);
+  if (!dryRun) {
+    const first = res.plans[0]!;
+    out(`\nEach skill is tracked in ss33.lock as a step of this set (see \`ss33 list\`); remove them all with \`ss33 remove ${res.set.ref}\`.`);
+    out(pickUpNote(first.paths, res.plans.map((p) => p.name).join('", "'), res.plans.length > 1));
+  }
+  return 0;
+}
+
 /** Which agents load the skill from where it was written. */
-function pickUpNote(paths: string[], name: string): string {
+function pickUpNote(paths: string[], name: string, several = false): string {
   const notes: string[] = [];
-  if (paths.some((p) => p.startsWith(TARGET_DIRS.claude + "/"))) notes.push(`Claude Code picks up new skills automatically; it appears as "${name}".`);
+  if (paths.some((p) => p.startsWith(TARGET_DIRS.claude + "/"))) notes.push(`Claude Code picks up new skills automatically; ${several ? "they appear as" : "it appears as"} "${name}".`);
   if (paths.some((p) => p.startsWith(TARGET_DIRS.agents + "/")))
     notes.push(
-      `Codex, Copilot, Cursor and other agents that read ${TARGET_DIRS.agents}/ load it as "${name}" (in Codex, Copilot or Cursor, start a new session if it doesn't appear; ` +
+      `Codex, Copilot, Cursor and other agents that read ${TARGET_DIRS.agents}/ load ${several ? "them" : "it"} as "${name}" (in Codex, Copilot or Cursor, start a new session if ${several ? "they don't" : "it doesn't"} appear; ` +
         `Hermes loads it only once the repo is trusted with \`hermes skills trust\`).`,
     );
   return notes.join("\n");
