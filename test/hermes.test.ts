@@ -103,7 +103,8 @@ const python = (() => {
     return undefined;
   }
 })();
-const skip = python ? false : "python3 (3.9+) not found";
+// The shim runs the POSIX launcher; on Windows, CI's launcher job covers it (MSYS paths, Git Bash).
+const skip = process.platform === "win32" ? "POSIX launcher; Windows is covered by the CI launcher job" : python ? false : "python3 (3.9+) not found";
 
 // Stands in for Hermes's PluginContext: only the methods the shim uses, recording what it registers.
 const DRIVER = `

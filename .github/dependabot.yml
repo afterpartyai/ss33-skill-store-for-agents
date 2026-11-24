@@ -1,0 +1,23 @@
+version: 2
+updates:
+  # The workflow pins actions to commit SHAs; this keeps them (and their version comments) current.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Dev dependencies only (the plugin itself has none). One grouped PR a month.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      dev-dependencies:
+        patterns: ["*"]
+    ignore:
+      # Stay at or below the Node floor in package.json engines; bump them together.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]

@@ -189,7 +189,7 @@ test("e2e hook: copilot's Windows PowerShell hook input (UTF-8 BOM, CRLF) still 
   assert.match(JSON.parse(r.stdout).additionalContext, new RegExp(`/ss33:add ${CI_REF}`));
 });
 
-test("e2e: a read-only .agents (Codex's sandbox) gets a clear message, not a stack trace, and no lock entry", { skip: process.getuid?.() === 0 ? "root ignores permissions" : false }, async () => {
+test("e2e: a read-only .agents (Codex's sandbox) gets a clear message, not a stack trace, and no lock entry", { skip: process.getuid?.() === 0 ? "root ignores permissions" : process.platform === "win32" ? "Windows ignores directory mode bits" : false }, async () => {
   const dir = project();
   mkdirSync(join(dir, ".agents"), { mode: 0o555 });
   try {

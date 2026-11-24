@@ -19,7 +19,7 @@ test("config: env beats plugin option beats file; key file is 0600", () => {
   const env = { SS33_CONFIG_DIR: dir };
   setConfigValue("apiKey", "ss33_file", env);
   setConfigValue("match.enabled", "true", env);
-  assert.equal(statSync(configPath(env)).mode & 0o777, 0o600);
+  if (process.platform !== "win32") assert.equal(statSync(configPath(env)).mode & 0o777, 0o600); // Windows has no mode bits
   assert.equal(loadConfig(env).apiKey, "ss33_file");
   assert.equal(loadConfig(env).match.enabled, true);
   assert.equal(loadConfig({ ...env, CLAUDE_PLUGIN_OPTION_API_KEY: "ss33_opt" }).apiKey, "ss33_opt");
@@ -40,7 +40,7 @@ test("config: the hook copies the plugin's API key to the file so commands see i
   assert.equal(syncPluginApiKey(env), false, "nothing to copy without a plugin option");
   assert.equal(syncPluginApiKey({ ...env, CLAUDE_PLUGIN_OPTION_API_KEY: "sk-one" }), true);
   assert.equal(loadConfig(env).apiKey, "sk-one", "commands (no plugin env) now get the key");
-  assert.equal(statSync(configPath(env)).mode & 0o777, 0o600);
+  if (process.platform !== "win32") assert.equal(statSync(configPath(env)).mode & 0o777, 0o600); // Windows has no mode bits
   assert.equal(syncPluginApiKey({ ...env, CLAUDE_PLUGIN_OPTION_API_KEY: "sk-one" }), false, "no rewrite when unchanged");
   assert.equal(syncPluginApiKey({ ...env, CLAUDE_PLUGIN_OPTION_API_KEY: "sk-two" }), true, "a changed key replaces the old one");
   assert.equal(loadConfig(env).apiKey, "sk-two");
