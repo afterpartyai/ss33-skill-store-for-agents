@@ -187,7 +187,7 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
 
 ## CI
 
-`.github/workflows/ci.yml`, on every PR and push to main. Actions are pinned to commit SHAs; Dependabot (`.github/dependabot.yml`) bumps them and the dev dependencies monthly.
+`.github/workflows/ci.yml`, on every PR and push to main. Actions are pinned to commit SHAs; Dependabot (`.github/dependabot.yml`) bumps them and the dev dependencies monthly (majors in their own PRs). An esbuild bump can change the shipped bundle: check out the PR, run `npm run build`, review the bundle diff (it's what users run) and push it, or the bundle check stays red. Dependabot doesn't see the launcher's pinned Node.js (`NODE_VERSION` in `scripts/ss33`) or the tool versions pinned in `ci.yml` (claude-code, ruff, actionlint): bump those by hand.
 
 - **lint**: actionlint, shellcheck (`--severity=warning`) on the launcher, ruff on the Hermes shim and its tests (E/F/W/B/UP, no line length; broad excepts are deliberate there), `claude plugin validate` on the Claude Code plugin and the marketplace.
 - **test**: `npm test` on Ubuntu (Node 22, 24, 26), macOS and Windows (Node 24). The Node 26 leg runs `npm run test:coverage`, adds the table to the job summary and uploads `coverage/lcov.info`. On Windows, the launcher and Hermes shim tests skip (the launcher job covers Windows) and so do mode-bit checks.

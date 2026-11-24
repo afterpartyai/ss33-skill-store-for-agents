@@ -9,7 +9,10 @@ updates:
       actions:
         patterns: ["*"]
 
-  # Dev dependencies only (the plugin itself has none). One grouped PR a month.
+  # Dev dependencies only (the plugin itself has none). Minor and patch updates come as one grouped PR a
+  # month; a major version gets a PR of its own, so it can wait without holding the routine ones up.
+  # esbuild builds the shipped bundle: if its output changes, CI's bundle check fails until `npm run build`
+  # is committed to the PR.
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -17,6 +20,7 @@ updates:
     groups:
       dev-dependencies:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
     ignore:
       # Stay at or below the Node floor in package.json engines; bump them together.
       - dependency-name: "@types/node"
