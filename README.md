@@ -1,17 +1,7 @@
-<!-- Header: the ss33.ai icon (a stack of skill tiles) and the SS33 wordmark. -->
-```
-          ▄▄█▄▄
-      ▄▄█████████▄▄
-  ▄▄█████████████████▄▄      ███████╗███████╗██████╗ ██████╗
-▀▀█████████████████████▀▀    ██╔════╝██╔════╝╚════██╗╚════██╗
-    ▀▀█████████████▀▀        ███████╗███████╗ █████╔╝ █████╔╝
-██▄     ▀▀█████▀▀     ▄██    ╚════██║╚════██║ ╚═══██╗ ╚═══██╗
-  ▀███▄     ▀     ▄███▀      ███████║███████║██████╔╝██████╔╝
-██▄   ▀███▄   ▄███▀   ▄██    ╚══════╝╚══════╝╚═════╝ ╚═════╝
-  ▀███▄   ▀███▀   ▄███▀
-      ▀███▄   ▄███▀          Skill Store 33 · agent skills for every task
-          ▀███▀
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/header-dark.svg">
+  <img alt="SS33: Skill Store 33, agent skills for every task" src="assets/header-light.svg" width="867">
+</picture>
 
 # ss33 Skill Store for agents
 
