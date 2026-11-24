@@ -3,7 +3,7 @@
  * Runs from the repo root (npm test), against the source tree rather than build/.
  */
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { DEFAULT_ENDPOINT } from "../src/core/config.js";
@@ -84,10 +84,22 @@ test("packaging: marketplaces point each harness at its own plugin root", () => 
   assert.equal(copilot.name, json("adapters/copilot/plugin.json").name);
 });
 
+test("packaging: Copilot manifest is Agent Plugins v1.0.0", () => {
+  // awesome-copilot's intake rejects any other top-level key. Copilot then finds skills/ at the plugin root and the hooks
+  // only under com.github.copilot/ (CLI 1.0.114 changelog), so nothing points at them from the manifest.
+  const manifest = json("adapters/copilot/plugin.json");
+  assert.equal(manifest.$schema, "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json");
+  const allowed = ["$schema", "name", "version", "description", "author", "homepage", "repository", "license", "keywords", "extensions"];
+  for (const k of Object.keys(manifest)) assert.ok(allowed.includes(k), `not an Agent Plugins key: ${k}`);
+  for (const k of Object.keys(manifest.author)) assert.ok(["name", "email", "url"].includes(k), `author.${k}`);
+  assert.match(manifest.name, /^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/);
+  assert.ok(!existsSync(join(root, "adapters/copilot/hooks")), "hooks at the root are ignored for Agent Plugins manifests");
+});
+
 test("packaging: Copilot hooks and skills use Copilot's conventions", () => {
   // Copilot's own format: camelCase events, bash/powershell commands. Claude Code's hookSpecificOutput would be ignored,
   // so the prompt hook routes to the copilot adapter, which answers with a top-level additionalContext.
-  const hooks = json("adapters/copilot/hooks/hooks.json");
+  const hooks = json("adapters/copilot/com.github.copilot/hooks/hooks.json");
   assert.equal(hooks.version, 1);
   assert.deepEqual(Object.keys(hooks.hooks).sort(), ["sessionStart", "userPromptSubmitted"]);
   assert.match(hooks.hooks.userPromptSubmitted[0].bash, /^sh "\$PLUGIN_ROOT\/scripts\/ss33" hook copilot user-prompt-submitted$/);
