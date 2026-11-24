@@ -354,3 +354,26 @@ test("diff: reports additions and removals", () => {
   assert.equal(lineDiff("a\nb\nc", "a\nc\nd"), "- b\n+ d");
   assert.equal(lineDiff("same", "same"), "(no textual changes)");
 });
+
+test("skill sets: the set note stays on one line, can't close the comment, and unstamp still recovers the exact content", () => {
+  const set = { ref: "skill-set/x-1", title: "Evil --> set\nline", position: 2, steps: ["a", "b-->c"] };
+  const stamped = stamp(SKILL_MD, "acme/vitest-1", sha256(SKILL_MD), {}, set);
+  const note = stamped.split("\n").find((l) => l.startsWith("<!-- ss33:"))!;
+  assert.match(note, /This is step 2 of the skill set "Evil - set line" \(skill-set\/x-1\)\. Its steps, in order: 1\. a, 2\. b-c\. .*-->$/);
+  assert.equal(note.indexOf("-->"), note.length - 3);
+  assert.equal(unstamp(stamped), SKILL_MD);
+});
+
+test("skill sets: the client reads skill_sets from a search and refuses a set ref in fetchSkill", async () => {
+  const sets = [{ ref: "skill-set/s-1", title: "S", skill_refs: ["a/b-1", 7, "c/d-2"], sequential: true, version: 2 }, { title: "no ref" }];
+  const fetchImpl = (async (_u: unknown, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body));
+    const data = { found: true, candidates: [{ ref: "a/b-1", title: "B" }], skill_sets: sets };
+    return new Response(JSON.stringify({ jsonrpc: "2.0", id: body.id, result: { content: [{ type: "text", text: JSON.stringify(data) }], structuredContent: data } }), { headers: { "content-type": "application/json" } });
+  }) as typeof fetch;
+  const c = new StoreClient({ endpoint: "https://store.test/mcp", fetchImpl });
+  const res = await c.search("q");
+  assert.deepEqual(res.skillSets, [{ ref: "skill-set/s-1", title: "S", skill_refs: ["a/b-1", "c/d-2"], sequential: true, version: 2 }]);
+  await assert.rejects(c.fetchSkill("skill-set/s-1"), /is a skill set, not a skill/);
+  assert.deepEqual((await fakeClient({ candidates: [] }).search("q")).skillSets, [], "older stores send no skill_sets");
+});

@@ -10,7 +10,7 @@ This repo holds a harness-agnostic core and CLI for the ss33 Skill Store (an MCP
 
 ```
 src/core/        harness-agnostic logic. No harness-specific code here.
-  client.ts        MCP-over-HTTP client (search_skills, get_skill). No SDK dependency.
+  client.ts        MCP-over-HTTP client (search_skills, get_skill, get_skill_set). No SDK dependency.
   config.ts        config file + env precedence, state dir
   fingerprint.ts   project summary from manifests and lockfile names
   match.ts         prompt → suggest / none / skip decision, hint text
@@ -169,6 +169,11 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
   - DSH gives shell commands `DSH_NODE_EXECUTABLE` (the executable running DSH; Electron under Desktop). The launcher uses it as `SS33_HOST_NODE` with `ELECTRON_RUN_AS_NODE=1`, because the shell sandbox (writes only in the workspace and /tmp) would block the Node.js download into `~/.cache`.
   - DSH reads project skills from `.dsh/skills`, `.agents/skills` and `~/.dsh/skills`; `add` uses `--target agents`.
   - No API key option yet: plugin config lives in plain YAML (`cordis.patch.yml`), so the key goes through `ss33 config set apiKey` or `SS33_API_KEY`, as for Cursor. DSH has a credentials service (`ctx.credentials`) that could hold it later.
+- **Skill sets** (store feature, 2026-11-24; ss33 0.5.0). `search_skills` may add `skill_sets` (`{ref: "skill-set/…", title, what_it_does, skill_refs, sequential, version, all_verified}`), and `get_skill_set(ref)` returns the `steps` in order (`{position, ref, title, label, model_size, version, available}`). `get_skill` on a set ref returns the step list, not a SKILL.md, so `fetchSkill` refuses set refs and `get`/`add`/`remove` route them by the `skill-set/` prefix. Few searches return a set yet ("prepare patent drawings for a utility patent application" does).
+  - `add skill-set/…` installs each step as its own native skill. Everything is fetched and planned first; a conflict or symlink problem in any step aborts the whole set before anything is written. Steps the store can't serve are left out and reported; the rest install.
+  - The lock entry gets `set: {ref, title, position, steps}` (`steps` = every step's installed name, or `<title> (not installed)`). Lock version stays 1: the field is optional, and older ss33 versions drop it the next time they rewrite that entry. A skill in several sets keeps the most recent one. Reinstalling or updating a step alone keeps it. The lock is untrusted, so `validSet` checks its shape before use.
+  - The provenance stamp gains "This is step N of the skill set "…" (ref). Its steps, in order: 1. a, 2. b." so an agent loading one step knows the rest. It's our text, made single-line and `-->`-free (it sits in a one-line HTML comment that `unstamp` strips), so hashes and local-edit detection are unchanged.
+  - No set-level skill file is generated, and prompt matching ignores sets (hints stay single-skill; the matching baseline is untouched). `update` checks each step's content, not the set's own version, so a set that gains or drops steps upstream isn't noticed yet.
 - **Supporting files:** the store returns only `SKILL.md`. `add` warns about linked files that won't be installed and points to the author's folder.
 
 ## Releasing

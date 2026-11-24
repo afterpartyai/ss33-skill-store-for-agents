@@ -10,6 +10,7 @@
  *
  * It mirrors the real store's shapes as of 2026-11-05 (see ss33-issues-files-and-licensing.md):
  * `available` on candidates; unavailable skills as isError + structuredContent; files_not_stored.
+ * Skill sets as of 2026-11-24: `skill_sets` in search results, get_skill_set, and get_skill on a set ref.
  * report_skill_outcome is captured and NEVER forwarded, so evals can't pollute the real store's data.
  */
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
@@ -32,6 +33,18 @@ export interface ScriptedSkill {
   sourceUrl?: string;
   filesNotStored?: boolean;
   files?: { path: string; content: string }[];
+}
+
+/** A skill set: scripted skills used together for one job. */
+export interface ScriptedSkillSet {
+  ref: string;
+  title: string;
+  what_it_does?: string;
+  /** Extra search terms that should find this set. */
+  keywords?: string[];
+  sequential?: boolean;
+  version?: number;
+  steps: { ref: string; label?: string; model_size?: string }[];
 }
 
 export interface Fault {
@@ -62,6 +75,7 @@ export interface FakeStoreOptions {
   port?: number;
   host?: string;
   skills?: ScriptedSkill[];
+  sets?: ScriptedSkillSet[];
   /** Replay recorded responses from this directory (and save new ones here when recording). */
   cassetteDir?: string;
   /** Forward misses to the real store and save the answers as cassettes. Needs cassetteDir. */
@@ -95,12 +109,14 @@ export interface FakeStore {
   /** Adds or replaces a scripted skill (e.g. publish a new version). */
   publish(skill: ScriptedSkill): void;
   unpublish(ref: string): void;
+  /** Adds or replaces a skill set. */
+  publishSet(set: ScriptedSkillSet): void;
   setFault(fault: Fault | undefined): void;
   reset(): void;
   close(): Promise<void>;
 }
 
-/** The real store's server instructions and tool descriptions (as served on 2026-11-05), so MCP clients see the same text. */
+/** The real store's server instructions (as served on 2026-11-05) and tool descriptions (2026-11-24), so MCP clients see the same text. */
 export const STORE_INSTRUCTIONS = `The Skill Store holds ~60,000 skills: step-by-step procedures written by
 practitioners and organisations, covering software, operations, data,
 documents, finance, legal, health, animal care, marketing, design and more.
@@ -127,7 +143,7 @@ const TOOLS = [
   {
     name: "search_skills",
     description:
-      "Call this BEFORE starting a domain task (a plan, schedule,\nprocedure, document, configuration or code), even one you know how to do: a\nskill may carry specific rules general knowledge will not reproduce. `query`\nis a sentence or two describing the task. `area` is the subject area that best fits the\ntask; skills from that area rank higher (others are still returned). `limit`\n1-10 (default 3). Optional `tier` ('frontier' or 'small') for the model that\nwill follow the skill.",
+      "Call this BEFORE starting a domain task (a plan, schedule,\nprocedure, document, configuration or code), even one you know how to do: a\nskill may carry specific rules general knowledge will not reproduce. `query`\nis a sentence or two describing the task. A candidate with `available`\nfalse is one the store can list but not serve (its licence): get_skill returns\nonly the author's link. `skill_sets`, when present, lists sets of skills used\ntogether for the whole job, each with its `skill_refs` in order. `area` is the subject area that best fits the\ntask; skills from that area rank higher (others are still returned). `limit`\n1-10 (default 3). Optional `tier` ('frontier' or 'small') for the model that\nwill follow the skill.",
     inputSchema: {
       type: "object",
       properties: {
@@ -142,12 +158,17 @@ const TOOLS = [
   {
     name: "get_skill",
     description:
-      "Fetch a skill's SKILL.md by the `ref` from\nsearch_skills (e.g. \"oakoss/vitest-testing-18074849092\"). Returns the\nmarkdown to follow. Pass `model` (the model that will use the skill, e.g.\n\"qwen3.6-27b\") or `tier` (\"small\" for a local / on-device model with a short\ncontext): many skills have a short version written for small models. When\nthe store holds a skill's supporting files (references, templates, scripts)\nthey follow the SKILL.md, each under its path; when it does not,\n`files_not_stored` is true and `source_url` is the author's folder with them.\nA skill whose licence forbids redistribution comes back as an error\n(`available` false) with the author's link. To keep a skill for later, save\nit as .claude/skills/<name>/SKILL.md with its files beside it.",
+      "Fetch a skill's SKILL.md by the `ref` from\nsearch_skills (e.g. \"oakoss/vitest-testing-18074849092\"). Returns the\nmarkdown to follow. Pass `model` (the model that will use the skill, e.g.\n\"qwen3.6-27b\") or `tier` (\"small\" for a local / on-device model with a short\ncontext): many skills have a short version written for small models. When\nthe store holds a skill's supporting files (references, templates, scripts)\nthey follow the SKILL.md, each under its path; when it does not,\n`files_not_stored` is true and `source_url` is the author's folder with them.\nA skill whose licence forbids redistribution comes back as an error\n(`available` false) with the author's link. To keep a skill for later, save\nit as .claude/skills/<name>/SKILL.md with its files beside it. A ref ending\nin @<n> returns version n; a skill set's ref (skill-set/...) returns the set's\nsteps in order.",
     inputSchema: {
       type: "object",
       properties: { skill_ref: { type: "string", title: "Skill Ref" }, tier: { type: "string", title: "Tier", enum: ["frontier", "small"] }, model: { type: "string", title: "Model" } },
       required: ["skill_ref"],
     },
+  },
+  {
+    name: "get_skill_set",
+    description: "Fetch a skill set by the `ref` from\nsearch_skills' `skill_sets` (e.g. \"skill-set/patent-drawing-set-179...\"): the\nskills used together for one job, in order, each with its `ref` for\nget_skill, its recommended model size (\"frontier\" or \"small\"), its step\nlabel and version. `sequential` true means run the steps in order.",
+    inputSchema: { type: "object", properties: { ref: { type: "string", title: "Ref" } }, required: ["ref"] },
   },
   {
     name: "report_skill_outcome",
@@ -181,6 +202,60 @@ function scriptedSearch(skills: Iterable<ScriptedSkill>, query: string, limit: n
     if (score > 0) scored.push({ s, score: score + (s.available === false ? -0.5 : 0) });
   }
   return scored.sort((a, b) => b.score - a.score || a.s.ref.localeCompare(b.s.ref)).slice(0, limit).map((x) => x.s);
+}
+
+/** Sets come back only when they match the task at least as well as a skill would (score 2+). */
+function scriptedSetSearch(sets: Iterable<ScriptedSkillSet>, query: string): ScriptedSkillSet[] {
+  const task = query.split(/\n\s*Project context:/)[0] ?? query;
+  const q = new Set(words(task).filter((w) => w.length > 2));
+  const hits: ScriptedSkillSet[] = [];
+  for (const set of sets) {
+    const hay = new Set(words(`${set.title} ${set.what_it_does ?? ""} ${(set.keywords ?? []).join(" ")}`));
+    if ([...q].filter((w) => hay.has(w)).length >= 2) hits.push(set);
+  }
+  return hits;
+}
+
+function setSummaryOf(set: ScriptedSkillSet, skills: Map<string, ScriptedSkill>): Record<string, unknown> {
+  return {
+    ref: set.ref,
+    title: set.title,
+    what_it_does: set.what_it_does ?? "",
+    skill_count: set.steps.length,
+    skill_refs: set.steps.map((st) => st.ref),
+    sequential: set.sequential !== false,
+    all_verified: false,
+    version: set.version ?? 1,
+  };
+}
+
+function scriptedGetSet(set: ScriptedSkillSet, skills: Map<string, ScriptedSkill>): Record<string, unknown> {
+  const steps = set.steps.map((st, i) => {
+    const s = skills.get(st.ref);
+    return {
+      position: i + 1,
+      ref: st.ref,
+      title: s?.title ?? st.ref,
+      label: st.label ?? "",
+      model_size: st.model_size ?? "frontier",
+      version: 1,
+      available: Boolean(s) && s!.available !== false,
+      is_verified: false,
+      pinned: false,
+      pin_status: "latest",
+    };
+  });
+  const data = { ...setSummaryOf(set, skills), steps };
+  const text = [
+    `# Skill set: ${set.title}`,
+    "",
+    set.what_it_does ?? "",
+    "",
+    `${steps.length} skills, set version ${set.version ?? 1}. Run these in order. Fetch each with get_skill(ref).`,
+    "",
+    ...steps.map((st) => `${st.position}. ${st.title} [${st.label}]: ref \`${st.ref}\`, model size ${st.model_size}`),
+  ].join("\n");
+  return { content: [{ type: "text", text }], structuredContent: data, isError: false };
 }
 
 function candidateOf(s: ScriptedSkill): Record<string, unknown> {
@@ -242,6 +317,7 @@ function send(res: ServerResponse, status: number, body: unknown, headers: Recor
 
 export async function startFakeStore(opts: FakeStoreOptions = {}): Promise<FakeStore> {
   const skills = new Map<string, ScriptedSkill>((opts.skills ?? []).map((s) => [s.ref, s]));
+  const sets = new Map<string, ScriptedSkillSet>((opts.sets ?? []).map((s) => [s.ref, s]));
   const cassettes: Map<string, Cassette> = opts.cassetteDir ? loadCassettes(opts.cassetteDir) : new Map();
   if (opts.record && !opts.cassetteDir) throw new Error("record mode needs cassetteDir");
   const calls: CallRecord[] = [];
@@ -302,13 +378,31 @@ export async function startFakeStore(opts: FakeStoreOptions = {}): Promise<FakeS
         opts.auth && auth === "anonymous"
           ? { store_note: `Free tier: ${Math.max((opts.auth.freeTierPerMinute ?? 5) - anonSearches.length, 0)} free searches left this minute from this address.` }
           : {};
-      if (hits.length) return { result: toolResult({ found: true, candidates: hits.map(candidateOf), ...freeNote }), source: "scripted" };
+      const setHits = scriptedSetSearch(sets.values(), String(args.query ?? ""));
+      const setsField = setHits.length ? { skill_sets: setHits.map((x) => setSummaryOf(x, skills)) } : {};
+      if (hits.length) return { result: toolResult({ found: true, candidates: hits.map(candidateOf), ...setsField, ...freeNote }), source: "scripted" };
       if (opts.record) {
         const result = await forward(tool, args);
         if (result) return { result, source: "upstream" };
       }
       if (skills.size && !opts.cassetteDir) {
         return { result: toolResult({ found: false, candidates: [], message: "No skill in the corpus covers this request well enough to recommend.", ...freeNote }), source: "scripted" };
+      }
+    }
+    if (tool === "get_skill_set" || (tool === "get_skill" && String(args.skill_ref ?? "").startsWith("skill-set/"))) {
+      const ref = String(args.ref ?? args.skill_ref ?? "");
+      const set = sets.get(ref);
+      if (set) return { result: scriptedGetSet(set, skills), source: "scripted" };
+      if (tool === "get_skill_set") {
+        const recorded = cassettes.get(cassetteKey(tool, args));
+        if (recorded) return { result: recorded.result, source: "cassette" };
+        if (opts.record) {
+          const result = await forward(tool, args);
+          if (result) return { result, source: "upstream" };
+        }
+        if ((skills.size || sets.size) && !opts.cassetteDir) {
+          return { result: textResult(`Could not fetch skill set ${ref}: no such set (use a ref from search skill_sets)`, true), source: "scripted" };
+        }
       }
     }
     if (tool === "get_skill") {
@@ -421,7 +515,8 @@ export async function startFakeStore(opts: FakeStoreOptions = {}): Promise<FakeS
     misses,
     outcomes,
     publish: (s) => void skills.set(s.ref, s),
-    unpublish: (ref) => void skills.delete(ref),
+    unpublish: (ref) => void (skills.delete(ref) || sets.delete(ref)),
+    publishSet: (set) => void sets.set(set.ref, set),
     setFault: (f) => void (fault = f ? { ...f } : undefined),
     reset: () => {
       calls.length = 0;

@@ -10,7 +10,7 @@ import { execFile } from "node:child_process";
 import { chmodSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
-import { loadSkillFixture } from "../src/fakestore/fixtures.js";
+import { loadSetFixture, loadSkillFixture } from "../src/fakestore/fixtures.js";
 import { startFakeStore, type FakeStore } from "../src/fakestore/server.js";
 import { tempDir } from "./helpers.js";
 
@@ -18,7 +18,8 @@ const BIN = join(process.cwd(), process.env.SS33_E2E_BIN ?? "build/src/cli/main.
 let store: FakeStore;
 
 before(async () => {
-  store = await startFakeStore({ skills: loadSkillFixture(join(process.cwd(), "test/fixtures/store/basic.json")) });
+  const fixture = join(process.cwd(), "test/fixtures/store/basic.json");
+  store = await startFakeStore({ skills: loadSkillFixture(fixture), sets: loadSetFixture(fixture) });
 });
 after(() => store.close());
 
@@ -233,4 +234,80 @@ test("e2e hook: store failures never reach the session (silent, exit 0, within b
   assert.equal(down.code, 0);
   assert.equal(down.stdout, "", "store unreachable");
   assert.match(readFileSync(join(dir, ".state", "hook.log"), "utf8"), /timed out/, "the reason is logged for debugging");
+});
+
+const SET_REF = "skill-set/node-ci-quality-set-9001";
+const VITEST = ".claude/skills/vitest-testing/SKILL.md";
+
+test("e2e skill sets: search shows the set, get lists its steps, add installs every step in order, remove takes them all", async () => {
+  const dir = project();
+  try {
+    const search = await ss33(["search", "quality pipeline for unit tests"], { cwd: dir });
+    assert.equal(search.code, 0, search.stderr);
+    assert.match(search.stdout, /Skill sets \(skills used together for the whole job\):\n• Node CI Quality Set {2}\(skill-set\/node-ci-quality-set-9001\) {2}2 skills, run in order/);
+
+    const get = await ss33(["get", SET_REF], { cwd: dir });
+    assert.equal(get.code, 0, get.stderr);
+    assert.match(get.stdout, /1\. Vitest Testing {2}\(acme\/vitest-testing-1002\) {2}\[write the tests; small model\]\n {2}2\. Github Actions CI/);
+
+    const dry = await ss33(["add", SET_REF, "--dry-run"], { cwd: dir });
+    assert.equal(dry.code, 0, dry.stderr);
+    assert.match(dry.stdout, /Would install 2 of 2 skills/);
+    assert.ok(!existsSync(join(dir, "ss33.lock")), "a dry run writes nothing");
+
+    const add = await ss33(["add", SET_REF], { cwd: dir });
+    assert.equal(add.code, 0, add.stderr);
+    const lock = JSON.parse(readFileSync(join(dir, "ss33.lock"), "utf8"));
+    assert.deepEqual(lock.skills["vitest-testing"].set, { ref: SET_REF, title: "Node CI Quality Set", position: 1, steps: ["vitest-testing", "github-actions-ci"] });
+    assert.equal(lock.skills["github-actions-ci"].set.position, 2);
+    assert.match(readFileSync(join(dir, SKILL), "utf8"), /This is step 2 of the skill set "Node CI Quality Set" \(skill-set\/node-ci-quality-set-9001\)\. Its steps, in order: 1\. vitest-testing, 2\. github-actions-ci\./);
+    assert.match((await ss33(["list"], { cwd: dir })).stdout, /step 1 of skill set "Node CI Quality Set"/);
+    assert.doesNotMatch((await ss33(["list"], { cwd: dir })).stdout, /modified/, "the set note doesn't count as a local edit");
+
+    // A step updated or reinstalled on its own stays in the set.
+    const original = ciSkill();
+    store.publish({ ...original, content: original.content!.replace("3. Use a Node version matrix", "3. Cache npm.\n4. Use a Node version matrix") });
+    try {
+      assert.match((await ss33(["update", "--yes"], { cwd: dir })).stdout, /github-actions-ci .*: updated/);
+    } finally {
+      store.publish(original);
+    }
+    assert.match(readFileSync(join(dir, SKILL), "utf8"), /Cache npm/);
+    assert.match(readFileSync(join(dir, SKILL), "utf8"), /This is step 2 of the skill set/);
+    assert.equal((await ss33(["add", CI_REF], { cwd: dir })).code, 0);
+    assert.equal(JSON.parse(readFileSync(join(dir, "ss33.lock"), "utf8")).skills["github-actions-ci"].set.position, 2);
+
+    const rm = await ss33(["remove", SET_REF], { cwd: dir });
+    assert.equal(rm.code, 0, rm.stderr);
+    assert.ok(!existsSync(join(dir, "ss33.lock")) && !existsSync(join(dir, SKILL)) && !existsSync(join(dir, VITEST)));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("e2e skill sets: a conflict in any step installs nothing; an unavailable step is left out; an unknown set fails", async () => {
+  const dir = project();
+  try {
+    mkdirSync(join(dir, ".claude/skills/github-actions-ci"), { recursive: true });
+    writeFileSync(join(dir, SKILL), "our own\n");
+    const blocked = await ss33(["add", SET_REF], { cwd: dir });
+    assert.equal(blocked.code, 1);
+    assert.match(blocked.stderr, /Not overwriting files ss33 doesn't manage: \.claude\/skills\/github-actions-ci\/SKILL\.md .*Nothing was changed/);
+    assert.ok(!existsSync(join(dir, VITEST)) && !existsSync(join(dir, "ss33.lock")), "step 1 isn't written either");
+    rmSync(join(dir, ".claude"), { recursive: true });
+
+    store.publishSet({ ref: "skill-set/deck-set-9002", title: "Deck Set", steps: [{ ref: "restricted/pptx-creator-1006" }, { ref: "acme/vitest-testing-1002" }] });
+    const partial = await ss33(["add", "skill-set/deck-set-9002"], { cwd: dir });
+    assert.equal(partial.code, 0, partial.stderr);
+    assert.match(partial.stdout, /Installed 1 of 2 skills/);
+    assert.match(partial.stdout, /✗ step 1 \(Pptx Creator\) left out: .*isn't available from the Skill Store/);
+    assert.match(readFileSync(join(dir, VITEST), "utf8"), /Its steps, in order: 1\. Pptx Creator \(not installed\), 2\. vitest-testing\./);
+
+    const missing = await ss33(["get", "skill-set/nope-1"], { cwd: dir });
+    assert.equal(missing.code, 1);
+    assert.match(missing.stdout, /No such skill set: skill-set\/nope-1/);
+  } finally {
+    store.unpublish("skill-set/deck-set-9002");
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
