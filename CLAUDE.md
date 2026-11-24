@@ -65,6 +65,7 @@ adapters/dsh/            the DeepSeek Harness plugin: an npm-style bundle packag
   skills/ss33-{search,add,update,list,setup}/SKILL.md   → /ss33-search, /ss33-add, …  (user-only: disable-model-invocation)
   scripts/ss33, lib/ss33.cjs   COPIES made by `npm run build`; never edit them here
 assets/header-{light,dark}.svg   README header, drawn by `npm run header` (tools/header.mjs holds the ASCII it's drawn from)
+assets/readyai-logo.{png,svg}    ReadyAI's square logo (publisher logo for marketplace listings): the symbol cropped from readyai.ai/images/logo.svg; PNG 512×512 on a dark background, SVG white on transparent
 .claude-plugin/marketplace.json   Claude Code installs straight from this GitHub repo
 .agents/plugins/marketplace.json  Codex installs from this repo (Codex prefers it over .claude-plugin/)
 .cursor-plugin/marketplace.json   Cursor installs from this repo
