@@ -1233,7 +1233,7 @@ function debugLog(dir, message) {
 }
 
 // src/core/version.ts
-var VERSION = "0.5.0";
+var VERSION = "0.5.1";
 
 // src/core/events.ts
 var LOCAL_SURFACES = /* @__PURE__ */ new Set(["cli", "tui", "desktop", "acp"]);

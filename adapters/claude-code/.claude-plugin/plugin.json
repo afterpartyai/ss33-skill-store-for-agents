@@ -1,6 +1,6 @@
 {
   "name": "ss33",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "ss33 Skill Store for Claude Code: project-aware skill search, native skill install with a lockfile, and opt-in prompt matching.",
   "author": { "name": "ReadyAI", "email": "support@readyai.ai" },
   "repository": "https://github.com/afterpartyai/ss33-skill-store-for-agents",
