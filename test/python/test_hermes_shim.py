@@ -80,7 +80,8 @@ class ShimTest(unittest.TestCase):
     def setUp(self):
         self.mod = load_shim()
         self.tmp = Path(tempfile.mkdtemp(prefix="ss33-pytest-"))
-        clean = {k: v for k, v in os.environ.items() if not k.startswith(("SS33_", "HERMES", "XDG_", "LOCALAPPDATA"))}
+        # ProgramFiles/LOCALAPPDATA too: a Windows runner has a real Git there, which the shell lookup would find.
+        clean = {k: v for k, v in os.environ.items() if not k.upper().startswith(("SS33_", "HERMES", "XDG_", "LOCALAPPDATA", "PROGRAMFILES", "PROGRAMW6432"))}
         clean["HOME"] = str(self.tmp / "home")
         clean["USERPROFILE"] = clean["HOME"]
         patcher = mock.patch.dict(os.environ, clean, clear=True)
