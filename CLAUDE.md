@@ -78,6 +78,7 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
   e2e-cli.test.ts  real CLI as a child process vs the fake store: lifecycle, hook, hostile skill, outages
   cli.test.ts      every CLI command in-process (main() with an output collector): output, usage errors, config, doctor
   edges.test.ts    core edge cases: fingerprint ecosystems, client session/errors, config/state dirs, hooks that must not throw
+  python/          the Hermes shim's own unit tests (stdlib unittest; the CLI process is mocked)
   release.test.ts  tools/release.mjs on a copy of the version files (SS33_RELEASE_ROOT, --no-verify)
   matching/        prompt-matching eval: cases.jsonl, baseline.json, run.ts (report), corpus.ts
   matching.test.ts regression gate against matching/baseline.json
@@ -90,6 +91,7 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
 - `npm install`: dev deps only (typescript, esbuild, @types/node). The runtime has **zero dependencies**.
 - `npm test`: compiles to `build/` and runs everything offline: unit, fake-store, end-to-end (real CLI vs fake store) and the matching regression gate. About 11 s.
 - `npm run test:coverage`: the same suite with coverage of `build/src`, `adapters/dsh/index.js` and `tools/`; fails under the thresholds in the script (lines 95, branches 88, functions 95) and writes `coverage/lcov.info`. Raise the thresholds when coverage goes up; don't lower them to land a change.
+- `npm run test:python`: the Hermes shim's unit tests (`python3 -m unittest discover -s test/python`). With coverage, as CI runs it: `coverage run --branch --source=adapters/hermes -m unittest discover -s test/python && coverage report --fail-under=95`.
 - `npm run test:live`: also hits the real store (set `SS33_API_KEY` to avoid the 5/min free-tier limit).
 - `npm run eval:matching`: matching report (offline replay). `-- --verbose` shows every case; `-- --record` records answers for new cases from the real store (uses your key); `-- --update-baseline` accepts the current numbers.
 - `npm run fake-store -- --skills test/fixtures/store/basic.json`: run the fake store; point anything at it with `SS33_ENDPOINT=<printed url>`. `--help` for record/auth/fault options; faults and new skill versions can be set at runtime via `POST /_admin/fault` and `POST /_admin/skills`.
@@ -120,6 +122,7 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
 - **The API key has two paths, because plugin options don't reach Bash.** `/plugin configure` stores it in the keychain and hooks get it as `CLAUDE_PLUGIN_OPTION_API_KEY`; the hook copies it to `~/.config/ss33/config.json` (0600) so `/ss33:*` commands can use it. `ss33 doctor` shows both views.
 - **Prompt matching precedence:** `SS33_MATCH` > the plugin option (`CLAUDE_PLUGIN_OPTION_PROMPT_MATCHING`) > config file `match.enabled` > default (off). When off, the hook makes no network call.
 - **Client-side match confidence.** The store has no relevance score, so `match.ts` suggests a candidate only if it shares at least 2 keywords with the prompt (1 in the title), names no stack the project doesn't use, isn't already installed or suggested this session, and the per-session cap (3) isn't reached. Hint text is ours, neutralised and truncated, never the publisher's instructions.
+- **Declared hosts.** The Claude Code manifest lists `network.hosts`: `mcp.ss33.ai` (the store) and `nodejs.org` (the launcher's one-time download). `test/packaging.test.ts` derives both from `DEFAULT_ENDPOINT` and the launcher's `NODE_DIST`, so a new host must be declared there too. The other harnesses' manifests have no such field (Cursor's schema rejects unknown keys).
 - **The MCP server isn't bundled.** It rejects an empty bearer token, so an optional key can't be expressed in `.mcp.json`, and the CLI already covers search and install.
 - **Never overwrite what ss33 doesn't manage.** An existing skill folder not in the lock, or an update over local edits, needs `--force`.
 - **Hermes specifics.**
@@ -185,8 +188,9 @@ test/            node:test. *.test.ts run in `npm test`; live.test.ts hits the r
 
 `.github/workflows/ci.yml`, on every PR and push to main. Actions are pinned to commit SHAs; Dependabot (`.github/dependabot.yml`) bumps them and the dev dependencies monthly.
 
-- **lint**: actionlint, shellcheck (`--severity=warning`) on the launcher, ruff on the Hermes shim (E/F/W/B/UP, no line length; broad excepts are deliberate there), `claude plugin validate` on the Claude Code plugin and the marketplace.
+- **lint**: actionlint, shellcheck (`--severity=warning`) on the launcher, ruff on the Hermes shim and its tests (E/F/W/B/UP, no line length; broad excepts are deliberate there), `claude plugin validate` on the Claude Code plugin and the marketplace.
 - **test**: `npm test` on Ubuntu (Node 22, 24, 26), macOS and Windows (Node 24). The Node 26 leg runs `npm run test:coverage`, adds the table to the job summary and uploads `coverage/lcov.info`. On Windows, the launcher and Hermes shim tests skip (the launcher job covers Windows) and so do mode-bit checks.
+- **python**: the Hermes shim's unit tests on Python 3.11 and 3.14 (Ubuntu) and 3.13 (Windows); the 3.14 leg measures branch coverage and fails under 95%.
 - **bundle**: `npm run build` must leave `adapters/` unchanged (every plugin's bundle and launcher copy), then the e2e tests run against the shipped bundle.
 - **launcher**: the Node.js download on Linux (x64, arm64), macOS (arm64, Intel) and Windows, and every plugin's prompt hook exits 0 silently.
 - **ci-ok**: one check that needs all the others; make it the required status check on `main`.

@@ -18,6 +18,7 @@
     "build": "npm run typecheck && npm run bundle && npm run sync:codex && npm run sync:hermes && npm run sync:cursor && npm run sync:copilot && npm run sync:dsh",
     "test": "npm run build:test && node --test \"build/test/**/*.test.js\"",
     "test:coverage": "npm run build:test && node -e \"require('fs').mkdirSync('coverage',{recursive:true})\" && node --test --experimental-test-coverage --test-coverage-include=\"build/src/**\" --test-coverage-include=adapters/dsh/index.js --test-coverage-include=\"tools/*.mjs\" --test-coverage-exclude=build/src/fakestore/cli.js --test-coverage-lines=95 --test-coverage-branches=88 --test-coverage-functions=95 --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info \"build/test/**/*.test.js\"",
+    "test:python": "python3 -B -m unittest discover -s test/python",
     "test:live": "npm run build:test && SS33_LIVE=1 node --test \"build/test/**/*.test.js\"",
     "fake-store": "npm run build:test --silent && node build/src/fakestore/cli.js",
     "release": "node tools/release.mjs",

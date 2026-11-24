@@ -41,7 +41,7 @@ jobs:
         run: shellcheck --shell=sh --severity=warning adapters/claude-code/scripts/ss33
       # Broad exception handlers are deliberate there (a hook must never break a turn), so B/BLE stay narrow.
       - name: ruff (Hermes shim, Python 3.11+)
-        run: pipx run ruff==0.17.6 check --isolated --target-version py311 --select E,F,W,B,UP --ignore E501 adapters/hermes
+        run: pipx run ruff==0.17.6 check --isolated --target-version py311 --select E,F,W,B,UP --ignore E501 adapters/hermes test/python
       - name: claude plugin validate
         run: |
           npx --yes @anthropic-ai/claude-code@2.1.331 plugin validate adapters/claude-code --strict
@@ -95,6 +95,37 @@ jobs:
           name: coverage-lcov
           path: coverage/lcov.info
           retention-days: 14
+
+  # The Hermes shim's own unit tests (test/python), with branch coverage. test/hermes.test.ts runs it end to end.
+  python:
+    name: Hermes shim (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Hermes requires 3.11+.
+          - { os: ubuntu-latest, python: "3.11" }
+          - { os: ubuntu-latest, python: "3.14", coverage: true }
+          - { os: windows-latest, python: "3.13" }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Tests
+        if: ${{ !matrix.coverage }}
+        run: python -B -m unittest discover -s test/python -v
+      - name: Tests with coverage (fails under 95%)
+        if: ${{ matrix.coverage }}
+        run: |
+          python -m pip install --quiet coverage==7.16.2
+          python -B -m coverage run --branch --source=adapters/hermes -m unittest discover -s test/python -v
+          python -m coverage report -m --fail-under=95
+          { echo "### Hermes shim coverage"; echo '```'; python -m coverage report; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
   # Plugins are installed by copying their folder, so every adapters/* plugin carries the built bundle.
   bundle:
@@ -178,7 +209,7 @@ jobs:
   ci-ok:
     name: CI passed
     if: ${{ always() }}
-    needs: [lint, test, bundle, launcher]
+    needs: [lint, test, python, bundle, launcher]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:

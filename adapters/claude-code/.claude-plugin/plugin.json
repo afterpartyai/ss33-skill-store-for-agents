@@ -7,6 +7,7 @@
   "license": "MIT",
   "icon": "./.claude-plugin/icon.png",
   "keywords": ["skills", "skill-store", "ss33"],
+  "network": { "hosts": ["mcp.ss33.ai", "nodejs.org"] },
   "userConfig": {
     "api_key": {
       "type": "string",
