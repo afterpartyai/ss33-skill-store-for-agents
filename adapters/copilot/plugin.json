@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "ss33",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "ss33 Skill Store for GitHub Copilot: project-aware skill search, native skill install with a lockfile, and opt-in prompt matching.",
   "author": { "name": "ReadyAI", "email": "support@readyai.ai", "url": "https://ss33.ai" },
   "homepage": "https://ss33.ai",

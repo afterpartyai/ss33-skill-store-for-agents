@@ -1,6 +1,6 @@
 {
   "name": "dsh-ss33",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "ss33 Skill Store for DeepSeek Harness: project-aware skill search, native skill install with a lockfile, and opt-in prompt matching.",
   "type": "module",
   "main": "index.js",
