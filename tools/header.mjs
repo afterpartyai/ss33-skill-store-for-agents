@@ -36,6 +36,8 @@ const CH = 24;
 const WORD_COL = 29; // where the wordmark starts, in cells
 const WORD_ROW = 2;
 const PAD = 16;
+const TAG_SIZE = 17;
+const TAG = ["Skill Store 33", " · agent skills for every task"];
 
 const THEMES = {
   light: { icon: ["#3B82F6", "#1D4ED8"], word: "#16181F", shadow: "#2563EB", brand: "#1D4ED8", tag: "#475569" },
@@ -82,7 +84,9 @@ function svg(theme) {
   const icon = layer(ICON, 0, 0);
   const word = layer(WORD, WORD_COL, WORD_ROW);
   const wordWidth = Math.max(...WORD.map((l) => [...l].length));
-  const width = PAD * 2 + (WORD_COL + wordWidth) * CW;
+  // The tagline is wider than the wordmark. Monospace fonts run about 0.6em a character; allow 0.65.
+  const tagWidth = Math.ceil(TAG.join("").length * TAG_SIZE * 0.65);
+  const width = PAD * 2 + WORD_COL * CW + Math.max(wordWidth * CW, tagWidth);
   const height = PAD * 2 + ICON.length * CH;
   const tagY = PAD + (WORD_ROW + WORD.length + 1.6) * CH;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="SS33: Skill Store 33, agent skills for every task">
@@ -90,7 +94,7 @@ function svg(theme) {
   <g fill="url(#g)" shape-rendering="crispEdges">${icon.fill}</g>
   <g fill="${t.shadow}" shape-rendering="crispEdges">${word.shadow}</g>
   <g fill="${t.word}" shape-rendering="crispEdges">${word.fill}</g>
-  <text x="${PAD + WORD_COL * CW}" y="${tagY}" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="17"><tspan fill="${t.brand}" font-weight="700">Skill Store 33</tspan><tspan fill="${t.tag}"> · agent skills for every task</tspan></text>
+  <text x="${PAD + WORD_COL * CW}" y="${tagY}" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="${TAG_SIZE}"><tspan fill="${t.brand}" font-weight="700">${TAG[0]}</tspan><tspan fill="${t.tag}">${TAG[1]}</tspan></text>
 </svg>
 `;
 }
